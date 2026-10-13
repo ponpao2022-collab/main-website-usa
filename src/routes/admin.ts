@@ -122,7 +122,18 @@ adminRouter.get("/", (c) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/80 text-slate-300">
-            ${posts.map(p => `
+            ${posts.length === 0 ? `
+              <tr>
+                <td colspan="6" class="text-center py-12 text-slate-500">
+                  <div class="text-sm font-semibold text-slate-400 mb-1">No articles in database</div>
+                  <div class="text-xs text-slate-500 mb-4">Old mock data has been cleanly deleted. Start fresh by creating a new article!</div>
+                  <a href="/admin/new" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center space-x-1.5 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>+ Publish First Story</span>
+                  </a>
+                </td>
+              </tr>
+            ` : posts.map(p => `
               <tr class="hover:bg-slate-800/40 transition">
                 <td class="py-4 px-5">
                   <div class="flex items-center space-x-3">
@@ -245,9 +256,13 @@ const renderEditor = (c: any) => {
         <span>TK Summary AI</span>
       </button>
 
-      <button onclick="saveAndDeploy()" id="saveBtn" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 transition">
+      <button onclick="saveAndDeploy('draft')" id="draftBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+        <span>💾 Save Draft</span>
+      </button>
+
+      <button onclick="saveAndDeploy('published')" id="saveBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/25 flex items-center space-x-1.5 transition">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-        <span>Instant Deploy to Edge</span>
+        <span>🚀 Publish</span>
       </button>
     </div>
   </header>
@@ -352,6 +367,32 @@ const renderEditor = (c: any) => {
     <!-- Right Settings Inspector Panel -->
     <aside class="w-80 border-l border-slate-800 bg-slate-900/90 p-5 overflow-y-auto space-y-6">
       
+      <!-- Dedicated Publish Action Box -->
+      <div class="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 shadow-lg space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Publishing Status</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${post && post.status === 'draft' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+            ${post ? (post.status === 'draft' ? 'Draft' : 'Published') : 'New Article'}
+          </span>
+        </div>
+        
+        <button type="button" onclick="saveAndDeploy('published')" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span>Publish Article Now</span>
+        </button>
+
+        <div class="flex items-center space-x-2 pt-1">
+          <button type="button" onclick="saveAndDeploy('draft')" class="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-medium transition text-center">
+            Save as Draft
+          </button>
+          ${post ? `
+            <a href="/article/${post.slug}" target="_blank" class="py-1.5 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 text-[11px] font-medium transition text-center">
+              View Live
+            </a>
+          ` : ''}
+        </div>
+      </div>
+
       <!-- Breaking News Switch -->
       <div class="flex items-center justify-between p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/30">
         <div>
@@ -1302,40 +1343,61 @@ const renderEditor = (c: any) => {
     }
 
     // Save and deploy
-    async function saveAndDeploy() {
+    async function saveAndDeploy(status) {
+      if (!status) status = 'published';
       const saveBtn = document.getElementById('saveBtn');
-      saveBtn.innerHTML = 'Deploying to Edge...';
+      const draftBtn = document.getElementById('draftBtn');
+      const originalSaveHtml = saveBtn ? saveBtn.innerHTML : '';
+      const originalDraftHtml = draftBtn ? draftBtn.innerHTML : '';
+
+      if (status === 'published' && saveBtn) {
+        saveBtn.innerHTML = '🚀 Publishing...';
+      } else if (status === 'draft' && draftBtn) {
+        draftBtn.innerHTML = '💾 Saving...';
+      }
 
       const payload = {
         id: postId,
-        title: document.getElementById('titleInput').value,
-        slug: document.getElementById('slugInput').value,
-        summary: document.getElementById('summaryInput').value,
+        title: document.getElementById('titleInput').value.trim() || 'Untitled Article',
+        slug: document.getElementById('slugInput').value.trim(),
+        summary: document.getElementById('summaryInput').value.trim(),
         content: document.getElementById('htmlCodeEditor').value || document.getElementById('postVisualEditor').innerHTML,
         category_id: parseInt(document.getElementById('categoryInput').value),
         featured_image: document.getElementById('imageInput').value,
-        author_name: document.getElementById('authorInput').value,
-        read_time: document.getElementById('readTimeInput').value,
+        author_name: document.getElementById('authorInput').value.trim() || 'Editorial Staff',
+        read_time: document.getElementById('readTimeInput').value.trim() || '4 min read',
         is_breaking: document.getElementById('isBreakingInput').checked,
-        status: 'published'
+        status: status
       };
 
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
+      try {
+        const res = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
 
-      if (data.success) {
-        await fetch('/api/cloudflare/purge', { method: 'POST' });
-        saveBtn.innerHTML = '✅ Live Globally (18ms)';
-        setTimeout(() => {
-          window.location.href = '/admin';
-        }, 800);
-      } else {
-        alert('Failed to save story');
-        saveBtn.innerHTML = 'Instant Deploy to Edge';
+        if (data.success) {
+          await fetch('/api/cloudflare/purge', { method: 'POST' }).catch(function(){});
+          if (saveBtn && status === 'published') {
+            saveBtn.innerHTML = '✅ Published!';
+          }
+          if (draftBtn && status === 'draft') {
+            draftBtn.innerHTML = '✅ Draft Saved!';
+          }
+          setTimeout(function() {
+            window.location.href = '/admin';
+          }, 600);
+        } else {
+          alert('Failed to save story: ' + (data.error || 'Unknown error'));
+          if (saveBtn) saveBtn.innerHTML = originalSaveHtml;
+          if (draftBtn) draftBtn.innerHTML = originalDraftHtml;
+        }
+      } catch (err) {
+        alert('Network error saving story: ' + err.message);
+        if (saveBtn) saveBtn.innerHTML = originalSaveHtml;
+        if (draftBtn) draftBtn.innerHTML = originalDraftHtml;
       }
     }
   </script>
