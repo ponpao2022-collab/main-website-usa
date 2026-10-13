@@ -62,7 +62,7 @@ db.exec(`
     summary TEXT,
     content TEXT NOT NULL,
     category_id INTEGER REFERENCES categories(id),
-    author_name TEXT DEFAULT 'Sarah Jenkins',
+    author_name TEXT DEFAULT 'Admin',
     author_avatar TEXT DEFAULT 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
     featured_image TEXT,
     read_time TEXT DEFAULT '5 min read',
@@ -108,5 +108,8 @@ if (catCount.count === 0) {
   const insertCat = db.prepare("INSERT INTO categories (name, slug, color) VALUES (?, ?, ?)");
   insertCat.run("NEWS", "news", "#c25e3e");
 }
+
+// Rename the former generic author label; preserve each post's avatar and custom authors.
+db.query("UPDATE posts SET author_name = 'Admin' WHERE author_name IN ('Editorial Staff', 'Editional Staff')").run();
 
 export { db, dbPath };

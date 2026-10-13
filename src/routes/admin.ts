@@ -177,7 +177,7 @@ adminRouter.get("/", (c) => {
       <a href="/" target="_blank" class="cms-nav-item">${icon('external')}<span>View website</span></a>
       <button type="button" onclick="purgeCache(this)" class="cms-nav-item">${icon('refresh')}<span>Refresh cache</span></button>
     </nav>
-    <div class="cms-sidebar-bottom"><div class="cms-account"><span class="cms-avatar">ES</span><div>Editorial Staff<small>CMS workspace</small></div></div><a href="/admin/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
+    <div class="cms-sidebar-bottom"><div class="cms-account"><span class="cms-avatar">A</span><div>Admin<small>CMS workspace</small></div></div><a href="/admin/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
   </aside>
   <button id="cmsNavOverlay" class="cms-nav-overlay" aria-label="Close navigation" onclick="toggleDashboardNav(false)"></button>
   <header class="cms-header">
@@ -1822,7 +1822,7 @@ const renderEditor = (c: any) => {
       <!-- Author -->
       <div>
         <label class="block text-xs font-semibold text-[#1C1B18] mb-1.5">Author</label>
-        <input type="text" id="authorInput" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white" value="${post ? post.author_name : 'Editorial Staff'}">
+        <input type="text" id="authorInput" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white" value="${post ? post.author_name : 'Admin'}">
       </div>
 
       <!-- Read Time -->
@@ -3046,7 +3046,7 @@ const renderEditor = (c: any) => {
         content: getActiveEditorContent(),
         category_id: parseInt(document.getElementById('categoryInput').value),
         featured_image: document.getElementById('imageInput').value,
-        author_name: document.getElementById('authorInput').value.trim() || 'Editorial Staff',
+        author_name: document.getElementById('authorInput').value.trim() || 'Admin',
         read_time: document.getElementById('readTimeInput').value.trim() || '4 min read',
         tags: tagsValue,
         is_breaking: document.getElementById('isBreakingInput').checked,

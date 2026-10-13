@@ -194,7 +194,7 @@ apiRouter.post("/posts", async (c) => {
       WHERE id = ?
     `).run(
       title, generatedSlug, summary || "", content, category_id || 1,
-      author_name || "Editorial Staff", featured_image || "", read_time || "4 min read",
+      author_name || "Admin", featured_image || "", read_time || "4 min read",
       is_breaking ? 1 : 0, is_featured ? 1 : 0, status || "published", tags || "",
       id
     );
@@ -208,7 +208,7 @@ apiRouter.post("/posts", async (c) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     `).run(
       title, generatedSlug, summary || "", content, category_id || 1,
-      author_name || "Editorial Staff", featured_image || "", read_time || "4 min read",
+      author_name || "Admin", featured_image || "", read_time || "4 min read",
       is_breaking ? 1 : 0, is_featured ? 1 : 0, status || "published", tags || ""
     );
 
