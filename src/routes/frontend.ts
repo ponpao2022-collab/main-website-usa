@@ -25,28 +25,28 @@ frontendRouter.use("*", async (c, next) => {
   }
 });
 
-// Helper: Format Article with Read More strictly after Paragraph 2 with Smooth Blur & Justified Text
+// Helper: Format Article with Read More strictly after Paragraph 2 with Smooth Blur & Balanced Justified Text
 function formatArticleWithReadMore(content: string) {
   const pRegex = /<p[\s\S]*?<\/p>/gi;
   const paragraphs = content.match(pRegex);
 
   if (!paragraphs || paragraphs.length <= 2) {
     return `
-      <div id="articleBodyText" class="text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-6 max-w-none font-normal" style="text-align: justify; text-justify: inter-word;">
+      <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-6 max-w-none font-normal article-justified">
         ${content}
       </div>
     `;
   }
 
-  // Paragraph 1 & 2 (Fully Visible, 100% Crisp & Justified)
+  // Paragraph 1 & 2 (Fully Visible, 100% Crisp & Balanced Justified)
   const para1And2 = paragraphs.slice(0, 2).join("\n");
   // Paragraph 3 onwards (Collapsible with Progressive Gradient Blur - No Sharp Cut-off Line)
   const remainingParas = paragraphs.slice(2).join("\n");
 
   return `
-    <div id="articleBodyText" class="text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-6 max-w-none font-normal">
+    <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-6 max-w-none font-normal">
       <!-- Paragraphs 1 & 2 (Fully Visible, Crisp, Justified) -->
-      <div class="space-y-6" style="text-align: justify; text-justify: inter-word;">
+      <div class="space-y-6 article-justified">
         ${para1And2}
       </div>
 
@@ -54,7 +54,7 @@ function formatArticleWithReadMore(content: string) {
       <div class="relative mt-6">
         <!-- Container for Paragraph 3 Onwards with Smooth CSS Gradient Mask -->
         <div id="articleRestContainer" class="max-h-[140px] overflow-hidden relative transition-all duration-700 ease-in-out" style="-webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%);">
-          <div class="space-y-6" style="text-align: justify; text-justify: inter-word;">
+          <div class="space-y-6 article-justified">
             ${remainingParas}
           </div>
         </div>
@@ -179,6 +179,46 @@ function layout(title: string, content: string, currentPath = "/") {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
+    }
+
+    /* Clean, Natural Balanced Justification (Zero unnatural stretched word gaps on mobile) */
+    .article-justified,
+    #articleBodyText,
+    #articleRestContainer {
+      text-align: justify;
+      text-align-last: left;
+      text-justify: inter-word;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .article-justified p,
+    #articleBodyText p,
+    #articleRestContainer p {
+      text-align: justify;
+      text-align-last: left;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    @media (max-width: 640px) {
+      .article-justified,
+      .article-justified p,
+      #articleBodyText,
+      #articleRestContainer,
+      #articleBodyText p,
+      #articleRestContainer p {
+        text-align: justify;
+        text-align-last: left;
+        text-justify: inter-word;
+        hyphens: auto;
+        -webkit-hyphens: auto;
+        word-spacing: -0.015em;
+        letter-spacing: -0.01em;
+        line-height: 1.75;
+      }
     }
   </style>
 </head>
@@ -1016,7 +1056,7 @@ frontendRouter.get("/article/:slug", (c) => {
         </h1>
 
         <!-- Executive Subtitle / Summary -->
-        <p class="text-lg text-[#6E6B63] font-normal leading-relaxed mb-6 font-headline italic" style="text-align: justify; text-justify: inter-word;">
+        <p class="text-lg text-[#6E6B63] font-normal leading-relaxed mb-6 font-headline italic text-left">
           ${post.summary}
         </p>
 

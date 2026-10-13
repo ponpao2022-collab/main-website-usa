@@ -462,8 +462,24 @@ apiRouter.post("/ai/format-or-rewrite", async (c) => {
 
     // If Gemini API Key is provided, call Google Gemini 2.0 Flash / 1.5 Flash
     if (apiKey && apiKey.trim().length > 10) {
-      const geminiPrompt = mode === "format"
-        ? `You are an elite news copy editor for ${targetStyleName}.
+      let geminiPrompt = "";
+      if (mode === "translate_khmer") {
+        geminiPrompt = `You are a professional Cambodian Khmer news editor.
+Translate the following English news headline, summary, and article body into high-quality, authentic, natural Khmer newsroom language.
+Ensure proper Khmer typography, appropriate vocabulary, and clean semantic HTML formatting.
+
+Title: ${title}
+Content:
+${content}
+
+Return ONLY a valid JSON object in this exact schema without markdown backticks:
+{
+  "title": "translated Khmer headline",
+  "summary": "translated Khmer executive summary",
+  "formatted_html": "translated Khmer article body in clean semantic HTML (<p>, <h2>, etc.)"
+}`;
+      } else if (mode === "format") {
+        geminiPrompt = `You are an elite news copy editor for ${targetStyleName}.
 OFFICIAL STYLE GUIDELINES:
 ${specificPrompt}
 
@@ -480,8 +496,9 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
   "title": "${title.replace(/"/g, '\\"')}",
   "summary": "original executive summary",
   "formatted_html": "clean semantic HTML string with styled callout boxes"
-}`
-        : `You are an elite journalist writing in the authentic newsroom standard of ${targetStyleName}.
+}`;
+      } else {
+        geminiPrompt = `You are an elite journalist writing in the authentic newsroom standard of ${targetStyleName}.
 OFFICIAL STYLE GUIDELINES:
 ${specificPrompt}
 
@@ -499,6 +516,7 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
   "summary": "compelling 2-sentence executive summary",
   "formatted_html": "full rewritten article body in semantic HTML matching the style structure"
 }`;
+      }
 
       try {
         const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey.trim()}`, {
@@ -530,7 +548,14 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
       }
     }
 
-    // Built-in High-Fidelity Style Transformer (Works 100% even without Gemini Key!)
+    if (mode === "translate_khmer") {
+      return c.json({
+        success: false,
+        error: "សូមបញ្ចូល Google Gemini API Key (ឥតគិតថ្លៃ) ក្នុងប្រអប់ TK Summary សិន ដើម្បីឱ្យប្រព័ន្ធ AI អាចបកប្រែអត្ថបទទាំងមូលជាភាសាខ្មែរបាន!"
+      });
+    }
+
+    // Built-in High-Fidelity Style Transformer (Clean Light Theme for #FAF9F5 Canvas)
     let styledBox = "";
     let formattedTitle = title;
     let formattedSummary = `Executive briefing formatted in ${targetStyleName} standard.`;
@@ -538,21 +563,21 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
     switch (selectedStyle) {
       case "cnn":
         styledBox = `
-<div class="p-4 rounded-xl bg-red-950/30 border-l-4 border-red-600 my-5 shadow-lg">
-  <div class="flex items-center space-x-2 text-xs font-black tracking-wider text-red-500 uppercase mb-2">
-    <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+<div class="tk-summary-box p-4 rounded-2xl bg-rose-50/80 border-l-4 border-rose-600 my-5 shadow-xs text-[#1C1B18]">
+  <div class="flex items-center space-x-2 text-xs font-black tracking-wider text-rose-700 uppercase mb-1.5">
+    <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
     <span>CNN DIGITAL • FACTS FIRST</span>
   </div>
-  <p class="text-sm text-slate-200 leading-relaxed italic">5W1H Lede: Key development confirmed as regional and national leaders react to the newly announced policy shifts.</p>
+  <p class="text-sm text-[#4A4742] leading-relaxed italic">5W1H Lede: Key development confirmed as regional and national leaders react to the newly announced policy shifts.</p>
 </div>`;
         formattedTitle = mode === "rewrite" ? `CNN: ${title}` : title;
         break;
 
       case "dailymail":
         styledBox = `
-<div class="p-4 rounded-xl bg-blue-950/40 border border-blue-500/40 my-5 shadow-lg">
-  <p class="font-extrabold text-blue-400 text-xs tracking-wider uppercase mb-2">WHAT WE KNOW:</p>
-  <ul class="space-y-1 text-xs text-slate-200 list-disc list-inside">
+<div class="tk-summary-box p-4 rounded-2xl bg-sky-50/80 border border-sky-200 my-5 shadow-xs text-[#1C1B18]">
+  <p class="font-extrabold text-sky-800 text-xs tracking-wider uppercase mb-2">WHAT WE KNOW:</p>
+  <ul class="space-y-1 text-xs text-[#4A4742] list-disc list-inside">
     <li><strong>Major Revelations:</strong> Key details emerge following intense public interest.</li>
     <li><strong>Verified Sources:</strong> Multiple direct witnesses confirm the timeline.</li>
     <li><strong>Next Steps:</strong> Official announcements expected in coming hours.</li>
@@ -563,9 +588,9 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
 
       case "foxnews":
         styledBox = `
-<div class="p-4 rounded-xl bg-red-950/40 border-l-4 border-red-600 my-5 shadow-lg">
-  <p class="font-black text-red-500 text-xs uppercase tracking-wider mb-2">KEY TAKEAWAYS</p>
-  <ul class="space-y-1.5 text-xs text-slate-200 list-disc list-inside">
+<div class="tk-summary-box p-4 rounded-2xl bg-red-50/80 border-l-4 border-red-600 my-5 shadow-xs text-[#1C1B18]">
+  <p class="font-black text-red-700 text-xs uppercase tracking-wider mb-2">KEY TAKEAWAYS</p>
+  <ul class="space-y-1.5 text-xs text-[#4A4742] list-disc list-inside">
     <li>High-stakes political showdown erupts over core national policy priorities.</li>
     <li>Critics slam new measures while supporters vow decisive defense.</li>
     <li>Battle shifts to key committees amid heightened scrutiny.</li>
@@ -576,21 +601,21 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
 
       case "ap":
         styledBox = `
-<div class="p-3 bg-slate-900 border-l-4 border-slate-400 my-4 text-xs text-slate-200">
+<div class="tk-summary-box p-3.5 rounded-xl bg-[#F3F1EC] border-l-4 border-[#6E6B63] my-4 text-xs text-[#1C1B18]">
   <strong>WASHINGTON (AP) —</strong> Essential facts delivered upfront with strict wire attribution and neutral framing.
 </div>`;
         break;
 
       case "people":
         styledBox = `
-<blockquote class="my-5 p-4 rounded-xl bg-pink-950/20 border-l-4 border-pink-500 text-sm italic text-pink-100">
+<blockquote class="tk-summary-box my-5 p-4 rounded-2xl bg-pink-50/80 border-l-4 border-pink-500 text-sm italic text-pink-950">
   "She opened up about the moment that changed everything — and the quiet strength that carried everyone forward."
 </blockquote>`;
         break;
 
       case "tmz":
         styledBox = `
-<div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/30 my-4 text-xs text-amber-200">
+<div class="tk-summary-box p-3.5 rounded-xl bg-amber-50 border border-amber-300 my-4 text-xs text-amber-950">
   <strong>Here's the deal...</strong> We've learned exclusive details behind today's sudden developments straight from insider sources.
 </div>`;
         formattedTitle = mode === "rewrite" ? `EXCLUSIVE: ${title}` : title;
@@ -598,20 +623,20 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
 
       case "buzzfeed":
         styledBox = `
-<div class="p-4 rounded-xl bg-red-950/30 border-l-4 border-rose-500 my-5 text-xs text-slate-200 space-y-1">
-  <p class="font-bold text-rose-400">Here is everything you need to know about today's story — and why everyone is talking about it:</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-rose-50/80 border-l-4 border-rose-500 my-5 text-xs text-rose-950 space-y-1">
+  <p class="font-bold text-rose-700">Here is everything you need to know about today's story — and why everyone is talking about it:</p>
 </div>`;
         break;
 
       case "breaking":
         styledBox = `
-<div class="p-4 rounded-xl bg-red-950/60 border-2 border-red-600 my-5 shadow-xl">
-  <div class="flex items-center space-x-2 text-xs font-black text-red-400 uppercase tracking-widest mb-2">
-    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+<div class="tk-summary-box p-4 rounded-2xl bg-red-50/90 border-2 border-red-600 my-5 shadow-xs">
+  <div class="flex items-center space-x-2 text-xs font-black text-red-700 uppercase tracking-widest mb-1.5">
+    <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></span>
     <span>BREAKING NEWS BULLETIN</span>
   </div>
-  <p class="text-xs text-slate-200 font-bold mb-2">What We Know (Confirmed Facts Only):</p>
-  <ul class="space-y-1 text-xs text-slate-300 list-disc list-inside">
+  <p class="text-xs text-red-950 font-bold mb-1.5">What We Know (Confirmed Facts Only):</p>
+  <ul class="space-y-1 text-xs text-[#4A4742] list-disc list-inside">
     <li>Primary development verified by on-scene authorities.</li>
     <li>Operations underway with emergency updates pending.</li>
   </ul>
@@ -621,26 +646,26 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
 
       case "tabloid":
         styledBox = `
-<div class="p-4 rounded-xl bg-red-950/50 border border-red-500 my-5 text-center">
-  <h4 class="text-sm font-black text-red-400 uppercase tracking-widest mb-1">🔥 BOMBSHELL REVELATION 🔥</h4>
-  <p class="text-xs text-slate-200 font-bold">The dramatic secret behind today's sudden announcement is finally coming to light!</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-500 text-center text-amber-950 my-5">
+  <h3 class="text-xs font-black text-amber-800 uppercase mb-1">🔥 BOMBSHELL REVELATION 🔥</h3>
+  <p class="text-xs text-[#4A4742]">Shocking new details emerge regarding today's developments unexpectedly!</p>
 </div>`;
         formattedTitle = mode === "rewrite" ? `SHOCK REVELATION: ${title}` : title;
         break;
 
       case "analysis":
         styledBox = `
-<div class="p-4 rounded-xl bg-slate-900 border border-slate-700 my-5">
-  <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">NEWS ANALYSIS: WHAT IT MEANS</h4>
-  <p class="text-xs text-slate-300 leading-relaxed">The stakes go far beyond today's headlines, reshaping the institutional landscape and setting precedents for years ahead.</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] my-5 text-[#1C1B18]">
+  <h4 class="text-xs font-bold text-[#6E6B63] uppercase tracking-wider mb-1">NEWS ANALYSIS: WHAT IT MEANS</h4>
+  <p class="text-xs text-[#4A4742] leading-relaxed">The stakes go far beyond today's headlines, reshaping the institutional landscape and setting precedents for years ahead.</p>
 </div>`;
         break;
 
       case "axios":
         styledBox = `
-<div class="p-4 rounded-xl bg-blue-950/40 border-l-4 border-blue-500 my-5 shadow-lg space-y-2">
-  <p class="text-xs font-bold text-blue-400"><strong>Why it matters:</strong> The milestone fundamentally accelerates execution timelines while removing key historical bottlenecks.</p>
-  <div class="pt-2 border-t border-slate-800 text-xs text-slate-300">
+<div class="tk-summary-box p-4 rounded-2xl bg-sky-50/80 border-l-4 border-sky-600 my-5 shadow-xs text-[#1C1B18] space-y-2">
+  <p class="text-xs font-bold text-sky-800"><strong>Why it matters:</strong> The milestone fundamentally accelerates execution timelines while removing key historical bottlenecks.</p>
+  <div class="pt-2 border-t border-sky-200 text-xs text-[#4A4742]">
     <strong>By the numbers:</strong>
     <ul class="list-disc list-inside mt-1 space-y-0.5">
       <li><strong>100%</strong> operational uptime achieved.</li>
@@ -652,46 +677,49 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
 
       case "usaviral":
         styledBox = `
-<div class="p-4 rounded-xl bg-orange-950/30 border border-orange-500/40 my-5 text-xs text-slate-200">
-  <strong class="text-orange-400 block mb-1">Nobody expected this sudden turn of events:</strong>
-  <p class="text-slate-300">The reaction sweeping the internet is something you have to see to believe.</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-orange-50 border border-orange-300 my-5 text-xs text-orange-950">
+  <strong class="text-orange-700 block mb-1">Nobody expected this sudden turn of events:</strong>
+  <p class="text-[#4A4742]">The reaction sweeping the internet is something you have to see to believe.</p>
 </div>`;
         break;
 
       case "nytexplainer":
         styledBox = `
-<div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700 my-5 font-serif">
-  <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-1">WHAT TO KNOW: CONTEXT & CONTROVERSY</h4>
-  <p class="text-xs text-slate-300 leading-relaxed">To understand the impact of today's decision, one must look at the institutional precedents and core tensions that led here.</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-[#F3F1EC] border-l-4 border-[#C25E3E] my-5 font-serif text-[#1C1B18]">
+  <h4 class="text-xs font-bold text-[#C25E3E] uppercase tracking-wider mb-1 font-sans">WHAT TO KNOW: CONTEXT & CONTROVERSY</h4>
+  <p class="text-xs text-[#4A4742] leading-relaxed italic">To understand the impact of today's decision, one must look at the institutional precedents and core tensions that led here.</p>
 </div>`;
         break;
 
       case "newsletter":
         styledBox = `
-<div class="p-4 rounded-xl bg-purple-950/30 border-l-4 border-purple-500 my-5 text-xs text-slate-200 space-y-1.5">
-  <p class="font-bold text-purple-300">Good morning, readers ☕ — Here's the one thing that matters today:</p>
-  <p class="text-slate-300">We broke down the complete story before you start your day, served in quick, punchy takeaways.</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-purple-50/80 border-l-4 border-purple-500 my-5 text-xs text-purple-950 space-y-1.5">
+  <p class="font-bold text-purple-800">Good morning, readers ☕ — Here's the one thing that matters today:</p>
+  <p class="text-[#4A4742]">We broke down the complete story before you start your day, served in quick, punchy takeaways.</p>
 </div>`;
         break;
 
       case "investigative":
         styledBox = `
-<div class="p-4 rounded-xl bg-teal-950/40 border-l-4 border-teal-500 my-5 text-xs text-slate-200 space-y-2">
-  <h4 class="font-bold text-teal-400 uppercase tracking-wider">INVESTIGATIVE FINDINGS // THE PAPER TRAIL</h4>
-  <p class="text-slate-300">A rigorous review of official filings, procurement logs, and on-record testimonies reveals an undocumented pattern dating back years.</p>
+<div class="tk-summary-box p-4 rounded-2xl bg-emerald-50/80 border-l-4 border-emerald-600 my-5 text-xs text-emerald-950 space-y-2">
+  <h4 class="font-bold text-emerald-800 uppercase tracking-wider">INVESTIGATIVE FINDINGS // THE PAPER TRAIL</h4>
+  <p class="text-[#4A4742]">A rigorous review of official filings, procurement logs, and on-record testimonies reveals an undocumented pattern dating back years.</p>
 </div>`;
         break;
 
       default:
         styledBox = `
-<div class="p-4 rounded-xl bg-indigo-950/30 border-l-4 border-indigo-500 my-5 text-xs text-slate-200">
+<div class="tk-summary-box p-4 rounded-2xl bg-indigo-50/80 border-l-4 border-indigo-500 my-5 text-xs text-indigo-950">
   <strong>KEY HIGHLIGHT:</strong> Core developments verified and formatted in modern digital newsroom standard.
 </div>`;
         break;
     }
 
+    // Strip previous tk-summary-box to prevent duplicates
+    let finalHtml = content.replace(/<div class="[^"]*tk-summary-box[^"]*"[\s\S]*?<\/div>/gi, "")
+                           .replace(/<blockquote class="[^"]*tk-summary-box[^"]*"[\s\S]*?<\/blockquote>/gi, "");
+
     // Format content with the styled box inserted after paragraph 1
-    let finalHtml = content;
     if (finalHtml.includes("</p>")) {
       finalHtml = finalHtml.replace("</p>", `</p>\n${styledBox}\n`);
     } else {

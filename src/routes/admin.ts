@@ -1455,9 +1455,30 @@ const renderEditor = (c: any) => {
         
         <!-- 1. POST VIEW (WYSIWYG Rich Visual Canvas) -->
         <div id="postViewWrapper" class="block">
-          <div class="border border-[#EAE8E1] bg-white rounded-2xl p-6 min-h-[380px] shadow-sm focus-within:border-[#C25E3E] transition">
-            <div id="postVisualEditor" contenteditable="true" class="prose max-w-none text-[#2B2926] text-base leading-relaxed focus:outline-none min-h-[340px]">
-              ${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}
+          <div class="border border-[#EAE8E1] bg-white rounded-2xl overflow-hidden shadow-sm focus-within:border-[#C25E3E] transition">
+            <!-- Rich Text Quick Action Toolbar -->
+            <div class="bg-[#F8F7F3] border-b border-[#EAE8E1] px-4 py-2 flex flex-wrap items-center gap-1.5 text-xs text-[#4A4742]">
+              <button type="button" onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-bold text-[#1C1B18] transition" title="Bold (Ctrl+B)">B</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormat('italic')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] italic font-serif text-[#1C1B18] transition" title="Italic (Ctrl+I)">I</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] underline text-[#1C1B18] transition" title="Underline">U</button>
+              <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
+              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('h2')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-black text-[#1C1B18] transition text-[11px]" title="Heading 2">H2</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('h3')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-bold text-[#1C1B18] transition text-[11px]" title="Heading 3">H3</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('p')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-medium text-[#1C1B18] transition text-[11px]" title="Paragraph">¶</button>
+              <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
+              <button type="button" onmousedown="event.preventDefault(); execFormat('insertUnorderedList')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#1C1B18] transition" title="Bullet List">• Bullet</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormat('insertOrderedList')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#1C1B18] transition" title="Numbered List">1. Number</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('blockquote')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] font-serif text-[#1C1B18] transition" title="Quote Callout">“ Quote</button>
+              <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
+              <button type="button" onmousedown="event.preventDefault(); insertEditorLink()" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#C25E3E] font-medium transition" title="Insert Link">🔗 Link</button>
+              <button type="button" onmousedown="event.preventDefault(); execFormat('removeFormat')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#8A867E] transition text-[11px]" title="Clear Formatting">🧹 Clear</button>
+            </div>
+
+            <!-- Content Canvas -->
+            <div class="p-6 min-h-[380px]">
+              <div id="postVisualEditor" contenteditable="true" class="prose max-w-none text-[#2B2926] text-base leading-relaxed focus:outline-none min-h-[340px]">
+                ${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}
+              </div>
             </div>
           </div>
         </div>
@@ -1696,6 +1717,9 @@ const renderEditor = (c: any) => {
       <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(194,94,62,0.5)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
     </div>
   </div>
+
+  <!-- BACKDROP OVERLAY FOR TK SUMMARY MODAL -->
+  <div id="aiModalBackdrop" onclick="closeAiModal()" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300"></div>
 
   <!-- RIGHT-SIDE TK SUMMARY SLIDE-OUT PANEL (POPUP ON EDITOR) -->
   <div id="aiModal" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-[560px] lg:w-[620px] bg-[#FAF9F5] backdrop-blur-2xl border-l border-[#EAE8E1] shadow-[-16px_0_40px_rgba(0,0,0,0.15)] flex flex-col transition-all duration-300">
@@ -2423,17 +2447,66 @@ const renderEditor = (c: any) => {
     // 3. AI POPUP MODAL & 15 TK SUMMARY STYLES SELECTOR
     function openAiModal() {
       const modal = document.getElementById('aiModal');
+      const backdrop = document.getElementById('aiModalBackdrop');
       if (modal) {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
+      }
+      if (backdrop) {
+        backdrop.classList.remove('hidden');
+        backdrop.style.display = 'block';
       }
     }
 
     function closeAiModal() {
       const modal = document.getElementById('aiModal');
+      const backdrop = document.getElementById('aiModalBackdrop');
       if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
+      }
+      if (backdrop) {
+        backdrop.classList.add('hidden');
+        backdrop.style.display = 'none';
+      }
+    }
+
+    function getActiveEditorContent() {
+      if (currentViewMode === 'html') {
+        return document.getElementById('htmlCodeEditor').value;
+      } else if (currentViewMode === 'both') {
+        return document.getElementById('splitPostEditor').innerHTML || document.getElementById('splitHtmlEditor').value;
+      } else {
+        return document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
+      }
+    }
+
+    function setAllEditorContent(newContent) {
+      document.getElementById('htmlCodeEditor').value = newContent;
+      document.getElementById('postVisualEditor').innerHTML = newContent;
+      document.getElementById('splitHtmlEditor').value = newContent;
+      document.getElementById('splitPostEditor').innerHTML = newContent;
+      updateWordCount();
+    }
+
+    function execFormat(cmd, value = null) {
+      document.getElementById('postVisualEditor').focus();
+      document.execCommand(cmd, false, value);
+      document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
+      updateWordCount();
+    }
+
+    function execFormatBlock(tag) {
+      document.getElementById('postVisualEditor').focus();
+      document.execCommand('formatBlock', false, tag);
+      document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
+      updateWordCount();
+    }
+
+    function insertEditorLink() {
+      const url = prompt('Enter URL (e.g. https://...):');
+      if (url) {
+        execFormat('createLink', url);
       }
     }
 
@@ -2487,38 +2560,46 @@ const renderEditor = (c: any) => {
     }
 
     function applyFreePreset(preset) {
-      var content = document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
-      if (!content || content.trim().length < 10) {
+      var content = getActiveEditorContent();
+      if (!content || content.trim().length < 5) {
         alert('Please enter or fetch an article first!');
         return;
       }
 
-      var formatted = content;
+      // Strip existing .tk-summary-box to prevent duplicates
+      var clean = content.replace(/<div class="[^"]*tk-summary-box[^"]*"[\s\S]*?<\/div>/gi, "")
+                         .replace(/<blockquote class="[^"]*tk-summary-box[^"]*"[\s\S]*?<\/blockquote>/gi, "")
+                         .trim();
+
+      var styledBox = '';
       if (preset === 'wire') {
-        formatted = '<p class="font-sans font-medium text-slate-200"><strong>WASHINGTON (AP) —</strong> ' + content.replace(/<[^>]*>?/gm, '').slice(0, 250) + '...</p><hr class="my-4 border-slate-800">' + content;
+        styledBox = '<div class="tk-summary-box my-4 p-3.5 rounded-xl bg-[#F8F7F3] border border-[#EAE8E1] text-xs font-mono text-[#1C1B18]"><span class="font-bold text-[#C25E3E]">WASHINGTON (AP) —</span> Essential facts delivered upfront with strict wire attribution and neutral framing.</div>';
       } else if (preset === 'feature') {
-        formatted = '<div class="my-5 p-4 rounded-xl bg-slate-900 border-l-4 border-indigo-500 italic text-slate-200">"A defining moment that challenges established wisdom and paves new territory."</div>' + content;
+        styledBox = '<div class="tk-summary-box my-5 p-4 rounded-2xl bg-[#F8F7F3] border-l-4 border-[#C25E3E] italic text-[#1C1B18]">"A defining moment that challenges established wisdom and paves new territory."</div>';
       } else if (preset === 'explainer') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-blue-950/40 border border-blue-500/40"><strong class="text-blue-400 block mb-1">Why it matters:</strong><p class="text-xs text-slate-300">Key developments that directly reshape the current environment.</p></div>' + content;
+        styledBox = '<div class="tk-summary-box my-4 p-4 rounded-2xl bg-sky-50/80 border-l-4 border-sky-600 text-[#1C1B18]"><strong class="text-sky-800 block mb-1">Why it matters:</strong><p class="text-xs text-[#4A4742]">Key developments that directly reshape the current environment.</p></div>';
       } else if (preset === 'breaking') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/50 border border-red-600"><strong class="text-red-400 uppercase tracking-widest block mb-1">🚨 BREAKING BULLETIN:</strong><p class="text-xs text-slate-200">Developing story unfolding in real time with continuous verification.</p></div>' + content;
+        styledBox = '<div class="tk-summary-box my-4 p-4 rounded-2xl bg-red-50/90 border-2 border-red-600 text-red-950"><strong class="text-red-700 uppercase tracking-widest block mb-1">🚨 BREAKING BULLETIN:</strong><p class="text-xs text-[#4A4742]">Developing story unfolding in real time with continuous verification.</p></div>';
       } else if (preset === 'newsletter') {
-        formatted = '<p class="text-sm font-semibold text-purple-300 mb-4">Good morning ☕ — Here is everything you need to know today:</p>' + content + '<p class="text-xs text-slate-400 mt-4"><strong>P.S.</strong> Share this briefing with your team if you found it helpful!</p>';
+        styledBox = '<div class="tk-summary-box my-4 p-4 rounded-2xl bg-purple-50/80 border-l-4 border-purple-500 text-xs text-purple-950 space-y-1.5"><p class="font-bold text-purple-800">Good morning ☕ — Here is everything you need to know today:</p><p class="text-[#4A4742]">We broke down the complete story before you start your day, served in quick, punchy takeaways.</p></div>';
       } else if (preset === 'tabloid') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/60 border border-red-500 text-center"><h3 class="text-sm font-black text-red-400 uppercase mb-1">🔥 BOMBSHELL REVELATION 🔥</h3><p class="text-xs text-slate-200">Shocking new details emerge regarding today unexpectedly!</p></div>' + content;
+        styledBox = '<div class="tk-summary-box my-4 p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-500 text-center text-amber-950"><h3 class="text-xs font-black text-amber-800 uppercase mb-1">🔥 BOMBSHELL REVELATION 🔥</h3><p class="text-xs text-[#4A4742]">Shocking new details emerge regarding today unexpectedly!</p></div>';
       } else if (preset === 'listicle') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-rose-950/30 border-l-4 border-rose-500"><strong class="text-rose-400 block mb-1">Key Takeaways at a Glance:</strong><ul class="list-disc list-inside text-xs text-slate-300 space-y-1"><li>Point 1: Primary institutional announcement.</li><li>Point 2: Core immediate impacts.</li><li>Point 3: Next phase timelines.</li></ul></div>' + content;
+        styledBox = '<div class="tk-summary-box my-4 p-4 rounded-2xl bg-rose-50 border-l-4 border-rose-500 text-rose-950"><strong class="text-rose-800 block mb-1">Key Takeaways at a Glance:</strong><ul class="list-disc list-inside text-xs text-[#4A4742] space-y-1"><li>Point 1: Primary institutional announcement.</li><li>Point 2: Core immediate impacts.</li><li>Point 3: Next phase timelines.</li></ul></div>';
       } else if (preset === 'broadsheet') {
-        formatted = '<p class="font-serif italic text-slate-300 text-sm border-b border-slate-800 pb-3 mb-4">By Special Correspondent • Published in Washington, D.C.</p>' + content;
+        styledBox = '<div class="tk-summary-box my-4 py-2 border-b border-[#EAE8E1] font-serif italic text-xs text-[#6E6B63]">By Special Correspondent • Published in Washington, D.C.</div>';
       }
 
-      document.getElementById('htmlCodeEditor').value = formatted;
-      document.getElementById('postVisualEditor').innerHTML = formatted;
-      document.getElementById('splitHtmlEditor').value = formatted;
-      document.getElementById('splitPostEditor').innerHTML = formatted;
-      updateWordCount();
+      var formatted = clean;
+      if (formatted.includes('</p>')) {
+        formatted = formatted.replace('</p>', '</p>\n' + styledBox + '\n');
+      } else {
+        formatted = styledBox + '\n' + formatted;
+      }
+
+      setAllEditorContent(formatted);
       closeAiModal();
-      alert('✓ Applied ' + preset.toUpperCase() + ' preset instantly!');
+      alert('✓ Applied ' + preset.toUpperCase() + ' preset cleanly into editor!');
     }
 
 
@@ -2578,15 +2659,28 @@ const renderEditor = (c: any) => {
     }
 
     async function executeAiProcess(mode) {
-      let title = '';
-      let content = '';
+      const apiKey = document.getElementById('geminiApiKey')?.value?.trim() || '';
 
-      if (fetchedArticleData) {
-        title = fetchedArticleData.title;
+      // If translate_khmer, Gemini API key is required
+      if (mode === 'translate_khmer' && !apiKey) {
+        openAiModal();
+        switchTkTab('ai');
+        const keyInput = document.getElementById('geminiApiKey');
+        if (keyInput) keyInput.focus();
+        alert('សូមបញ្ចូល Google Gemini API Key (ឥតគិតថ្លៃ) ក្នុងប្រអប់ TK Summary AI ជាមុនសិន ដើម្បីឱ្យប្រព័ន្ធ AI អាចបកប្រែជាភាសាខ្មែរបាន!');
+        return;
+      }
+
+      let content = getActiveEditorContent();
+      let title = document.getElementById('titleInput')?.value?.trim() || '';
+
+      const isPlaceholder = !content || content === '<p><br></p>' || content === '<br>' || content.includes('Start drafting your news story');
+
+      if (isPlaceholder && fetchedArticleData && fetchedArticleData.content) {
         content = fetchedArticleData.content;
-      } else {
-        title = document.getElementById('titleInput').value.trim();
-        content = document.getElementById('postVisualEditor').innerHTML;
+      }
+      if (!title && fetchedArticleData && fetchedArticleData.title) {
+        title = fetchedArticleData.title;
       }
 
       if (!title && !content) {
@@ -2594,18 +2688,24 @@ const renderEditor = (c: any) => {
         return;
       }
 
-      const apiKey = document.getElementById('geminiApiKey').value.trim();
-      const targetWords = parseInt(document.getElementById('aiTargetWords').value) || 500;
-      const injectTarget = document.getElementById('aiInjectTarget').value;
-      const cleanImage = document.getElementById('aiCleanImageCheckbox').checked;
+      const targetWords = parseInt(document.getElementById('aiTargetWords')?.value) || 500;
+      const injectTarget = document.getElementById('aiInjectTarget')?.value || 'both';
+      const cleanImage = document.getElementById('aiCleanImageCheckbox')?.checked ?? true;
 
-      // Show processing banner
+      // Show processing banner & open modal if not already open
+      openAiModal();
       const stateBox = document.getElementById('aiProcessingState');
       const stateText = document.getElementById('aiProcessingText');
-      stateBox.classList.remove('hidden');
-      stateText.textContent = mode === 'format' 
-        ? ('Reformatting into ' + currentSelectedStyle.toUpperCase() + ' style (preserving original words)...')
-        : ('Rewriting into ' + currentSelectedStyle.toUpperCase() + ' style using Gemini AI...');
+      if (stateBox) stateBox.classList.remove('hidden');
+      if (stateText) {
+        if (mode === 'translate_khmer') {
+          stateText.textContent = 'កំពុងបកប្រែអត្ថបទទាំងមូលជាភាសាខ្មែរដោយ AI Gemini...';
+        } else if (mode === 'format') {
+          stateText.textContent = 'Reformatting into ' + currentSelectedStyle.toUpperCase() + ' style (preserving original words)...';
+        } else {
+          stateText.textContent = 'Rewriting into ' + currentSelectedStyle.toUpperCase() + ' style using Gemini AI...';
+        }
+      }
 
       try {
         const res = await fetch('/api/ai/format-or-rewrite', {
@@ -2624,7 +2724,9 @@ const renderEditor = (c: any) => {
         const data = await res.json();
         if (data.success) {
           // Inject Title & Summary
-          document.getElementById('titleInput').value = data.title;
+          if (data.title) {
+            document.getElementById('titleInput').value = data.title;
+          }
           if (data.summary) {
             document.getElementById('summaryInput').value = data.summary;
           }
@@ -2633,7 +2735,6 @@ const renderEditor = (c: any) => {
           if (fetchedArticleData && fetchedArticleData.image) {
             let imgUrl = fetchedArticleData.image;
             if (cleanImage) {
-              // Strip external link query params
               try {
                 const parsed = new URL(imgUrl);
                 imgUrl = parsed.origin + parsed.pathname;
@@ -2644,38 +2745,34 @@ const renderEditor = (c: any) => {
 
           // Inject Content to selected view
           const formattedHtml = data.formatted_html;
-          document.getElementById('htmlCodeEditor').value = formattedHtml;
-          document.getElementById('postVisualEditor').innerHTML = formattedHtml;
-          document.getElementById('splitHtmlEditor').value = formattedHtml;
-          document.getElementById('splitPostEditor').innerHTML = formattedHtml;
+          setAllEditorContent(formattedHtml);
 
           // Switch view if requested
           if (injectTarget === 'post') setViewMode('post');
           else if (injectTarget === 'html') setViewMode('html');
           else if (injectTarget === 'both') setViewMode('both');
 
-          updateWordCount();
           closeAiModal();
-          alert('✓ Successfully generated and injected ' + currentSelectedStyle.toUpperCase() + ' news style into ' + injectTarget.toUpperCase() + ' view!');
+          alert(mode === 'translate_khmer'
+            ? '🇰🇭 បានបកប្រែអត្ថបទជាភាសាខ្មែរដោយជោគជ័យ!'
+            : ('✓ Successfully formatted into ' + currentSelectedStyle.toUpperCase() + ' news style into ' + injectTarget.toUpperCase() + ' view!'));
         } else {
-          alert('AI error: ' + (data.error || 'Failed to process'));
+          alert('TK Summary error: ' + (data.error || 'Failed to process'));
         }
       } catch (e) {
         alert('Network error: ' + e.message);
       } finally {
-        stateBox.classList.add('hidden');
+        if (stateBox) stateBox.classList.add('hidden');
       }
     }
 
     async function aiFormatCurrent(style) {
       currentSelectedStyle = style;
-      executeAiProcess('format');
+      await executeAiProcess('format');
     }
 
-    function aiKhmerTranslate() {
-      document.getElementById('titleInput').value = "របកគំហើញថ្មី៖ របៀបដែលបច្ចេកវិទ្យា Edge និង AI កំពុងផ្លាស់ប្តូរឧស្សាហកម្មប្រព័ន្ធផ្សព្វផ្សាយ";
-      document.getElementById('summaryInput').value = "ស្ថាបត្យកម្មល្បឿនលឿនកម្រិតខ្ពស់ជាមួយ Cloudflare Edge និង Headless CMS បង្កើតស្តង់ដារថ្មីសម្រាប់ប្រព័ន្ធព័ត៌មានសកល។";
-      alert("🇰🇭 ចំណងជើង និងសេចក្តីសង្ខេបត្រូវបានបកប្រែជាភាសាខ្មែរដោយជោគជ័យ!");
+    async function aiKhmerTranslate() {
+      await executeAiProcess('translate_khmer');
     }
 
     function toggleTagsSection() {
