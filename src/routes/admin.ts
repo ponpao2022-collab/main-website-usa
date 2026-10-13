@@ -1443,7 +1443,29 @@ const renderEditor = (c: any) => {
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
-    .style-card.selected { border-color: #C25E3E; background-color: rgba(194, 94, 62, 0.08); ring: 2px; }
+    .style-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .style-card:hover {
+      border-color: #C25E3E !important;
+      transform: translateY(-2px);
+    }
+    .style-card.selected {
+      border: 2px solid #C25E3E !important;
+      background-color: #FFF5F0 !important;
+      box-shadow: 0 0 0 2px rgba(194, 94, 62, 0.3), 0 6px 16px rgba(194, 94, 62, 0.15) !important;
+      transform: scale(1.02);
+    }
+    .style-card .check-pill {
+      display: none;
+    }
+    .style-card.selected .check-pill {
+      display: flex !important;
+    }
   </style>
   <script>
     function openAiModal() {
@@ -1574,6 +1596,94 @@ const renderEditor = (c: any) => {
       }
     }
     window.insertEditorLink = insertEditorLink;
+
+    function selectStyle(style) {
+      window.currentSelectedStyle = style;
+      if (typeof currentSelectedStyle !== 'undefined') currentSelectedStyle = style;
+
+      document.querySelectorAll('.style-card').forEach(el => {
+        const isCurrent = el.getAttribute('data-style') === style;
+        const checkEl = el.querySelector('.check-pill');
+        if (isCurrent) {
+          el.classList.add('selected');
+          el.style.border = '2px solid #C25E3E';
+          el.style.backgroundColor = '#FFF5F0';
+          if (checkEl) checkEl.style.display = 'flex';
+        } else {
+          el.classList.remove('selected');
+          el.style.border = '1px solid #EAE8E1';
+          el.style.backgroundColor = '#FFFFFF';
+          if (checkEl) checkEl.style.display = 'none';
+        }
+      });
+
+      const styleNames = {
+        cnn: 'CNN Digital',
+        dailymail: 'Daily Mail',
+        foxnews: 'Fox News',
+        ap: 'AP Wire',
+        people: 'People Magazine',
+        tmz: 'TMZ',
+        buzzfeed: 'BuzzFeed',
+        breaking: 'Breaking Express',
+        tabloid: 'Tabloid',
+        analysis: 'News Analysis',
+        axios: 'Axios Express',
+        usaviral: 'USA Viral Hook',
+        nytexplainer: 'NYT Explainer',
+        newsletter: 'Substack / Brew',
+        investigative: 'Investigative'
+      };
+
+      const name = styleNames[style] || style.toUpperCase();
+      const badge = document.getElementById('selectedStyleBadge');
+      if (badge) badge.textContent = name;
+      const inlineBadge = document.getElementById('selectedStyleBadgeInline');
+      if (inlineBadge) inlineBadge.textContent = name;
+      const quickBtn = document.getElementById('quickApplyStyleBtnText');
+      if (quickBtn) quickBtn.textContent = '⚡ Apply ' + name + ' Style';
+    }
+    window.selectStyle = selectStyle;
+
+    function onStyleCardDblClick(style) {
+      selectStyle(style);
+      if (typeof window.executeAiProcess === 'function') {
+        window.executeAiProcess('format');
+      }
+    }
+    window.onStyleCardDblClick = onStyleCardDblClick;
+
+    function switchTkTab(tab) {
+      const btnAi = document.getElementById('tabAiStyles');
+      const btnFree = document.getElementById('tabFreePresets');
+      const contentAi = document.getElementById('tkAiTabContent');
+      const contentFree = document.getElementById('tkFreeTabContent');
+
+      if (tab === 'ai') {
+        if (btnAi) btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-[#C25E3E] text-white shadow-xs cursor-pointer';
+        if (btnFree) btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9] cursor-pointer';
+        if (contentAi) {
+          contentAi.style.display = 'block';
+          contentAi.classList.remove('hidden');
+        }
+        if (contentFree) {
+          contentFree.style.display = 'none';
+          contentFree.classList.add('hidden');
+        }
+      } else {
+        if (btnFree) btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-emerald-700 text-white shadow-xs cursor-pointer';
+        if (btnAi) btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9] cursor-pointer';
+        if (contentFree) {
+          contentFree.style.display = 'block';
+          contentFree.classList.remove('hidden');
+        }
+        if (contentAi) {
+          contentAi.style.display = 'none';
+          contentAi.classList.add('hidden');
+        }
+      }
+    }
+    window.switchTkTab = switchTkTab;
   </script>
 </head>
 <body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen selection:bg-[#C25E3E] selection:text-white relative">
@@ -2031,11 +2141,23 @@ const renderEditor = (c: any) => {
             <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">2. Choose Editorial News Style (15 Official Presets):</label>
             <span class="text-[11px] text-[#C25E3E] font-mono font-bold" id="selectedStyleBadge">CNN Digital</span>
           </div>
+
+          <!-- Quick Apply Action Bar inside Step 2 -->
+          <div class="p-3 bg-white border border-[#EAE8E1] rounded-2xl flex items-center justify-between gap-2 shadow-xs">
+            <div class="flex items-center space-x-2 min-w-0">
+              <span class="text-xs font-bold text-[#1C1B18] flex-shrink-0">Active:</span>
+              <span id="selectedStyleBadgeInline" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#C25E3E] text-white shadow-xs truncate">CNN Digital</span>
+            </div>
+            <button type="button" onclick="executeAiProcess('format')" style="touch-action: manipulation;" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs shadow-md shadow-[#C25E3E]/20 flex items-center space-x-1.5 transition cursor-pointer flex-shrink-0">
+              <span id="quickApplyStyleBtnText">⚡ Apply CNN Digital Style</span>
+            </button>
+          </div>
           
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[360px] overflow-y-auto pr-1" id="styleSelectorGrid">
             
             <!-- 1. CNN -->
-            <div onclick="selectStyle('cnn')" class="style-card selected border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="cnn">
+            <div onclick="selectStyle('cnn')" ondblclick="onStyleCardDblClick('cnn')" class="style-card selected border border-[#C25E3E] bg-[#FFF5F0] p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" style="border: 2px solid #C25E3E !important; background-color: #FFF5F0 !important;" data-style="cnn">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black flex items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/cnn.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="CNN">
                 <div class="text-left min-w-0">
@@ -2047,7 +2169,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 2. Daily Mail -->
-            <div onclick="selectStyle('dailymail')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="dailymail">
+            <div onclick="selectStyle('dailymail')" ondblclick="onStyleCardDblClick('dailymail')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="dailymail">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/dailymail.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Daily Mail">
                 <div class="text-left min-w-0">
@@ -2059,7 +2182,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 3. Fox News -->
-            <div onclick="selectStyle('foxnews')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="foxnews">
+            <div onclick="selectStyle('foxnews')" ondblclick="onStyleCardDblClick('foxnews')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="foxnews">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/foxnews.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Fox News">
                 <div class="text-left min-w-0">
@@ -2071,7 +2195,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 4. AP Wire -->
-            <div onclick="selectStyle('ap')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="ap">
+            <div onclick="selectStyle('ap')" ondblclick="onStyleCardDblClick('ap')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="ap">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/ap.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="AP">
                 <div class="text-left min-w-0">
@@ -2083,7 +2208,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 5. People Magazine -->
-            <div onclick="selectStyle('people')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="people">
+            <div onclick="selectStyle('people')" ondblclick="onStyleCardDblClick('people')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="people">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/people.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="People">
                 <div class="text-left min-w-0">
@@ -2095,7 +2221,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 6. TMZ -->
-            <div onclick="selectStyle('tmz')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="tmz">
+            <div onclick="selectStyle('tmz')" ondblclick="onStyleCardDblClick('tmz')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="tmz">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/tmz.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="TMZ">
                 <div class="text-left min-w-0">
@@ -2107,7 +2234,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 7. BuzzFeed -->
-            <div onclick="selectStyle('buzzfeed')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="buzzfeed">
+            <div onclick="selectStyle('buzzfeed')" ondblclick="onStyleCardDblClick('buzzfeed')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="buzzfeed">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/buzzfeed.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="BuzzFeed">
                 <div class="text-left min-w-0">
@@ -2119,7 +2247,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 8. Breaking Express -->
-            <div onclick="selectStyle('breaking')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="breaking">
+            <div onclick="selectStyle('breaking')" ondblclick="onStyleCardDblClick('breaking')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="breaking">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/breaking.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Breaking">
                 <div class="text-left min-w-0">
@@ -2131,7 +2260,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 9. Tabloid -->
-            <div onclick="selectStyle('tabloid')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="tabloid">
+            <div onclick="selectStyle('tabloid')" ondblclick="onStyleCardDblClick('tabloid')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="tabloid">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/tabloid.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Tabloid">
                 <div class="text-left min-w-0">
@@ -2143,7 +2273,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 10. News Analysis -->
-            <div onclick="selectStyle('analysis')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="analysis">
+            <div onclick="selectStyle('analysis')" ondblclick="onStyleCardDblClick('analysis')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="analysis">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/analysis.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Analysis">
                 <div class="text-left min-w-0">
@@ -2155,7 +2286,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 11. Axios Express -->
-            <div onclick="selectStyle('axios')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="axios">
+            <div onclick="selectStyle('axios')" ondblclick="onStyleCardDblClick('axios')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="axios">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/axios.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Axios">
                 <div class="text-left min-w-0">
@@ -2167,7 +2299,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 12. USA Viral Hook -->
-            <div onclick="selectStyle('usaviral')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="usaviral">
+            <div onclick="selectStyle('usaviral')" ondblclick="onStyleCardDblClick('usaviral')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="usaviral">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/usaviral.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Viral">
                 <div class="text-left min-w-0">
@@ -2179,7 +2312,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 13. NYT Explainer -->
-            <div onclick="selectStyle('nytexplainer')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="nytexplainer">
+            <div onclick="selectStyle('nytexplainer')" ondblclick="onStyleCardDblClick('nytexplainer')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="nytexplainer">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/nyt.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="NYT">
                 <div class="text-left min-w-0">
@@ -2191,7 +2325,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 14. Substack / Brew -->
-            <div onclick="selectStyle('newsletter')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="newsletter">
+            <div onclick="selectStyle('newsletter')" ondblclick="onStyleCardDblClick('newsletter')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="newsletter">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/substack.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Substack">
                 <div class="text-left min-w-0">
@@ -2203,7 +2338,8 @@ const renderEditor = (c: any) => {
             </div>
 
             <!-- 15. Investigative -->
-            <div onclick="selectStyle('investigative')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="investigative">
+            <div onclick="selectStyle('investigative')" ondblclick="onStyleCardDblClick('investigative')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between relative" data-style="investigative">
+              <span class="check-pill absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#C25E3E] text-white text-[10px] font-black items-center justify-center shadow">✓</span>
               <div class="flex items-center space-x-2.5">
                 <img src="/assets/styles/investigative.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Investigative">
                 <div class="text-left min-w-0">
@@ -2773,76 +2909,6 @@ const renderEditor = (c: any) => {
       updateWordCount();
     }
 
-    function execFormat(cmd, value = null) {
-      document.getElementById('postVisualEditor').focus();
-      document.execCommand(cmd, false, value);
-      document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
-      updateWordCount();
-    }
-
-    function execFormatBlock(tag) {
-      document.getElementById('postVisualEditor').focus();
-      document.execCommand('formatBlock', false, tag);
-      document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
-      updateWordCount();
-    }
-
-    function insertEditorLink() {
-      const url = prompt('Enter URL (e.g. https://...):');
-      if (url) {
-        execFormat('createLink', url);
-      }
-    }
-
-    function switchTkTab(tab) {
-      const btnAi = document.getElementById('tabAiStyles');
-      const btnFree = document.getElementById('tabFreePresets');
-      const contentAi = document.getElementById('tkAiTabContent');
-      const contentFree = document.getElementById('tkFreeTabContent');
-
-      if (tab === 'ai') {
-        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-[#C25E3E] text-white shadow-xs';
-        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9]';
-        contentAi.classList.remove('hidden');
-        contentFree.classList.add('hidden');
-      } else {
-        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-emerald-700 text-white shadow-xs';
-        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9]';
-        contentFree.classList.remove('hidden');
-        contentAi.classList.add('hidden');
-      }
-    }
-
-    function selectStyle(style) {
-      currentSelectedStyle = style;
-      document.querySelectorAll('.style-card').forEach(el => {
-        if (el.getAttribute('data-style') === style) {
-          el.classList.add('selected');
-        } else {
-          el.classList.remove('selected');
-        }
-      });
-      const styleNames = {
-        cnn: 'CNN Digital',
-        dailymail: 'Daily Mail',
-        foxnews: 'Fox News',
-        ap: 'AP Wire',
-        people: 'People Magazine',
-        tmz: 'TMZ',
-        buzzfeed: 'BuzzFeed',
-        breaking: 'Breaking Express',
-        tabloid: 'Tabloid',
-        analysis: 'News Analysis',
-        axios: 'Axios Express',
-        usaviral: 'USA Viral Hook',
-        nytexplainer: 'NYT Explainer',
-        newsletter: 'Substack / Brew',
-        investigative: 'Investigative'
-      };
-      const badge = document.getElementById('selectedStyleBadge');
-      if (badge) badge.textContent = styleNames[style] || style.toUpperCase();
-    }
-
     function applyFreePreset(preset) {
       var content = getActiveEditorContent();
       if (!content || content.trim().length < 5) {
@@ -2976,6 +3042,8 @@ const renderEditor = (c: any) => {
       const injectTarget = document.getElementById('aiInjectTarget')?.value || 'both';
       const cleanImage = document.getElementById('aiCleanImageCheckbox')?.checked ?? true;
 
+      const activeStyle = window.currentSelectedStyle || currentSelectedStyle || 'cnn';
+
       // Show processing banner & open modal if not already open
       openAiModal();
       const stateBox = document.getElementById('aiProcessingState');
@@ -2985,9 +3053,9 @@ const renderEditor = (c: any) => {
         if (mode === 'translate_khmer') {
           stateText.textContent = 'កំពុងបកប្រែអត្ថបទទាំងមូលជាភាសាខ្មែរដោយ AI Gemini...';
         } else if (mode === 'format') {
-          stateText.textContent = 'Reformatting into ' + currentSelectedStyle.toUpperCase() + ' style (preserving original words)...';
+          stateText.textContent = 'Reformatting into ' + activeStyle.toUpperCase() + ' style (preserving original words)...';
         } else {
-          stateText.textContent = 'Rewriting into ' + currentSelectedStyle.toUpperCase() + ' style using Gemini AI...';
+          stateText.textContent = 'Rewriting into ' + activeStyle.toUpperCase() + ' style using Gemini AI...';
         }
       }
 
@@ -2998,7 +3066,7 @@ const renderEditor = (c: any) => {
           body: JSON.stringify({
             apiKey,
             mode,
-            style: currentSelectedStyle,
+            style: activeStyle,
             title,
             content,
             targetWords
@@ -3039,7 +3107,7 @@ const renderEditor = (c: any) => {
           closeAiModal();
           alert(mode === 'translate_khmer'
             ? '🇰🇭 បានបកប្រែអត្ថបទជាភាសាខ្មែរដោយជោគជ័យ!'
-            : ('✓ Successfully formatted into ' + currentSelectedStyle.toUpperCase() + ' news style into ' + injectTarget.toUpperCase() + ' view!'));
+            : ('✓ Successfully formatted into ' + activeStyle.toUpperCase() + ' news style into ' + injectTarget.toUpperCase() + ' view!'));
         } else {
           alert('TK Summary error: ' + (data.error || 'Failed to process'));
         }
@@ -3051,7 +3119,11 @@ const renderEditor = (c: any) => {
     }
 
     async function aiFormatCurrent(style) {
-      currentSelectedStyle = style;
+      if (typeof window.selectStyle === 'function') {
+        window.selectStyle(style);
+      } else {
+        currentSelectedStyle = style;
+      }
       await executeAiProcess('format');
     }
 
@@ -3137,8 +3209,8 @@ const renderEditor = (c: any) => {
     }
 
     // Explicitly bind all editor functions to window for 100% reliable HTML onclick execution
-    window.switchTkTab = switchTkTab;
-    window.selectStyle = selectStyle;
+    if (typeof switchTkTab !== 'undefined') window.switchTkTab = switchTkTab;
+    if (typeof selectStyle !== 'undefined') window.selectStyle = selectStyle;
     window.applyFreePreset = applyFreePreset;
     window.fetchArticleFromLink = fetchArticleFromLink;
     window.executeAiProcess = executeAiProcess;
