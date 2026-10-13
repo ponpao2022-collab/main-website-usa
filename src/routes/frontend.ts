@@ -28,19 +28,19 @@ function formatArticleWithReadMore(content: string) {
         ${para1And2}
       </div>
 
-      <!-- Content After Paragraph 2 with Smooth Gradient Blur (Zero Hard Edge) -->
-      <div class="relative mt-6 pt-1">
-        <!-- Collapsible Container for Paragraph 3 Onwards -->
-        <div id="articleRestContainer" class="readmore-blur-box max-h-[130px] overflow-hidden relative transition-all duration-700 ease-in-out">
+      <!-- Collapsible Section Strictly Starting After Paragraph 2 (100% Smooth Transparent Fade, Zero Hard Line) -->
+      <div class="relative mt-6">
+        <!-- Container for Paragraph 3 Onwards with Smooth CSS Gradient Mask -->
+        <div id="articleRestContainer" class="max-h-[140px] overflow-hidden relative transition-all duration-700 ease-in-out" style="-webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%);">
           <div class="space-y-6" style="text-align: justify; text-justify: inter-word;">
             ${remainingParas}
           </div>
         </div>
 
-        <!-- 100% Matching Terracotta Circle Button & Smooth Gradient Overlay -->
-        <div id="readMoreOverlay" class="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-[#FAF9F5] via-[#FAF9F5]/90 to-transparent backdrop-blur-[2px] flex flex-col items-center justify-end pb-2 pt-8 transition-all duration-500 z-20 pointer-events-auto">
+        <!-- 100% Matching Terracotta Circle Button & Pure Gradient Fade (Zero Backdrop Blur, Zero Line) -->
+        <div id="readMoreOverlay" class="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#FAF9F5] from-30% via-[#FAF9F5]/85 via-65% to-transparent flex flex-col items-center justify-end pb-1 pt-4 transition-all duration-500 z-20 pointer-events-auto">
           <button onclick="revealFullArticle()" type="button" class="group flex flex-col items-center focus:outline-none cursor-pointer select-none">
-            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#C25E3E] hover:bg-[#B05335] text-white flex items-center justify-center shadow-xl shadow-[#C25E3E]/35 transition-all duration-300 transform group-hover:scale-110 active:scale-95 mb-2">
+            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#C25E3E] hover:bg-[#B05335] text-white flex items-center justify-center shadow-xl shadow-[#C25E3E]/30 transition-all duration-300 transform group-hover:scale-110 active:scale-95 mb-2">
               <svg class="w-6 h-6 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
@@ -905,7 +905,7 @@ frontendRouter.get("/article/:slug", (c) => {
         const container = document.getElementById('articleRestContainer');
         const overlay = document.getElementById('readMoreOverlay');
         if (container) {
-          container.classList.remove('max-h-[130px]');
+          container.classList.remove('max-h-[140px]', 'max-h-[130px]');
           container.classList.add('expanded');
           container.style.maxHeight = 'none';
           container.style.webkitMaskImage = 'none';
