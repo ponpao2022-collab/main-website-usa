@@ -23,6 +23,8 @@ adminRouter.get("/", (c) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NextGen Newsroom CMS - Dashboard</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
+  <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
@@ -187,8 +189,8 @@ adminRouter.get("/", (c) => {
       <span>Create with TK Summary AI</span>
     </div>
     <div class="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 active:scale-95">
-      <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_10px_20px_rgba(8,124,218,0.45)]" alt="TK Summary">
-      <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_26px_rgba(8,124,218,0.7)] animate-bounce" alt="TK Summary Happy">
+      <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_10px_20px_rgba(8,124,218,0.45)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
+      <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_26px_rgba(8,124,218,0.7)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
     </div>
   </a>
 
@@ -325,6 +327,8 @@ const renderEditor = (c: any) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${post ? 'Edit Story' : 'New Story'} | NextGen Newsroom CMS</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
+  <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
@@ -353,7 +357,7 @@ const renderEditor = (c: any) => {
       </div>
 
       <button onclick="openAiModal()" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 flex items-center space-x-1.5 transition">
-        <img src="/assets/tk-mascot.png" class="w-4 h-4 object-contain" alt="TK">
+        <img src="/assets/tk-mascot.webp" class="w-4 h-4 object-contain" alt="TK" loading="eager" width="16" height="16">
         <span>TK Summary AI</span>
       </button>
 
@@ -654,8 +658,8 @@ const renderEditor = (c: any) => {
 
     <!-- Character Mascot (Transparent PNG, No Background) -->
     <div class="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95 pointer-events-none">
-      <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(8,124,218,0.5)]" alt="TK Summary">
-      <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(8,124,218,0.75)] animate-bounce" alt="TK Summary Happy">
+      <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(8,124,218,0.5)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
+      <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(8,124,218,0.75)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
     </div>
   </div>
 
@@ -666,7 +670,7 @@ const renderEditor = (c: any) => {
     <div class="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between flex-shrink-0">
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-1 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-          <img src="/assets/tk-mascot.png" class="w-full h-full object-contain" alt="TK Summary">
+          <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain" alt="TK Summary" loading="eager" width="40" height="40">
         </div>
         <div>
           <div class="flex items-center space-x-2">

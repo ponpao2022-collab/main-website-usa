@@ -6,7 +6,11 @@ import { apiRouter } from "./routes/api";
 
 const app = new Hono();
 
-// Serve static assets from public directory
+// Serve static assets from public directory with high-performance cache headers
+app.use("/assets/*", async (c, next) => {
+  await next();
+  c.header("Cache-Control", "public, max-age=31536000, immutable");
+});
 app.use("/assets/*", serveStatic({ root: "./public" }));
 
 // Mount Routers
