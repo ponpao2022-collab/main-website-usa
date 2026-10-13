@@ -76,6 +76,16 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS short_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+    clicks INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_short_links_code ON short_links(code);
+  CREATE INDEX IF NOT EXISTS idx_short_links_post ON short_links(post_id);
 `);
 
 // Safe migrations for existing DB

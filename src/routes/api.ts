@@ -848,6 +848,80 @@ apiRouter.post("/system/import-posts", async (c) => {
   }
 });
 
+// AUTHENTICATION LOGIN ENDPOINT
+apiRouter.post("/auth/login", async (c) => {
+  try {
+    const { username, password, remember } = await c.req.json().catch(() => ({}));
+    if (username === "admin" && password === "admin@12345") {
+      const token = "usa_news_cms_auth_token_secret_2026";
+      const maxAge = remember !== false ? 31536000 : 86400; // 1 year if remember
+      c.header("Set-Cookie", `usa_cms_token=${token}; Path=/; Max-Age=${maxAge}; SameSite=Lax; HttpOnly`);
+      return c.json({ success: true, token, message: "Logged in successfully" });
+    }
+    return c.json({ success: false, error: "Username ឬ Password មិនត្រឹមត្រូវឡើយ" }, 401);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+apiRouter.post("/auth/logout", (c) => {
+  c.header("Set-Cookie", `usa_cms_token=; Path=/; Max-Age=0; SameSite=Lax; HttpOnly`);
+  return c.json({ success: true });
+});
+
+// 6-CHARACTER SHORT LINKS GENERATOR FOR EDIT POST
+function generateRandomShortCode(length = 6): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// GET SHORT LINKS FOR POST
+apiRouter.get("/posts/:id/short-links", (c) => {
+  const postId = Number(c.req.param("id"));
+  const links = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId);
+  return c.json({ success: true, data: links });
+});
+
+// BATCH GENERATE SHORT LINKS FOR POST
+apiRouter.post("/posts/:id/short-links/generate", async (c) => {
+  try {
+    const postId = Number(c.req.param("id"));
+    const body = await c.req.json().catch(() => ({}));
+    const count = Math.min(100, Math.max(1, Number(body.count) || 10));
+
+    const post = db.query("SELECT id, slug FROM posts WHERE id = ?").get(postId) as any;
+    if (!post) {
+      return c.json({ success: false, error: "Post not found" }, 404);
+    }
+
+    const generated: string[] = [];
+    const insertStmt = db.prepare("INSERT INTO short_links (code, post_id, clicks) VALUES (?, ?, 0)");
+
+    for (let i = 0; i < count; i++) {
+      let attempts = 0;
+      while (attempts < 10) {
+        const code = generateRandomShortCode(6);
+        try {
+          insertStmt.run(code, postId);
+          generated.push(code);
+          break;
+        } catch {
+          attempts++;
+        }
+      }
+    }
+
+    const allLinks = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId);
+    return c.json({ success: true, count: generated.length, generated, data: allLinks });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
 // Real-Time Visitor Tracking (Whos.amung.us style, <0.001ms RAM engine)
 apiRouter.post("/track/ping", async (c) => {
   try {
@@ -861,8 +935,10 @@ apiRouter.post("/track/ping", async (c) => {
     }
     const ip = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "";
     const country = c.req.header("cf-ipcountry") || body.country || "US";
+    const city = c.req.header("cf-ipcity") || body.city || "";
     const userAgent = c.req.header("user-agent") || "";
-    recordVisitorPing(body.s, body.p, body.t, ip, country, userAgent);
+    const referrer = body.r || c.req.header("referer") || "";
+    recordVisitorPing(body.s, body.p, body.t, ip, country, userAgent, referrer, city);
     return c.json({ ok: true });
   } catch {
     return c.json({ ok: false }, 400);
@@ -872,6 +948,7 @@ apiRouter.post("/track/ping", async (c) => {
 apiRouter.get("/track/live", (c) => {
   return c.json(getLiveStats());
 });
+
 
 
 

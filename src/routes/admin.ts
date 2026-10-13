@@ -3,12 +3,125 @@ import { db } from "../db/index";
 
 export const adminRouter = new Hono();
 
-// Disable caching for admin CMS
+// Disable caching for admin CMS & Enforce Authentication
 adminRouter.use("*", async (c, next) => {
-  await next();
   c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   c.res.headers.set("Pragma", "no-cache");
   c.res.headers.set("Expires", "0");
+
+  const path = c.req.path;
+  if (path === "/admin/login" || path === "/admin/logout") {
+    await next();
+    return;
+  }
+
+  const cookieHeader = c.req.header("cookie") || "";
+  const tokenMatch = cookieHeader.match(/usa_cms_token=([^;]+)/);
+  const token = tokenMatch ? tokenMatch[1] : null;
+
+  if (token !== "usa_news_cms_auth_token_secret_2026") {
+    return c.redirect("/admin/login");
+  }
+
+  await next();
+});
+
+// ADMIN LOGIN PAGE
+adminRouter.get("/login", (c) => {
+  const cookieHeader = c.req.header("cookie") || "";
+  if (cookieHeader.includes("usa_cms_token=usa_news_cms_auth_token_secret_2026")) {
+    return c.redirect("/admin");
+  }
+
+  return c.html(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMS Login | USA NEWS STORY</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script src="/assets/tailwindcss.min.js"></script>
+</head>
+<body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen flex items-center justify-center p-4 selection:bg-[#C25E3E] selection:text-white">
+  
+  <div class="max-w-sm w-full bg-white border border-[#EAE8E1] rounded-3xl p-8 shadow-xl space-y-6">
+    <div class="text-center space-y-2">
+      <img src="/assets/logo-sm.webp" class="h-14 w-14 rounded-full mx-auto object-contain shadow-sm border border-[#EAE8E1]" alt="USA NEWS STORY">
+      <h1 class="text-2xl font-black text-[#1C1B18] tracking-tight">USA NEWS STORY</h1>
+      <p class="text-xs text-[#6E6B63]">Newsroom CMS Dashboard Sign In</p>
+    </div>
+
+    <form onsubmit="handleLogin(event)" class="space-y-4">
+      <div id="loginError" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold"></div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#1C1B18] uppercase tracking-wider mb-1.5">Username</label>
+        <input type="text" id="usernameInput" required value="admin" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3.5 py-2.5 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white font-medium">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#1C1B18] uppercase tracking-wider mb-1.5">Password</label>
+        <input type="password" id="passwordInput" required placeholder="Enter password" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3.5 py-2.5 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white font-medium">
+      </div>
+
+      <div class="flex items-center justify-between text-xs pt-1">
+        <label class="flex items-center space-x-2 text-[#6E6B63] cursor-pointer">
+          <input type="checkbox" id="rememberMeInput" checked class="w-4 h-4 rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-[#C25E3E]">
+          <span class="font-medium">Remember on this browser</span>
+        </label>
+      </div>
+
+      <button type="submit" id="loginBtn" class="w-full py-3 px-4 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs transition shadow-md shadow-[#C25E3E]/20 flex items-center justify-center space-x-2 cursor-pointer">
+        <span>🔒 Sign In to CMS</span>
+      </button>
+    </form>
+
+    <div class="text-center pt-2 border-t border-[#EAE8E1]">
+      <a href="/" class="text-xs text-[#6E6B63] hover:text-[#C25E3E] transition font-medium">&larr; Return to Live Website</a>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('usernameInput').value.trim();
+      const p = document.getElementById('passwordInput').value.trim();
+      const remember = document.getElementById('rememberMeInput').checked;
+      const errEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginBtn');
+
+      errEl.classList.add('hidden');
+      btn.innerText = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p, remember })
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = '/admin';
+        } else {
+          errEl.textContent = data.error || 'Username ឬ Password មិនត្រឹមត្រូវ';
+          errEl.classList.remove('hidden');
+          btn.innerText = '🔒 Sign In to CMS';
+        }
+      } catch (err) {
+        errEl.textContent = 'Network error: ' + err.message;
+        errEl.classList.remove('hidden');
+        btn.innerText = '🔒 Sign In to CMS';
+      }
+    }
+  </script>
+</body>
+</html>`);
+});
+
+// LOGOUT ROUTE
+adminRouter.get("/logout", (c) => {
+  c.header("Set-Cookie", "usa_cms_token=; Path=/; Max-Age=0; SameSite=Lax; HttpOnly");
+  return c.redirect("/admin/login");
 });
 
 // ADMIN DASHBOARD
@@ -76,6 +189,10 @@ adminRouter.get("/", (c) => {
       <a href="/admin/new" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-md shadow-[#C25E3E]/20 flex items-center space-x-1.5 transition">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         <span>Write New Story</span>
+      </a>
+
+      <a href="/admin/logout" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 flex items-center space-x-1 transition cursor-pointer" title="Sign out of CMS">
+        <span>🚪 Logout</span>
       </a>
     </div>
   </header>
@@ -386,130 +503,210 @@ adminRouter.get("/", (c) => {
     </div>
 
     <!-- ==================== VIEW 2: DEDICATED WHOS.AMUNG.US LIVE TRACKER ==================== -->
-    <div id="mainTrackingView" class="hidden space-y-6">
+    <div id="mainTrackingView" class="hidden space-y-5">
 
-      <!-- Live Counter Hero Header -->
-      <div class="bg-white border-2 border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div class="space-y-2">
-            <div class="flex items-center space-x-2">
-              <span class="relative flex h-3.5 w-3.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
-              </span>
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                WHOS.AMUNG.US LIVE ENGINE
-              </span>
-              <span class="text-[11px] font-mono text-[#6E6B63]">3s auto-refresh</span>
-            </div>
-            <h2 class="text-2xl sm:text-3xl font-black text-[#1C1B18] tracking-tight">
-              Real-Time Active Readers & Country Geo-Tracker
-            </h2>
-            <p class="text-xs sm:text-sm text-[#6E6B63]">
-              តាមដានអ្នកអានផ្ទាល់ទូទាំងពិភពលោក (Real-Time Visitors by Country & Device) ជាមួយ Cloudflare Edge
-            </p>
+      <!-- Whos.amung.us Authentic Brand Navigation Bar -->
+      <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-1.5 select-none">
+            <span class="text-xl sm:text-2xl font-black font-serif italic text-[#1C1B18] tracking-tight">wh<span class="text-[#C25E3E] font-bold">o</span>'s.amung.us</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-black shadow-xs">🏃</span>
           </div>
+          <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            Private Edge Tracker
+          </span>
+        </div>
 
-          <div class="bg-[#FAF9F5] border border-[#EAE8E1] rounded-2xl p-4 sm:p-6 text-center min-w-[200px]">
-            <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">ONLINE RIGHT NOW</div>
-            <div id="whosHugeCount" class="text-5xl sm:text-6xl font-black text-emerald-600 font-mono tracking-tight my-1">
-              0
-            </div>
-            <div class="text-[11px] text-[#6E6B63] font-mono">active readers online</div>
-          </div>
+        <!-- Sub Tabs (Dashboard vs Readers) -->
+        <div class="flex items-center bg-[#FAF9F5] border border-[#E5E2D9] p-1 rounded-xl space-x-1">
+          <button type="button" onclick="switchWhosSubTab('dashboard')" id="whosSubTabDashboardBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-[#1C1B18] shadow-xs border border-[#E5E2D9] transition cursor-pointer flex items-center space-x-1.5 underline decoration-[#C25E3E] decoration-2">
+            <span>📊 DASHBOARD</span>
+          </button>
+          <button type="button" onclick="switchWhosSubTab('readers')" id="whosSubTabReadersBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition cursor-pointer flex items-center space-x-1.5">
+            <span>👥 READERS</span>
+            <span id="whosSubTabCount" class="bg-rose-100 text-rose-800 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full">0</span>
+          </button>
         </div>
       </div>
 
-      <!-- 2-Column Grid: Countries with Flags + Devices & Popular Pages -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- Left Column: Country Breakdown (ទង់ជាតិ & ចំនួនអ្នកអាន) -->
-        <div class="lg:col-span-7 bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
-            <div class="flex items-center space-x-2">
-              <span class="text-base">🌍</span>
-              <h3 class="font-bold text-sm text-[#1C1B18]">Readers by Country (អ្នកអានតាមប្រទេស)</h3>
-            </div>
-            <span id="whosCountryCountBadge" class="text-xs font-mono font-bold bg-[#F3F1EC] text-[#2B2926] px-2.5 py-0.5 rounded-full border border-[#E5E2D9]">
-              0 Countries
-            </span>
+      <!-- ================= SUB-VIEW 1: DASHBOARD ================= -->
+      <div id="whosSubViewDashboard" class="space-y-6">
+        
+        <!-- Header row matching screenshot: Speedometer icon + Dashboard (count) -->
+        <div class="flex items-center justify-between border-b-2 border-dotted border-[#D5D2C9] pb-3">
+          <div class="flex items-center space-x-2.5">
+            <span class="text-2xl text-slate-700">🧭</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#1C1B18] font-sans">
+              Dashboard (<span id="whosDashCount" class="font-mono text-[#C25E3E]">0</span>)
+            </h2>
           </div>
-
-          <div id="whosCountryList" class="space-y-2.5">
-            <div class="text-xs text-[#8A867E] italic py-8 text-center">
-              កំពុងរង់ចាំអ្នកអាន... (Waiting for active sessions. Visit site in another tab to see your flag!)
-            </div>
+          <div class="flex items-center space-x-2 text-xs text-[#6E6B63]">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span class="font-mono">Live auto-sync (3s)</span>
           </div>
         </div>
 
-        <!-- Right Column: Devices Split & Most Popular Active Pages -->
-        <div class="lg:col-span-5 space-y-6">
+        <!-- Dashboard Grid: Readers (left) + Countries Proportions (right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-          <!-- Device Distribution Card -->
-          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
-            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+          <!-- Left Column: Top Readers / Stories -->
+          <div class="lg:col-span-6 bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2.5">
               <div class="flex items-center space-x-2">
-                <span class="text-base">📱</span>
-                <h3 class="font-bold text-sm text-[#1C1B18]">Device Types (ឧបករណ៍)</h3>
+                <span class="text-sm font-bold text-[#6E6B63]">½</span>
+                <h3 class="font-bold text-sm text-[#1C1B18]">Readers</h3>
               </div>
               <span class="text-[11px] font-mono text-[#6E6B63]">Active split</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-2.5 pt-1 text-center">
-              <div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-lg mb-0.5">📱</div>
-                <div class="text-[11px] font-bold text-[#6E6B63]">Mobile</div>
-                <div id="deviceMobileCount" class="text-lg font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
-              </div>
-              <div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-lg mb-0.5">💻</div>
-                <div class="text-[11px] font-bold text-[#6E6B63]">Desktop</div>
-                <div id="deviceDesktopCount" class="text-lg font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
-              </div>
-              <div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-lg mb-0.5">📟</div>
-                <div class="text-[11px] font-bold text-[#6E6B63]">Tablet</div>
-                <div id="deviceTabletCount" class="text-lg font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
-              </div>
+            <!-- List of Top Stories -->
+            <div id="whosTopReadersList" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+              <div class="text-xs text-[#8A867E] italic py-8 text-center">កំពុងរង់ចាំអ្នកអាន... (Waiting for active visitors)</div>
             </div>
           </div>
 
-          <!-- Active Pages List Card -->
-          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
-            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+          <!-- Right Column: Countries with Proportional Flag Mosaic -->
+          <div class="lg:col-span-6 bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2.5">
               <div class="flex items-center space-x-2">
-                <span class="text-base">📄</span>
-                <h3 class="font-bold text-sm text-[#1C1B18]">Pages Being Read (ទំព័រកំពុងបើក)</h3>
+                <span class="text-sm">🚩</span>
+                <h3 class="font-bold text-sm text-[#1C1B18]">Countries</h3>
               </div>
-              <span id="whosPagesCountBadge" class="text-xs font-mono font-bold bg-[#F3F1EC] text-[#2B2926] px-2 py-0.5 rounded border border-[#E5E2D9]">
-                0
+              <span id="whosCountryCountBadge" class="text-xs font-mono font-bold bg-[#FAF9F5] text-[#2B2926] px-2 py-0.5 rounded border border-[#E5E2D9]">
+                0 Countries
               </span>
             </div>
 
-            <div id="whosActivePages" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-              <div class="text-xs text-[#8A867E] italic py-4 text-center">No active pages right now</div>
+            <!-- Proportional Flags Display -->
+            <div id="whosFlagsMosaic" class="flex flex-wrap gap-2.5 p-3 bg-[#FAF9F5] rounded-xl border border-[#EAE8E1] min-h-[100px] items-center justify-center">
+              <div class="text-xs text-[#8A867E] italic py-6 text-center">No country data yet</div>
+            </div>
+
+            <!-- Country Detailed List -->
+            <div id="whosCountryList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+          </div>
+
+        </div>
+
+        <!-- 3-Column Bottom Row: Devices + OS + Referrers -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Devices -->
+          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2">
+              <h4 class="font-bold text-xs text-[#1C1B18] flex items-center space-x-1.5">
+                <span>💻</span>
+                <span>Devices</span>
+              </h4>
+              <span class="text-[10px] font-mono text-[#6E6B63]">Active</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center pt-1">
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-base">📱</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Mobile</div>
+                <div id="deviceMobileCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-base">💻</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Desktop</div>
+                <div id="deviceDesktopCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-base">📟</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Tablet</div>
+                <div id="deviceTabletCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
             </div>
           </div>
 
+          <!-- Operating Systems -->
+          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2">
+              <h4 class="font-bold text-xs text-[#1C1B18] flex items-center space-x-1.5">
+                <span>🤖</span>
+                <span>Operating Systems</span>
+              </h4>
+              <span class="text-[10px] font-mono text-[#6E6B63]">Active</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center pt-1">
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-base">🤖</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Android</div>
+                <div id="osAndroidCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-base">🍏</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Apple/iOS</div>
+                <div id="osAppleCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-base">🪟</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Windows</div>
+                <div id="osWindowsCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Referrers (Facebook, Google, Direct) -->
+          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2">
+              <h4 class="font-bold text-xs text-[#1C1B18] flex items-center space-x-1.5">
+                <span class="text-blue-600 font-black">ⓕ</span>
+                <span>Referral Sources</span>
+              </h4>
+              <span class="text-[10px] font-mono text-[#6E6B63]">Origin</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center pt-1">
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="w-5 h-5 mx-auto bg-[#1877F2] text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">f</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Facebook</div>
+                <div id="refFacebookCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="w-5 h-5 mx-auto bg-red-500 text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">G</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Google</div>
+                <div id="refGoogleCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="w-5 h-5 mx-auto bg-slate-700 text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">🔗</div>
+                <div class="text-[10px] font-bold text-[#6E6B63]">Direct</div>
+                <div id="refDirectCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
 
-      <!-- Real-Time Activity Log / Stream -->
-      <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
-        <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
-          <div class="flex items-center space-x-2">
-            <span class="text-base">⚡</span>
-            <h3 class="font-bold text-sm text-[#1C1B18]">Live Visitor Stream (សកម្មភាពអ្នកអានផ្ទាល់)</h3>
+      <!-- ================= SUB-VIEW 2: READERS (AUTHENTIC WHOS.AMUNG.US) ================= -->
+      <div id="whosSubViewReaders" class="hidden space-y-4">
+        
+        <!-- Header row matching screenshot 2: List icon + Readers (count) -->
+        <div class="flex items-center justify-between border-b-2 border-dotted border-[#D5D2C9] pb-3">
+          <div class="flex items-center space-x-2.5">
+            <span class="text-xl font-black text-slate-700">≡</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#1C1B18] font-sans">
+              Readers (<span id="whosReadersCount" class="font-mono text-[#C25E3E]">0</span>)
+            </h2>
           </div>
-          <span class="text-[11px] font-mono text-[#6E6B63]">Updated real-time</span>
+          <div class="flex items-center space-x-2">
+            <span class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold shadow-xs">≡</span>
+            <span class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-xs">👤</span>
+          </div>
         </div>
 
-        <div id="whosRecentStream" class="divide-y divide-[#EAE8E1] max-h-80 overflow-y-auto">
-          <div class="text-xs text-[#8A867E] italic py-6 text-center">
-            No visitor events logged in memory yet.
+        <!-- Live Readers Feed matching Screenshot 2 -->
+        <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 sm:p-6 shadow-xs">
+          <div id="whosReadersTableList" class="divide-y divide-[#F0EDE6] max-h-[700px] overflow-y-auto">
+            <div class="text-xs text-[#8A867E] italic py-12 text-center">
+              កំពុងរង់ចាំអ្នកអាន... (No active readers online. Open your website in another window or phone to see live updates!)
+            </div>
           </div>
         </div>
+
       </div>
 
     </div>
@@ -652,6 +849,26 @@ adminRouter.get("/", (c) => {
         artBtn.className = 'px-4 py-2 rounded-xl font-semibold text-xs text-[#6E6B63] hover:text-[#1C1B18] flex items-center space-x-2 transition cursor-pointer';
         trkView.classList.remove('hidden');
         artView.classList.add('hidden');
+      }
+    }
+
+    // ================= WHOS.AMUNG.US SUB-TABS SWITCHER =================
+    function switchWhosSubTab(sub) {
+      const dashBtn = document.getElementById('whosSubTabDashboardBtn');
+      const readBtn = document.getElementById('whosSubTabReadersBtn');
+      const dashView = document.getElementById('whosSubViewDashboard');
+      const readView = document.getElementById('whosSubViewReaders');
+
+      if (sub === 'dashboard') {
+        dashBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-[#1C1B18] shadow-xs border border-[#E5E2D9] transition cursor-pointer flex items-center space-x-1.5 underline decoration-[#C25E3E] decoration-2';
+        readBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition cursor-pointer flex items-center space-x-1.5';
+        dashView.classList.remove('hidden');
+        readView.classList.add('hidden');
+      } else {
+        readBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-[#1C1B18] shadow-xs border border-[#E5E2D9] transition cursor-pointer flex items-center space-x-1.5 underline decoration-[#C25E3E] decoration-2';
+        dashBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition cursor-pointer flex items-center space-x-1.5';
+        readView.classList.remove('hidden');
+        dashView.classList.add('hidden');
       }
     }
 
@@ -945,37 +1162,79 @@ adminRouter.get("/", (c) => {
         const data = await res.json();
         const total = data.totalOnline || 0;
 
-        // 1. Update counters
+        // 1. Update all counters
         const countEl = document.getElementById('liveOnlineCount');
         if (countEl) countEl.innerText = String(total);
         const hugeEl = document.getElementById('whosHugeCount');
         if (hugeEl) hugeEl.innerText = String(total);
         const pillEl = document.getElementById('mainTrackingPill');
         if (pillEl) pillEl.innerText = String(total);
+        const subCountEl = document.getElementById('whosSubTabCount');
+        if (subCountEl) subCountEl.innerText = String(total);
+        const dashCountEl = document.getElementById('whosDashCount');
+        if (dashCountEl) dashCountEl.innerText = String(total);
+        const readersCountEl = document.getElementById('whosReadersCount');
+        if (readersCountEl) readersCountEl.innerText = String(total);
 
-        // 2. Update Country List
+        // 2. Update Top Readers List (Dashboard Left Card)
+        const topReadersList = document.getElementById('whosTopReadersList');
+        if (topReadersList) {
+          if (!data.activePages || data.activePages.length === 0) {
+            topReadersList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-8 text-center">កំពុងរង់ចាំអ្នកអាន... (No active readers online)</div>';
+          } else {
+            topReadersList.innerHTML = data.activePages.map(function(p) {
+              return '<div class="flex items-center space-x-3.5 p-2 rounded-xl hover:bg-[#FAF9F5] transition">' +
+                '<span class="text-2xl font-black font-mono text-[#1C1B18] w-8 text-right flex-shrink-0">' + p.count + '</span>' +
+                '<div class="flex-1 min-w-0">' +
+                  '<div class="flex items-center space-x-1.5 truncate">' +
+                    '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+                    '<a href="' + p.path + '" target="_blank" class="text-xs font-semibold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' + (p.title || p.path) + '</a>' +
+                  '</div>' +
+                  '<div class="flex items-center space-x-1 text-[11px] font-bold text-rose-600 mt-0.5">' +
+                    '<span class="text-xs">⭐</span>' +
+                    '<span>' + p.percent + '%</span>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+            }).join('');
+          }
+        }
+
+        // 3. Update Countries Proportional Flags Mosaic & List (Dashboard Right Card)
         const countryBadge = document.getElementById('whosCountryCountBadge');
-        const countryList = document.getElementById('whosCountryList');
         if (countryBadge) countryBadge.innerText = (data.countries || []).length + ' Countries';
+
+        const flagsMosaic = document.getElementById('whosFlagsMosaic');
+        if (flagsMosaic) {
+          if (!data.countries || data.countries.length === 0) {
+            flagsMosaic.innerHTML = '<div class="text-xs text-[#8A867E] italic py-6 text-center">No country data yet</div>';
+          } else {
+            flagsMosaic.innerHTML = data.countries.map(function(c) {
+              const size = c.percent > 40 ? 'text-4xl sm:text-5xl p-3' : c.percent > 20 ? 'text-3xl p-2' : 'text-xl p-1.5';
+              return '<div class="inline-flex flex-col items-center justify-center rounded-xl bg-white border border-[#EAE8E1] shadow-xs ' + size + ' hover:scale-105 transition cursor-pointer" title="' + c.name + ': ' + c.count + ' readers (' + c.percent + '%)">' +
+                '<span>' + (c.flag || '🌐') + '</span>' +
+                '<span class="text-[9px] font-mono font-bold text-slate-600 mt-0.5">' + c.count + ' (' + c.percent + '%)</span>' +
+              '</div>';
+            }).join('');
+          }
+        }
+
+        const countryList = document.getElementById('whosCountryList');
         if (countryList) {
           if (!data.countries || data.countries.length === 0) {
-            countryList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-8 text-center">No active visitors right now. Open the site in a tab or on phone to see your country flag!</div>';
+            countryList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-3 text-center">No active visitors. Open in another tab to see your country flag!</div>';
           } else {
             countryList.innerHTML = data.countries.map(function(c) {
-              return '<div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1] hover:border-[#C25E3E]/40 transition space-y-2">' +
+              return '<div class="p-2.5 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1] space-y-1.5">' +
                 '<div class="flex items-center justify-between">' +
-                  '<div class="flex items-center space-x-2.5">' +
-                    '<span class="text-2xl leading-none">' + (c.flag || '🌐') + '</span>' +
-                    '<div>' +
-                      '<span class="font-bold text-xs text-[#1C1B18]">' + c.name + '</span>' +
-                      '<span class="text-[10px] text-[#8A867E] font-mono ml-1.5 uppercase">(' + c.code + ')</span>' +
-                    '</div>' +
+                  '<div class="flex items-center space-x-2">' +
+                    '<span class="text-xl leading-none">' + (c.flag || '🌐') + '</span>' +
+                    '<span class="font-bold text-xs text-[#1C1B18]">' + c.name + '</span>' +
+                    '<span class="text-[10px] text-[#8A867E] font-mono">(' + c.code + ')</span>' +
                   '</div>' +
                   '<div class="flex items-center space-x-2">' +
-                    '<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">' +
-                      c.count + ' ' + (c.count === 1 ? 'reader' : 'readers') +
-                    '</span>' +
-                    '<span class="text-xs font-mono font-bold text-[#6E6B63]">' + c.percent + '%</span>' +
+                    '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold">' + c.count + '</span>' +
+                    '<span class="text-[11px] font-mono text-[#6E6B63]">' + c.percent + '%</span>' +
                   '</div>' +
                 '</div>' +
                 '<div class="w-full bg-[#EAE8E1] h-1.5 rounded-full overflow-hidden">' +
@@ -986,7 +1245,7 @@ adminRouter.get("/", (c) => {
           }
         }
 
-        // 3. Update Devices
+        // 4. Update Devices, OS & Referrers
         if (data.devices) {
           const mEl = document.getElementById('deviceMobileCount');
           const dEl = document.getElementById('deviceDesktopCount');
@@ -996,51 +1255,68 @@ adminRouter.get("/", (c) => {
           if (tEl) tEl.innerText = String(data.devices.tablet || 0);
         }
 
-        // 4. Update Active Pages
-        const pagesBadge = document.getElementById('whosPagesCountBadge');
-        const pagesList = document.getElementById('whosActivePages');
-        if (pagesBadge) pagesBadge.innerText = String((data.activePages || []).length);
-        if (pagesList) {
-          if (!data.activePages || data.activePages.length === 0) {
-            pagesList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-4 text-center">No active pages right now</div>';
-          } else {
-            pagesList.innerHTML = data.activePages.map(function(p) {
-              return '<div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1] text-xs hover:border-[#C25E3E]/40 transition">' +
-                '<div class="truncate mr-2">' +
-                  '<a href="' + p.path + '" target="_blank" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' +
-                    (p.title || p.path) +
-                  '</a>' +
-                  '<span class="text-[10px] text-[#8A867E] font-mono">' + p.path + '</span>' +
-                '</div>' +
-                '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold flex-shrink-0">' +
-                  p.count + ' ' + (p.count === 1 ? 'reader' : 'readers') +
-                '</span>' +
-              '</div>';
-            }).join('');
-          }
+        if (data.osMap) {
+          const aEl = document.getElementById('osAndroidCount');
+          const apEl = document.getElementById('osAppleCount');
+          const wEl = document.getElementById('osWindowsCount');
+          if (aEl) aEl.innerText = String(data.osMap.android || 0);
+          if (apEl) apEl.innerText = String(data.osMap.apple || 0);
+          if (wEl) wEl.innerText = String(data.osMap.windows || 0);
         }
 
-        // 5. Update Recent Stream
-        const streamList = document.getElementById('whosRecentStream');
-        if (streamList) {
+        if (data.referrers) {
+          const fEl = document.getElementById('refFacebookCount');
+          const gEl = document.getElementById('refGoogleCount');
+          const dirEl = document.getElementById('refDirectCount');
+          if (fEl) fEl.innerText = String(data.referrers.facebook || 0);
+          if (gEl) gEl.innerText = String(data.referrers.google || 0);
+          if (dirEl) dirEl.innerText = String(data.referrers.direct || 0);
+        }
+
+        // 5. Update Readers Table Feed (Screenshot 2 Authentic View)
+        const readersTable = document.getElementById('whosReadersTableList');
+        if (readersTable) {
           if (!data.recentVisitors || data.recentVisitors.length === 0) {
-            streamList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-6 text-center">No visitor events logged in memory yet.</div>';
+            readersTable.innerHTML = '<div class="text-xs text-[#8A867E] italic py-12 text-center">កំពុងរង់ចាំអ្នកអាន... (No active readers online. Open your website in another window or phone to see live updates!)</div>';
           } else {
-            streamList.innerHTML = data.recentVisitors.map(function(v) {
+            readersTable.innerHTML = data.recentVisitors.map(function(v) {
+              const devIcon = v.device === 'Mobile' ?
+                '<span title="Mobile" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-pink-100 text-pink-600 font-bold shadow-xs">📱</span>' :
+                '<span title="Desktop" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-emerald-100 text-emerald-600 font-bold shadow-xs">💻</span>';
+
+              const osIcon = v.os === 'Android' ?
+                '<span title="Android" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-lime-100 text-lime-700 font-bold shadow-xs">🤖</span>' :
+                v.os === 'Apple' ?
+                '<span title="Apple / iOS" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-slate-200 text-slate-700 font-bold shadow-xs">🍏</span>' :
+                '<span title="Windows" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-sky-100 text-sky-600 font-bold shadow-xs">🪟</span>';
+
+              const refIcon = v.referrer === 'facebook' ?
+                '<span title="Facebook Referral" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-[#1877F2] text-white font-black shadow-xs">f</span>' :
+                v.referrer === 'google' ?
+                '<span title="Google Search" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-red-500 text-white font-black shadow-xs">G</span>' :
+                '<span title="Direct Traffic" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-slate-600 text-white font-bold shadow-xs">🔗</span>';
+
+              const loc = (v.city ? v.city + ', ' : '') + v.country;
+
               return '<div class="py-2.5 px-3 flex items-center justify-between hover:bg-[#FAF9F5] transition text-xs">' +
-                '<div class="flex items-center space-x-3 truncate mr-3">' +
-                  '<span class="text-xl flex-shrink-0">' + (v.flag || '🌐') + '</span>' +
-                  '<div class="truncate">' +
-                    '<div class="flex items-center space-x-1.5">' +
-                      '<span class="font-bold text-[#1C1B18]">' + v.country + '</span>' +
-                      '<span class="text-[10px] px-1.5 py-0.2 rounded bg-[#F3F1EC] text-[#6E6B63] font-mono border border-[#E5E2D9]">' + v.device + '</span>' +
+                '<div class="flex items-center space-x-3.5 min-w-0 mr-3">' +
+                  '<span class="text-base sm:text-lg font-black font-mono text-[#1C1B18] w-14 flex-shrink-0">' + v.formattedTime + '</span>' +
+                  '<div class="min-w-0 space-y-0.5">' +
+                    '<div class="flex items-center space-x-1.5 truncate">' +
+                      '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+                      '<a href="' + p_escape(v.path) + '" target="_blank" class="font-semibold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' + p_escape(v.title || v.path) + '</a>' +
                     '</div>' +
-                    '<div class="text-[11px] text-[#6E6B63] truncate">' + (v.title || v.path) + '</div>' +
+                    '<div class="flex items-center space-x-1.5 text-[11px] text-[#6E6B63]">' +
+                      '<span class="text-sm flex-shrink-0">' + (v.flag || '🌐') + '</span>' +
+                      '<span class="truncate">' + p_escape(loc) + '</span>' +
+                    '</div>' +
                   '</div>' +
                 '</div>' +
-                '<span class="text-[10px] font-mono text-emerald-700 font-medium flex-shrink-0 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">' +
-                  v.agoSec + 's ago' +
-                '</span>' +
+                '<div class="flex items-center space-x-2 flex-shrink-0">' +
+                  devIcon +
+                  osIcon +
+                  refIcon +
+                '</div>' +
               '</div>';
             }).join('');
           }
@@ -1048,6 +1324,12 @@ adminRouter.get("/", (c) => {
 
       } catch(e) {}
     }
+
+    function p_escape(text) {
+      if (!text) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     setInterval(pollLiveVisitors, 3000);
     pollLiveVisitors();
   </script>
@@ -1341,6 +1623,51 @@ const renderEditor = (c: any) => {
           <input type="text" id="tagsInput" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-3 py-1.5 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] font-mono" placeholder="USANews, Politics, Breaking" value="${post && post.tags ? post.tags : ''}">
           <p class="text-[10px] text-[#8A867E] leading-tight">Separate tags with commas. If unticked or empty, no tags will be displayed.</p>
         </div>
+      </div>
+
+      <!-- VIRAL SHORT LINKS GENERATOR (៦ ខ្ទង់ - Pretty Links Alternative) -->
+      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-sm">🔗</span>
+            <span class="text-xs font-bold text-[#1C1B18]">Viral Short Links (៦ ខ្ទង់)</span>
+          </div>
+          <span class="text-[10px] font-mono text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Whos Tracking</span>
+        </div>
+        <p class="text-[11px] text-[#6E6B63] leading-snug">
+          បង្កើត Short Link ៦ ខ្ទង់ (ឧ. <code>https://topusanewsstory.com/asdfef</code>) សម្រាប់ចែករំលែកលើ Facebook & Comments។ ចុចទៅនឹង Redirect ទៅ Post ដើមស្អាតគ្មានកន្ទុយរញេរញៃ!
+        </p>
+
+        ${post ? `
+          <div class="space-y-2">
+            <div class="flex items-center space-x-2">
+              <div class="flex-1">
+                <label class="block text-[10px] font-bold text-[#6E6B63] mb-1">ចំនួន Link (Quantity)</label>
+                <input type="number" id="shortLinkQuantity" min="1" max="100" value="10" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-2.5 py-1 text-xs text-[#1C1B18] font-mono focus:outline-none focus:border-[#C25E3E]">
+              </div>
+              <button type="button" onclick="generateShortLinks(${post.id})" id="btnGenerateShortLinks" class="mt-4 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition flex items-center space-x-1 cursor-pointer">
+                <span>⚡ Generate</span>
+              </button>
+            </div>
+
+            <!-- Quick Action Bar -->
+            <div id="shortLinksActionBox" class="hidden flex items-center justify-between pt-1">
+              <span id="shortLinksStats" class="text-[10px] font-mono text-[#6E6B63]">0 links</span>
+              <button type="button" onclick="copyAllShortLinks()" class="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 flex items-center space-x-1 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg border border-indigo-200 transition cursor-pointer">
+                <span>📋 Copy All Links</span>
+              </button>
+            </div>
+
+            <!-- Links Container List -->
+            <div id="shortLinksList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              <div class="text-[11px] text-[#8A867E] italic py-2 text-center">កំពុងទាញយក short links...</div>
+            </div>
+          </div>
+        ` : `
+          <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 leading-snug">
+            💡 សូមចុច <strong>Publish</strong> ឬ <strong>Save as Draft</strong> អត្ថបទនេះសិន ទើបអាច Generate Short Links បាន!
+          </div>
+        `}
       </div>
 
       <!-- Cloudflare Edge Webhook Status -->
@@ -1775,7 +2102,7 @@ const renderEditor = (c: any) => {
     let currentSelectedStyle = 'cnn';
     let fetchedArticleData = null;
 
-    // Load saved Gemini API Key
+    // Load saved Gemini API Key & short links
     document.addEventListener('DOMContentLoaded', () => {
       const savedKey = localStorage.getItem('gemini_api_key');
       if (savedKey) {
@@ -1783,7 +2110,120 @@ const renderEditor = (c: any) => {
       }
       updateWordCount();
       syncInitialContent();
+      if (postId) {
+        loadShortLinks(postId);
+      }
     });
+
+    // ================= SHORT LINKS CLIENT FUNCTIONS =================
+    let generatedShortLinksCache = [];
+
+    async function loadShortLinks(pid) {
+      if (!pid) return;
+      const listEl = document.getElementById('shortLinksList');
+      const actionBox = document.getElementById('shortLinksActionBox');
+      const statsEl = document.getElementById('shortLinksStats');
+      if (!listEl) return;
+
+      try {
+        const res = await fetch('/api/posts/' + pid + '/short-links');
+        const data = await res.json();
+        if (data.success && data.links) {
+          generatedShortLinksCache = data.links;
+          renderShortLinksList();
+        } else {
+          listEl.innerHTML = '<div class="text-[11px] text-[#8A867E] italic py-2 text-center">មិនទាន់មាន short link ទេ។</div>';
+        }
+      } catch (e) {
+        listEl.innerHTML = '<div class="text-[11px] text-rose-500 py-2 text-center">Failed to load short links</div>';
+      }
+    }
+
+    function renderShortLinksList() {
+      const listEl = document.getElementById('shortLinksList');
+      const actionBox = document.getElementById('shortLinksActionBox');
+      const statsEl = document.getElementById('shortLinksStats');
+      if (!listEl) return;
+
+      if (!generatedShortLinksCache || generatedShortLinksCache.length === 0) {
+        listEl.innerHTML = '<div class="text-[11px] text-[#8A867E] italic py-2 text-center">មិនទាន់មាន short link ទេ។ ចុច Generate ដើម្បីបង្កើត!</div>';
+        if (actionBox) actionBox.classList.add('hidden');
+        return;
+      }
+
+      const totalClicks = generatedShortLinksCache.reduce((sum, l) => sum + (l.clicks || 0), 0);
+      if (actionBox) actionBox.classList.remove('hidden');
+      if (statsEl) statsEl.innerText = generatedShortLinksCache.length + ' links (' + totalClicks + ' clicks)';
+
+      listEl.innerHTML = generatedShortLinksCache.map(link => {
+        return '<div class="p-2 bg-white rounded-xl border border-[#EAE8E1] flex items-center justify-between text-xs hover:border-indigo-300 transition">' +
+          '<div class="truncate mr-2">' +
+            '<a href="' + link.url + '" target="_blank" class="font-mono font-bold text-indigo-600 hover:underline text-[11px] block truncate">' + link.url + '</a>' +
+            '<span class="text-[9px] text-[#8A867E] font-mono">' + (link.clicks || 0) + ' clicks</span>' +
+          '</div>' +
+          '<button type="button" onclick="copyShortLink(\'' + link.url + '\', this)" class="px-2 py-1 rounded bg-[#F3F1EC] hover:bg-indigo-50 text-[#1C1B18] hover:text-indigo-600 text-[10px] font-bold border border-[#E5E2D9] transition flex-shrink-0 cursor-pointer">' +
+            'Copy' +
+          '</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    async function generateShortLinks(pid) {
+      if (!pid) return;
+      const qtyInput = document.getElementById('shortLinkQuantity');
+      const count = parseInt(qtyInput ? qtyInput.value : '10') || 10;
+      const btn = document.getElementById('btnGenerateShortLinks');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⚡...</span>';
+      }
+
+      try {
+        const res = await fetch('/api/posts/' + pid + '/short-links/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count })
+        });
+        const data = await res.json();
+        if (data.success && data.links) {
+          generatedShortLinksCache = [...data.links, ...generatedShortLinksCache];
+          renderShortLinksList();
+          alert('✓ បានបង្កើត Short Links ៦ ខ្ទង់ចំនួន ' + data.generated + ' ដោយជោគជ័យ!');
+        } else {
+          alert('Error: ' + (data.error || 'Failed to generate short links'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>⚡ Generate</span>';
+        }
+      }
+    }
+
+    function copyShortLink(url, btn) {
+      navigator.clipboard.writeText(url).then(() => {
+        if (btn) {
+          const orig = btn.innerText;
+          btn.innerText = 'Copied!';
+          btn.classList.add('bg-emerald-100', 'text-emerald-700');
+          setTimeout(() => {
+            btn.innerText = orig;
+            btn.classList.remove('bg-emerald-100', 'text-emerald-700');
+          }, 1500);
+        }
+      });
+    }
+
+    function copyAllShortLinks() {
+      if (!generatedShortLinksCache || generatedShortLinksCache.length === 0) return;
+      const allUrls = generatedShortLinksCache.map(l => l.url).join('\n');
+      navigator.clipboard.writeText(allUrls).then(() => {
+        alert('✓ បាន Copy គ្រប់ ' + generatedShortLinksCache.length + ' Links ចូលក្នុង Clipboard រួចរាល់! អាចយកទៅ Paste ក្នុង Facebook/Comments បានភ្លាមៗ។');
+      });
+    }
 
     function saveGeminiKey() {
       const key = document.getElementById('geminiApiKey').value.trim();

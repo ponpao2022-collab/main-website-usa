@@ -371,7 +371,7 @@ function layout(title: string, content: string, currentPath = "/") {
             else if (tz.includes("toronto") || tz.includes("vancouver") || tz.includes("montreal")) cHint = "CA";
             else if (tz.includes("new_york") || tz.includes("chicago") || tz.includes("los_angeles") || tz.includes("denver") || tz.includes("america/")) cHint = "US";
           } catch(e) {}
-          const payload = JSON.stringify({ s: sid, p: window.location.pathname, t: document.title, country: cHint });
+          const payload = JSON.stringify({ s: sid, p: window.location.pathname, t: document.title, country: cHint, r: document.referrer || "" });
           if (navigator.sendBeacon) {
             navigator.sendBeacon('/api/track/ping', payload);
           } else {
@@ -387,6 +387,24 @@ function layout(title: string, content: string, currentPath = "/") {
 </body>
 </html>`;
 }
+
+// 6-Character Clean Viral Short Link Redirect (e.g. /asdfef -> /article/original-slug with NO tail)
+frontendRouter.get("/:code{[a-zA-Z0-9]{6}}", (c) => {
+  const code = c.req.param("code").toLowerCase();
+  const link = db.query(`
+    SELECT sl.*, p.slug 
+    FROM short_links sl
+    JOIN posts p ON sl.post_id = p.id
+    WHERE LOWER(sl.code) = ? AND p.status = 'published'
+  `).get(code) as any;
+
+  if (link && link.slug) {
+    db.prepare("UPDATE short_links SET clicks = clicks + 1 WHERE id = ?").run(link.id);
+    return c.redirect(`/article/${link.slug}`, 302);
+  }
+  return c.redirect("/", 302);
+});
+
 
 // 1. HOME PAGE ROUTE (Light Mode)
 frontendRouter.get("/", (c) => {
