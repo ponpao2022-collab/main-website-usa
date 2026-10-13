@@ -2561,7 +2561,7 @@ const renderEditor = (c: any) => {
             '<a href="' + linkUrl + '" target="_blank" class="font-mono font-bold text-indigo-600 hover:underline text-[11px] block truncate">' + linkUrl + '</a>' +
             '<span class="text-[9px] text-[#8A867E] font-mono">' + (link.clicks || 0) + ' clicks</span>' +
           '</div>' +
-          '<button type="button" onclick="copyShortLink(\'' + linkUrl + '\', this)" class="px-2 py-1 rounded bg-[#F3F1EC] hover:bg-indigo-50 text-[#1C1B18] hover:text-indigo-600 text-[10px] font-bold border border-[#E5E2D9] transition flex-shrink-0 cursor-pointer">' +
+          '<button type="button" onclick="copyShortLink(this.previousElementSibling.firstElementChild.href, this)" class="px-2 py-1 rounded bg-[#F3F1EC] hover:bg-indigo-50 text-[#1C1B18] hover:text-indigo-600 text-[10px] font-bold border border-[#E5E2D9] transition flex-shrink-0 cursor-pointer">' +
             'Copy' +
           '</button>' +
         '</div>';
@@ -2627,7 +2627,7 @@ const renderEditor = (c: any) => {
 
     function copyAllShortLinks() {
       if (!generatedShortLinksCache || generatedShortLinksCache.length === 0) return;
-      const allUrls = generatedShortLinksCache.map(l => l.url || (window.location.origin + '/' + l.code)).join('\n');
+      const allUrls = generatedShortLinksCache.map(l => l.url || (window.location.origin + '/' + l.code)).join('\\n');
       navigator.clipboard.writeText(allUrls).then(() => {
         alert('✓ បាន Copy គ្រប់ ' + generatedShortLinksCache.length + ' TK Links ចូលក្នុង Clipboard រួចរាល់! អាចយកទៅ Paste ក្នុង Facebook/Comments បានភ្លាមៗ។');
       }).catch(() => {
@@ -2934,8 +2934,8 @@ const renderEditor = (c: any) => {
       }
 
       // Strip existing .tk-summary-box to prevent duplicates
-      var clean = content.replace(/<div class="[^"]*tk-summary-box[^"]*"[\s\S]*?<\/div>/gi, "")
-                         .replace(/<blockquote class="[^"]*tk-summary-box[^"]*"[\s\S]*?<\/blockquote>/gi, "")
+      var clean = content.replace(/<div class="[^"]*tk-summary-box[^"]*"[\\s\\S]*?<\\/div>/gi, "")
+                         .replace(/<blockquote class="[^"]*tk-summary-box[^"]*"[\\s\\S]*?<\\/blockquote>/gi, "")
                          .trim();
 
       var styledBox = '';
@@ -2959,9 +2959,9 @@ const renderEditor = (c: any) => {
 
       var formatted = clean;
       if (formatted.includes('</p>')) {
-        formatted = formatted.replace('</p>', '</p>\n' + styledBox + '\n');
+        formatted = formatted.replace('</p>', '</p>\\n' + styledBox + '\\n');
       } else {
-        formatted = styledBox + '\n' + formatted;
+        formatted = styledBox + '\\n' + formatted;
       }
 
       setAllEditorContent(formatted);
