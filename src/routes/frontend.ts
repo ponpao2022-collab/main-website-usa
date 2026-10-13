@@ -401,11 +401,12 @@ function layout(title: string, content: string, currentPath = "/") {
     // Real-Time Visitor Heartbeat Beacon (Whos.amung.us style, silent & non-blocking)
     (function() {
       try {
-        let sid = sessionStorage.getItem('_us_sid');
-        if (!sid) {
-          sid = 's_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
-          sessionStorage.setItem('_us_sid', sid);
+        let tabSid = window.__wau_tab_sid;
+        if (!tabSid) {
+          tabSid = 'w_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+          window.__wau_tab_sid = tabSid;
         }
+
         function pingVisitor() {
           let cHint = "";
           try {
@@ -421,15 +422,24 @@ function layout(title: string, content: string, currentPath = "/") {
             else if (tz.includes("toronto") || tz.includes("vancouver") || tz.includes("montreal")) cHint = "CA";
             else if (tz.includes("new_york") || tz.includes("chicago") || tz.includes("los_angeles") || tz.includes("denver") || tz.includes("america/")) cHint = "US";
           } catch(e) {}
-          const payload = JSON.stringify({ s: sid, p: window.location.pathname, t: document.title, country: cHint, r: document.referrer || "" });
+          const payload = JSON.stringify({ s: tabSid, p: window.location.pathname, t: document.title, country: cHint, r: document.referrer || "" });
+          fetch('/api/track/ping', { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(function() {
+            if (navigator.sendBeacon) navigator.sendBeacon('/api/track/ping', payload);
+          });
+        }
+
+        function leaveVisitor() {
+          const payload = JSON.stringify({ s: tabSid });
           if (navigator.sendBeacon) {
-            navigator.sendBeacon('/api/track/ping', payload);
+            navigator.sendBeacon('/api/track/leave', payload);
           } else {
-            fetch('/api/track/ping', { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(function(){});
+            fetch('/api/track/leave', { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(function(){});
           }
         }
+
         pingVisitor();
-        setInterval(pingVisitor, 30000);
+        setInterval(pingVisitor, 15000); // 15 seconds authentic whos.amung.us pulse
+        window.addEventListener('pagehide', leaveVisitor);
       } catch(e) {}
     })();
   </script>

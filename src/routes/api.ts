@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { db, dbPath } from "../db/index";
 import fs from "fs";
-import { recordVisitorPing, getLiveStats } from "../utils/tracker";
+import { recordVisitorPing, removeVisitorSession, getLiveStats } from "../utils/tracker";
 import stylePrompts from "../data/style-prompts.json";
 import stylesList from "../data/styles.json";
 
@@ -970,6 +970,21 @@ apiRouter.post("/track/ping", async (c) => {
     return c.json({ ok: true });
   } catch {
     return c.json({ ok: false }, 400);
+  }
+});
+
+// Immediate disconnect beacon when visitor closes tab
+apiRouter.post("/track/leave", async (c) => {
+  try {
+    let body: any = {};
+    const text = await c.req.text().catch(() => "");
+    try { body = JSON.parse(text); } catch { body = {}; }
+    if (body.s) {
+      removeVisitorSession(body.s);
+    }
+    return c.json({ ok: true });
+  } catch {
+    return c.json({ ok: false });
   }
 });
 

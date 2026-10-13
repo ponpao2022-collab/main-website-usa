@@ -86,13 +86,19 @@ function detectReferrer(ref: string): "facebook" | "google" | "direct" | "telegr
   return "other";
 }
 
-// Purge sessions inactive for more than 3 minutes (180,000 ms)
+// Purge sessions inactive for more than 2 minutes (120,000 ms, authentic whos.amung.us)
 function cleanExpired() {
-  const cutoff = Date.now() - 3 * 60 * 1000;
+  const cutoff = Date.now() - 2 * 60 * 1000;
   for (const [id, session] of activeSessions.entries()) {
     if (session.lastSeen < cutoff) {
       activeSessions.delete(id);
     }
+  }
+}
+
+export function removeVisitorSession(sessionId: string) {
+  if (sessionId) {
+    activeSessions.delete(sessionId);
   }
 }
 
@@ -222,14 +228,14 @@ export function getLiveStats() {
   const countries = Array.from(countryMap.values())
     .map(c => ({
       ...c,
-      percent: total > 0 ? Math.round((c.count / total) * 100) : 0
+      percent: total > 0 ? Number(((c.count / total) * 100).toFixed(1)) : 0
     }))
     .sort((a, b) => b.count - a.count);
 
   const activePages = Array.from(pagesMap.values())
     .map(p => ({
       ...p,
-      percent: total > 0 ? Math.round((p.count / total) * 100) : 0
+      percent: total > 0 ? Number(((p.count / total) * 100).toFixed(1)) : 0
     }))
     .sort((a, b) => b.count - a.count);
 

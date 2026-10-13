@@ -684,23 +684,29 @@ adminRouter.get("/", (c) => {
       <!-- ================= SUB-VIEW 2: READERS (AUTHENTIC WHOS.AMUNG.US) ================= -->
       <div id="whosSubViewReaders" class="hidden space-y-4">
         
-        <!-- Header row matching screenshot 2: List icon + Readers (count) -->
-        <div class="flex items-center justify-between border-b-2 border-dotted border-[#D5D2C9] pb-3">
+        <!-- Header row matching screenshot: List icon + Readers (count) + 2 Interactive Toggle Buttons -->
+        <div class="flex items-center justify-between border-b-2 border-dotted border-[#B0B0B0] pb-3">
           <div class="flex items-center space-x-2.5">
-            <span class="text-xl font-black text-slate-700">≡</span>
-            <h2 class="text-xl sm:text-2xl font-bold text-[#1C1B18] font-sans">
-              Readers (<span id="whosReadersCount" class="font-mono text-[#C25E3E]">0</span>)
+            <span class="text-xl font-black text-[#555] select-none">½ ≡</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#1C1B18] font-sans tracking-tight">
+              Readers (<span id="whosReadersCount" class="font-mono text-[#1C1B18]">0</span>)
             </h2>
           </div>
           <div class="flex items-center space-x-2">
-            <span class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold shadow-xs">≡</span>
-            <span class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-xs">👤</span>
+            <!-- Button 1: Stream / Recent Visitors View (List icon) -->
+            <button type="button" id="btnReadersModeList" onclick="setReadersMode('visitors')" class="w-8 h-8 rounded-full bg-[#1C1B18] text-white flex items-center justify-center text-xs font-bold shadow-xs transition hover:scale-105 cursor-pointer focus:outline-none" title="Stream View (Recent Visitors)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <!-- Button 2: Page-by-Page Breakdown View (Person head icon in Blue) -->
+            <button type="button" id="btnReadersModePages" onclick="setReadersMode('pages')" class="w-8 h-8 rounded-full bg-[#0099FF] text-white flex items-center justify-center text-xs font-bold shadow-xs transition hover:scale-105 cursor-pointer focus:outline-none ring-2 ring-[#0099FF]/30" title="Readers per Page View (Breakdown with %)">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+            </button>
           </div>
         </div>
 
-        <!-- Live Readers Feed matching Screenshot 2 -->
+        <!-- Live Readers Feed matching Screenshot -->
         <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 sm:p-6 shadow-xs">
-          <div id="whosReadersTableList" class="divide-y divide-[#F0EDE6] max-h-[700px] overflow-y-auto">
+          <div id="whosReadersTableList" class="divide-y divide-[#F0EDE6]/60 max-h-[700px] overflow-y-auto">
             <div class="text-xs text-[#8A867E] italic py-12 text-center">
               កំពុងរង់ចាំអ្នកអាន... (No active readers online. Open your website in another window or phone to see live updates!)
             </div>
@@ -1273,56 +1279,124 @@ adminRouter.get("/", (c) => {
           if (dirEl) dirEl.innerText = String(data.referrers.direct || 0);
         }
 
-        // 5. Update Readers Table Feed (Screenshot 2 Authentic View)
-        const readersTable = document.getElementById('whosReadersTableList');
-        if (readersTable) {
-          if (!data.recentVisitors || data.recentVisitors.length === 0) {
-            readersTable.innerHTML = '<div class="text-xs text-[#8A867E] italic py-12 text-center">កំពុងរង់ចាំអ្នកអាន... (No active readers online. Open your website in another window or phone to see live updates!)</div>';
-          } else {
-            readersTable.innerHTML = data.recentVisitors.map(function(v) {
-              const devIcon = v.device === 'Mobile' ?
-                '<span title="Mobile" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-pink-100 text-pink-600 font-bold shadow-xs">📱</span>' :
-                '<span title="Desktop" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-emerald-100 text-emerald-600 font-bold shadow-xs">💻</span>';
-
-              const osIcon = v.os === 'Android' ?
-                '<span title="Android" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-lime-100 text-lime-700 font-bold shadow-xs">🤖</span>' :
-                v.os === 'Apple' ?
-                '<span title="Apple / iOS" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-slate-200 text-slate-700 font-bold shadow-xs">🍏</span>' :
-                '<span title="Windows" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-sky-100 text-sky-600 font-bold shadow-xs">🪟</span>';
-
-              const refIcon = v.referrer === 'facebook' ?
-                '<span title="Facebook Referral" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-[#1877F2] text-white font-black shadow-xs">f</span>' :
-                v.referrer === 'google' ?
-                '<span title="Google Search" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-red-500 text-white font-black shadow-xs">G</span>' :
-                '<span title="Direct Traffic" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-slate-600 text-white font-bold shadow-xs">🔗</span>';
-
-              const loc = (v.city ? v.city + ', ' : '') + v.country;
-
-              return '<div class="py-2.5 px-3 flex items-center justify-between hover:bg-[#FAF9F5] transition text-xs">' +
-                '<div class="flex items-center space-x-3.5 min-w-0 mr-3">' +
-                  '<span class="text-base sm:text-lg font-black font-mono text-[#1C1B18] w-14 flex-shrink-0">' + v.formattedTime + '</span>' +
-                  '<div class="min-w-0 space-y-0.5">' +
-                    '<div class="flex items-center space-x-1.5 truncate">' +
-                      '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
-                      '<a href="' + p_escape(v.path) + '" target="_blank" class="font-semibold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' + p_escape(v.title || v.path) + '</a>' +
-                    '</div>' +
-                    '<div class="flex items-center space-x-1.5 text-[11px] text-[#6E6B63]">' +
-                      '<span class="text-sm flex-shrink-0">' + (v.flag || '🌐') + '</span>' +
-                      '<span class="truncate">' + p_escape(loc) + '</span>' +
-                    '</div>' +
-                  '</div>' +
-                '</div>' +
-                '<div class="flex items-center space-x-2 flex-shrink-0">' +
-                  devIcon +
-                  osIcon +
-                  refIcon +
-                '</div>' +
-              '</div>';
-            }).join('');
-          }
-        }
+        // 5. Update Readers Table Feed (Dual Mode: Pages Breakdown vs Visitors Stream)
+        lastPollingData = data;
+        renderReadersList(data);
 
       } catch(e) {}
+    }
+
+    let currentReadersMode = 'pages'; // 'pages' (person head icon, default matching screenshot) or 'visitors' (list icon)
+    let lastPollingData = null;
+
+    function setReadersMode(mode) {
+      currentReadersMode = mode;
+      const btnList = document.getElementById('btnReadersModeList');
+      const btnPages = document.getElementById('btnReadersModePages');
+      if (mode === 'pages') {
+        if (btnPages) {
+          btnPages.className = 'w-8 h-8 rounded-full bg-[#0099FF] text-white flex items-center justify-center text-xs font-bold shadow-xs transition hover:scale-105 cursor-pointer focus:outline-none ring-2 ring-[#0099FF]/30';
+        }
+        if (btnList) {
+          btnList.className = 'w-8 h-8 rounded-full bg-[#1C1B18] text-white flex items-center justify-center text-xs font-bold shadow-xs transition hover:scale-105 cursor-pointer focus:outline-none';
+        }
+      } else {
+        if (btnList) {
+          btnList.className = 'w-8 h-8 rounded-full bg-[#0099FF] text-white flex items-center justify-center text-xs font-bold shadow-xs transition hover:scale-105 cursor-pointer focus:outline-none ring-2 ring-[#0099FF]/30';
+        }
+        if (btnPages) {
+          btnPages.className = 'w-8 h-8 rounded-full bg-[#1C1B18] text-white flex items-center justify-center text-xs font-bold shadow-xs transition hover:scale-105 cursor-pointer focus:outline-none';
+        }
+      }
+      if (lastPollingData) {
+        renderReadersList(lastPollingData);
+      }
+    }
+
+    function getStarsHtml(percent) {
+      if (percent >= 30) return '<span class="text-red-600 font-bold mr-0.5">★★</span>';
+      if (percent >= 8) return '<span class="text-red-600 font-bold mr-0.5">★</span>';
+      if (percent >= 3) return '<span class="text-red-500 font-bold mr-0.5">☆</span>';
+      return '<span class="text-transparent mr-0.5 select-none">☆</span>';
+    }
+
+    function renderReadersList(data) {
+      const readersTable = document.getElementById('whosReadersTableList');
+      if (!readersTable) return;
+
+      if (currentReadersMode === 'pages') {
+        // Authentic Page-by-Page Breakdown (Whos.amung.us Person Icon View)
+        if (!data.activePages || data.activePages.length === 0) {
+          readersTable.innerHTML = '<div class="text-xs text-[#8A867E] italic py-12 text-center">កំពុងរង់ចាំអ្នកអាន... (No active readers online. Open your website in another window or phone to see live updates!)</div>';
+          return;
+        }
+
+        readersTable.innerHTML = data.activePages.map(function(p) {
+          const stars = getStarsHtml(p.percent);
+          const percentStr = (p.percent || 0).toFixed(1) + '%';
+          return '<div class="py-2.5 px-3 flex items-center hover:bg-[#FAF9F5] transition text-xs border-b border-[#F0EDE6]/60 group">' +
+            '<div class="w-14 sm:w-16 flex-shrink-0 text-left">' +
+              '<span class="text-2xl sm:text-3xl font-extrabold text-[#1C1B18] font-sans leading-none block">' + p.count + '</span>' +
+            '</div>' +
+            '<div class="flex-1 min-w-0 flex items-center space-x-2 pl-2">' +
+              '<div class="w-20 flex-shrink-0 text-left font-mono font-bold text-xs text-red-600 flex items-center space-x-0.5">' +
+                stars + '<span>' + percentStr + '</span>' +
+              '</div>' +
+              '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+              '<a href="' + p_escape(p.path) + '" target="_blank" class="text-xs sm:text-sm font-medium text-[#222] group-hover:text-[#C25E3E] group-hover:underline truncate block flex-1" title="' + p_escape(p.title) + '">' +
+                p_escape(p.title || p.path) +
+              '</a>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } else {
+        // Stream of recent individual visitors view (List Icon View)
+        if (!data.recentVisitors || data.recentVisitors.length === 0) {
+          readersTable.innerHTML = '<div class="text-xs text-[#8A867E] italic py-12 text-center">កំពុងរង់ចាំអ្នកអាន... (No active readers online)</div>';
+          return;
+        }
+
+        readersTable.innerHTML = data.recentVisitors.map(function(v) {
+          const devIcon = v.device === 'Mobile' ?
+            '<span title="Mobile" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-pink-100 text-pink-600 font-bold shadow-xs">📱</span>' :
+            '<span title="Desktop" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-emerald-100 text-emerald-600 font-bold shadow-xs">💻</span>';
+
+          const osIcon = v.os === 'Android' ?
+            '<span title="Android" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-lime-100 text-lime-700 font-bold shadow-xs">🤖</span>' :
+            v.os === 'Apple' ?
+            '<span title="Apple / iOS" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-slate-200 text-slate-700 font-bold shadow-xs">🍏</span>' :
+            '<span title="Windows" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-sky-100 text-sky-600 font-bold shadow-xs">🪟</span>';
+
+          const refIcon = v.referrer === 'facebook' ?
+            '<span title="Facebook Referral" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-[#1877F2] text-white font-black shadow-xs">f</span>' :
+            v.referrer === 'google' ?
+            '<span title="Google Search" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-red-500 text-white font-black shadow-xs">G</span>' :
+            '<span title="Direct Traffic" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-slate-600 text-white font-bold shadow-xs">🔗</span>';
+
+          const loc = (v.city ? v.city + ', ' : '') + v.country;
+
+          return '<div class="py-2.5 px-3 flex items-center justify-between hover:bg-[#FAF9F5] transition text-xs border-b border-[#F0EDE6]/60">' +
+            '<div class="flex items-center space-x-3.5 min-w-0 mr-3">' +
+              '<span class="text-base sm:text-lg font-black font-mono text-[#1C1B18] w-14 flex-shrink-0">' + v.formattedTime + '</span>' +
+              '<div class="min-w-0 space-y-0.5">' +
+                '<div class="flex items-center space-x-1.5 truncate">' +
+                  '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+                  '<a href="' + p_escape(v.path) + '" target="_blank" class="font-semibold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' + p_escape(v.title || v.path) + '</a>' +
+                '</div>' +
+                '<div class="flex items-center space-x-1.5 text-[11px] text-[#6E6B63]">' +
+                  '<span class="text-sm flex-shrink-0">' + (v.flag || '🌐') + '</span>' +
+                  '<span class="truncate">' + p_escape(loc) + '</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex items-center space-x-2 flex-shrink-0">' +
+              devIcon +
+              osIcon +
+              refIcon +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
     }
 
     function p_escape(text) {
