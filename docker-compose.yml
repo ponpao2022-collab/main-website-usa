@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  news-app:
+    build: .
+    container_name: news-web-cms
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist SQLite Database & Media files on your VPS
+      - ./data:/app/data
+      - ./news.sqlite:/app/news.sqlite
+      - ./news.sqlite-wal:/app/news.sqlite-wal
+      - ./news.sqlite-shm:/app/news.sqlite-shm
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
