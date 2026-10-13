@@ -1203,7 +1203,9 @@ frontendRouter.get("/article/:slug", (c) => {
     </script>
   `;
 
-  return c.html(layout(post.title, content, `/article/${post.slug}`));
+  const socialWidgets = post.content.includes('twitter-tweet')
+    ? '<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>' : '';
+  return c.html(layout(post.title, content + socialWidgets, `/article/${post.slug}`));
 });
 
 // 8. CATEGORY PAGE ROUTE (Light Mode)

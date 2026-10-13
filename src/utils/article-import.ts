@@ -24,10 +24,12 @@ export async function extractArticleHtml(html: string, base: string) {
     .on('*', { element(el) {
       const tag = el.tagName.toLowerCase();
       if (!safeTags.has(tag)) { el.removeAndKeepContent(); return; }
+      const isTweet = tag === 'blockquote' && /twitter-tweet/.test(el.getAttribute('class') || '');
       const href = el.getAttribute('href') || '';
       const src = el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || el.getAttribute('src') || '';
       const alt = el.getAttribute('alt') || '';
       for (const [name] of [...el.attributes]) el.removeAttribute(name);
+      if (isTweet) { el.setAttribute('class', 'twitter-tweet'); el.setAttribute('data-dnt', 'true'); }
       if (tag === 'a') {
         const url = absoluteWebUrl(href, base);
         if (url) { el.setAttribute('href', url); el.setAttribute('rel', 'noopener noreferrer'); }
@@ -42,7 +44,12 @@ export async function extractArticleHtml(html: string, base: string) {
     } }).transform(new Response(source)).text();
   // Ignore surrounding navigation text, but keep short paragraphs and social post quotes.
   const blocks = sanitized.match(/<(p|h[234]|ul|ol|blockquote|figure)\b[^>]*>[\s\S]*?<\/\1>|<img\b[^>]*>|<a\b[^>]*>[\s\S]*?<\/a>/gi) || [];
-  const content = blocks.join('\n\n');
+  const content = blocks.map(block => {
+    if (/^<a\b/i.test(block) && /href="https?:\/\/(?:www\.)?(?:x|twitter)\.com\/[^"]*\/status\/\d+/i.test(block)) {
+      return '<blockquote class="twitter-tweet" data-dnt="true">' + block + '</blockquote>';
+    }
+    return block;
+  }).join('\n\n');
   const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const images = [...content.matchAll(/<img\b[^>]*src="([^"]+)"/gi)].map(m => m[1]!);
   return { content, text, images };

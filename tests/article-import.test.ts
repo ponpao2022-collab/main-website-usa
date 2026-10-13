@@ -11,6 +11,7 @@ test('article import preserves source links, social quotes, images and short tex
   expect(result.content).toContain('https://news.example/source?q=1&ref=2');
   expect(result.content).toContain('https://x.com/reporter/status/123');
   expect(result.content).toContain('Short update.');
+  expect(result.content).toContain('class="twitter-tweet"');
   expect(result.images[0]).toBe('https://news.example/photo.jpg?token=keep');
   expect(result.content).not.toMatch(/onclick|onerror|javascript:|<script|Navigation|Footer/);
 });
