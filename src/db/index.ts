@@ -37,6 +37,8 @@ if (process.env.DB_PATH) {
 }
 
 console.log(`[DB] Database active at: ${dbPath}`);
+const db = new Database(dbPath, { create: true });
+
 // Enable WAL mode & high-speed memory caching for ultra-low latency (<0.05ms)
 db.exec("PRAGMA journal_mode = WAL;");
 db.exec("PRAGMA synchronous = NORMAL;");
