@@ -393,6 +393,59 @@ const renderEditor = (c: any) => {
         </div>
       </div>
 
+      <!-- READ MORE LIVE PREVIEW CARD (100% MATCHING SCREENSHOT) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-xl space-y-2.5">
+        <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+          <span class="text-xs font-bold text-white flex items-center space-x-1.5">
+            <span>👁️</span>
+            <span>Live preview</span>
+          </span>
+          <button type="button" onclick="resetReadMorePreview()" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center space-x-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Reset</span>
+          </button>
+        </div>
+
+        <!-- White Card Replica -->
+        <div class="bg-white text-slate-900 rounded-xl p-3 border border-slate-200 shadow-sm relative overflow-hidden text-left">
+          <div class="text-[10px] font-bold text-[#c25e3e] uppercase tracking-wider mb-1">
+            POLITICS · 4 MIN READ
+          </div>
+          <h4 class="font-bold text-xs text-slate-900 leading-snug mb-1.5 font-serif">
+            Economy adds 162,000 jobs in August, beating forecasts
+          </h4>
+
+          <div id="prevCardBody" class="max-h-[120px] overflow-hidden transition-all duration-500 relative text-[11px] leading-relaxed text-slate-700 space-y-1.5">
+            <p>
+              The increase more than doubled economists' forecasts and marked the strongest monthly payroll gain since March, easing concerns that hiring was rapidly deteriorating.
+            </p>
+            <p>
+              The report also brought upward revisions to the previous two months, turning July's initially reported job loss into a gain. Still, economists cautioned that one strong month does not mean the labor market has returned to steady growth.
+            </p>
+            <p class="text-slate-700">
+              The Bureau of Labor Statistics reported Friday that nonfarm payroll employment increased by 162,000 in August. The unemployment rate held steady at 4.1 percent.
+            </p>
+          </div>
+
+          <!-- Blur & Read More Overlay -->
+          <div id="prevCardOverlay" class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/85 to-transparent backdrop-blur-[2px] flex flex-col items-center justify-end pb-1.5 pt-4 transition-all duration-300">
+            <button type="button" onclick="expandPreviewCard()" class="group flex flex-col items-center focus:outline-none cursor-pointer">
+              <div class="w-8 h-8 rounded-full bg-[#c25e3e] hover:bg-[#b05335] text-white flex items-center justify-center shadow-md shadow-[#c25e3e]/30 transition transform group-hover:scale-105 active:scale-95 mb-0.5">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <span class="font-black text-[10px] tracking-wider text-[#c25e3e] uppercase leading-tight">READ MORE</span>
+              <span class="text-[9px] text-[#c25e3e]/85 font-medium leading-tight">Continue reading the full story!</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="text-[10px] text-slate-400 italic text-center leading-tight">
+          Click the button in the preview: the blur is removed and the full text opens.
+        </p>
+      </div>
+
       <!-- Breaking News Switch -->
       <div class="flex items-center justify-between p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/30">
         <div>
@@ -1340,6 +1393,30 @@ const renderEditor = (c: any) => {
       document.getElementById('titleInput').value = "របកគំហើញថ្មី៖ របៀបដែលបច្ចេកវិទ្យា Edge និង AI កំពុងផ្លាស់ប្តូរឧស្សាហកម្មប្រព័ន្ធផ្សព្វផ្សាយ";
       document.getElementById('summaryInput').value = "ស្ថាបត្យកម្មល្បឿនលឿនកម្រិតខ្ពស់ជាមួយ Cloudflare Edge និង Headless CMS បង្កើតស្តង់ដារថ្មីសម្រាប់ប្រព័ន្ធព័ត៌មានសកល។";
       alert("🇰🇭 ចំណងជើង និងសេចក្តីសង្ខេបត្រូវបានបកប្រែជាភាសាខ្មែរដោយជោគជ័យ!");
+    }
+
+    function expandPreviewCard() {
+      const body = document.getElementById('prevCardBody');
+      const overlay = document.getElementById('prevCardOverlay');
+      if (body) {
+        body.classList.remove('max-h-[120px]');
+        body.style.maxHeight = 'none';
+      }
+      if (overlay) {
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+      }
+    }
+
+    function resetReadMorePreview() {
+      const body = document.getElementById('prevCardBody');
+      const overlay = document.getElementById('prevCardOverlay');
+      if (body) {
+        body.classList.add('max-h-[120px]');
+        body.style.maxHeight = '';
+      }
+      if (overlay) {
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+      }
     }
 
     // Save and deploy

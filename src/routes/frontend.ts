@@ -928,9 +928,26 @@ frontendRouter.get("/article/:slug", (c) => {
           <img src="${post.featured_image}" alt="${post.title}" class="w-full max-h-[500px] object-cover">
         </div>` : ''}
 
-        <!-- Article Body -->
-        <div id="articleBodyText" class="text-base sm:text-lg text-slate-200 leading-relaxed space-y-6 prose prose-invert max-w-none">
-          ${post.content}
+        <!-- Article Body with 100% Matching Read More Effect -->
+        <div class="relative">
+          <div id="articleBodyContainer" class="max-h-[380px] sm:max-h-[440px] overflow-hidden relative transition-all duration-700 ease-in-out">
+            <div id="articleBodyText" class="text-base sm:text-lg text-slate-200 leading-relaxed space-y-6 prose prose-invert max-w-none">
+              ${post.content}
+            </div>
+          </div>
+
+          <!-- Read More Blur & Action Overlay -->
+          <div id="readMoreOverlay" class="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-950 via-slate-950/85 to-transparent backdrop-blur-[2.5px] flex flex-col items-center justify-end pb-4 pt-16 transition-all duration-500 z-20">
+            <button onclick="revealFullArticle()" type="button" class="group flex flex-col items-center focus:outline-none cursor-pointer select-none">
+              <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#c25e3e] hover:bg-[#b05335] text-white flex items-center justify-center shadow-2xl shadow-[#c25e3e]/40 transition-all duration-300 transform group-hover:scale-110 active:scale-95 mb-2.5">
+                <svg class="w-6 h-6 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              <span class="font-black text-sm sm:text-base tracking-widest text-[#c25e3e] uppercase">READ MORE</span>
+              <span class="text-xs text-[#d97757] font-medium mt-0.5">Continue reading the full story!</span>
+            </button>
+          </div>
         </div>
 
         <!-- Bottom Share & Tags -->
@@ -995,6 +1012,31 @@ frontendRouter.get("/article/:slug", (c) => {
         if (currentSize > 26) currentSize = 26;
         document.getElementById('articleBodyText').style.fontSize = currentSize + 'px';
       }
+
+      function revealFullArticle() {
+        const container = document.getElementById('articleBodyContainer');
+        const overlay = document.getElementById('readMoreOverlay');
+        if (container) {
+          container.classList.remove('max-h-[380px]', 'sm:max-h-[440px]');
+          container.style.maxHeight = 'none';
+        }
+        if (overlay) {
+          overlay.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(function() {
+            overlay.style.display = 'none';
+          }, 350);
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('articleBodyContainer');
+        const overlay = document.getElementById('readMoreOverlay');
+        if (container && overlay) {
+          if (container.scrollHeight <= 380) {
+            revealFullArticle();
+          }
+        }
+      });
     </script>
   `;
 
