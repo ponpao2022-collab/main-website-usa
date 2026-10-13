@@ -48,3 +48,7 @@
 .ai-connection { border-top:1px solid #eceef1; padding-top:16px; font:12px system-ui; color:#707887; }
 .ai-connection summary { cursor:pointer; padding-bottom:12px; }
 #editorWorkspace [contenteditable]:empty::before { content:attr(data-placeholder); color:#9ba2ad; pointer-events:none; }
+#imageStudio[open] { display:flex; flex-direction:column; overflow:hidden; }
+.studio-head, .studio-footer, #studioStatus { flex-shrink:0; }
+.studio-body { flex:1; min-height:0; overflow-y:auto; }
+.studio-footer { background:white; box-shadow:0 -4px 16px #24293606; }

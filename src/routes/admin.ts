@@ -1438,7 +1438,7 @@ const renderEditor = (c: any) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
-  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014c">
+  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014d">
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
@@ -3228,7 +3228,7 @@ const renderEditor = (c: any) => {
     <div class="studio-footer"><button type="button" onclick="closeImageStudio()">Cancel</button><button type="button" onclick="injectStudioImage('thumbnail')">Set thumbnail</button><button type="button" onclick="injectStudioImage('inline')">Insert at cursor</button><button type="button" onclick="injectStudioImage('both')">Use for both</button></div>
   </dialog>
   <div id="editorToast" role="status" aria-live="polite"></div>
-  <script src="/assets/editor-studio.js?v=20261014c"></script>
+  <script src="/assets/editor-studio.js?v=20261014d"></script>
 
 </body>
 </html>`);
