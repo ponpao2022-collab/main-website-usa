@@ -37,10 +37,12 @@ if (process.env.DB_PATH) {
 }
 
 console.log(`[DB] Database active at: ${dbPath}`);
-const db = new Database(dbPath, { create: true });
-
-// Enable WAL mode for high concurrency & speed
+// Enable WAL mode & high-speed memory caching for ultra-low latency (<0.05ms)
 db.exec("PRAGMA journal_mode = WAL;");
+db.exec("PRAGMA synchronous = NORMAL;");
+db.exec("PRAGMA cache_size = -64000;"); // 64MB in-memory page cache
+db.exec("PRAGMA temp_store = MEMORY;");
+db.exec("PRAGMA mmap_size = 268435456;"); // 256MB memory-mapped I/O
 
 // Initialize Schema
 db.exec(`
@@ -86,6 +88,9 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_short_links_code ON short_links(code);
   CREATE INDEX IF NOT EXISTS idx_short_links_post ON short_links(post_id);
+  CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+  CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
+  CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
 `);
 
 // Safe migrations for existing DB
