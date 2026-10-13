@@ -937,7 +937,7 @@ apiRouter.get("/posts/:id/short-links", (c) => {
   const postId = Number(c.req.param("id"));
   const links = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId) as any[];
   const host = c.req.header("host") || "topusanewsstory.com";
-  const protocol = c.req.header("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+  const protocol = host.includes("localhost") ? "http" : "https";
   const baseUrl = `${protocol}://${host}`;
   const formatted = links.map(l => ({
     ...l,
@@ -977,7 +977,7 @@ apiRouter.post("/posts/:id/short-links/generate", async (c) => {
 
     const allLinks = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId) as any[];
     const host = c.req.header("host") || "topusanewsstory.com";
-    const protocol = c.req.header("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+    const protocol = host.includes("localhost") ? "http" : "https";
     const baseUrl = `${protocol}://${host}`;
     const formatted = allLinks.map(l => ({
       ...l,
