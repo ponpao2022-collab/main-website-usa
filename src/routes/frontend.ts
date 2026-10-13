@@ -81,6 +81,15 @@ function formatArticleWithReadMore(content: string) {
 // Helper: Common HTML Layout Wrapper in Claude AI Light Mode (60-30-10 Rule)
 function layout(title: string, content: string, currentPath = "/") {
   const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all() as any[];
+  const menuCategories = categories.filter(category => category.slug.toLowerCase() !== 'news' && category.name.trim().toLowerCase() !== 'news');
+  const escapeMenuLabel = (value: string) => value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]!));
+  const categoryMenu = (mobile = false) => menuCategories.map(category => {
+    const href = '/category/' + encodeURIComponent(category.slug);
+    const active = currentPath === href;
+    return mobile
+      ? `<a href="${href}" ${active ? 'aria-current="page"' : ''} class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${active ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}"><span>${escapeMenuLabel(category.name)}</span><svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></a>`
+      : `<a href="${href}" ${active ? 'aria-current="page"' : ''} class="text-sm font-semibold tracking-wide transition ${active ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">${escapeMenuLabel(category.name)}</a>`;
+  }).join('');
   const breaking = db.query("SELECT title, slug FROM posts WHERE is_breaking = 1 AND status = 'published' ORDER BY id DESC LIMIT 5").all() as any[];
 
   const breakingTickerHtml = breaking.map(b => `
@@ -244,9 +253,10 @@ function layout(title: string, content: string, currentPath = "/") {
       </a>
 
       <!-- Primary Navigation (Desktop) -->
-      <nav class="hidden lg:flex items-center space-x-7">
+      <nav aria-label="Primary navigation" class="hidden lg:flex items-center flex-wrap justify-end gap-x-5 gap-y-3 min-w-0">
         <a href="/" class="text-sm font-semibold tracking-wide transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">HOME</a>
         <a href="/news" class="text-sm font-semibold tracking-wide transition ${currentPath.startsWith('/news') ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">NEWS</a>
+        ${categoryMenu()}
         <a href="/about-us" class="text-sm font-semibold tracking-wide transition ${currentPath === '/about-us' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">About Us</a>
         <a href="/contact-us" class="text-sm font-semibold tracking-wide transition ${currentPath === '/contact-us' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">Contact Us</a>
         <a href="/privacy-policy" class="text-sm font-semibold tracking-wide transition ${currentPath === '/privacy-policy' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">Privacy Policy</a>
@@ -274,7 +284,7 @@ function layout(title: string, content: string, currentPath = "/") {
         <button type="submit" class="px-4 py-2.5 bg-[#C25E3E] hover:bg-[#B05335] text-white text-xs font-bold rounded-xl transition shadow-sm">Go</button>
       </form>
 
-      <nav class="flex flex-col text-sm font-semibold divide-y divide-[#2C2A26] py-1">
+      <nav aria-label="Mobile navigation" class="flex flex-col text-sm font-semibold divide-y divide-[#2C2A26] py-1">
         <a href="/" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>Home</span>
           <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -283,6 +293,7 @@ function layout(title: string, content: string, currentPath = "/") {
           <span>News</span>
           <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
+        ${categoryMenu(true)}
         <a href="/about-us" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/about-us' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>About Us</span>
           <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
