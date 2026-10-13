@@ -3,11 +3,13 @@ import { db } from "../db/index";
 
 export const frontendRouter = new Hono();
 
-// Real-time Cache-Control: Never cache HTML pages in browser or CDN, so published/deleted stories update instantly everywhere!
+// Real-time Cache-Control: Never cache HTML pages in browser or Cloudflare Edge, so published/deleted stories update instantly everywhere!
 frontendRouter.use("*", async (c, next) => {
   await next();
   if (c.req.method === "GET" || c.req.method === "HEAD") {
-    c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0");
+    c.res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    c.res.headers.set("CDN-Cache-Control", "no-store");
+    c.res.headers.set("Cloudflare-CDN-Cache-Control", "no-store");
     c.res.headers.set("Pragma", "no-cache");
     c.res.headers.set("Expires", "0");
   }
