@@ -25,13 +25,19 @@ ln -sf /root/.bun/bin/bun /usr/local/bin/bun || true
 echo ">>> 4. Setting up app directory in /var/www/news..."
 CURRENT_DIR="$(pwd)"
 if [ "$CURRENT_DIR" != "/var/www/news" ]; then
-  mkdir -p /var/www/news
   if [ -f "news-production.tar.gz" ]; then
+    mkdir -p /var/www/news
     tar -xzf news-production.tar.gz -C /var/www/news
   elif [ -f "/root/news-production.tar.gz" ]; then
+    mkdir -p /var/www/news
     tar -xzf /root/news-production.tar.gz -C /var/www/news
-  else
+  elif [ -f "$CURRENT_DIR/package.json" ]; then
+    mkdir -p /var/www/news
     cp -r "$CURRENT_DIR"/* /var/www/news/ 2>/dev/null || true
+  else
+    echo ">>> Cloning latest code from GitHub..."
+    rm -rf /var/www/news
+    git clone https://github.com/ponpao2022-collab/main-website-usa.git /var/www/news
   fi
 fi
 
