@@ -72,6 +72,54 @@ apiRouter.get("/categories", (c) => {
   return c.json({ success: true, data: categories });
 });
 
+// CREATE category (from CMS)
+apiRouter.post("/categories", async (c) => {
+  try {
+    const { name, slug, color } = await c.req.json();
+    if (!name || !name.trim()) {
+      return c.json({ success: false, error: "Category name is required" }, 400);
+    }
+    const cleanName = name.trim();
+    const cleanSlug = slug && slug.trim()
+      ? slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "")
+      : cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    const cleanColor = color || "#c25e3e";
+
+    const existing = db.query("SELECT id FROM categories WHERE slug = ?").get(cleanSlug);
+    if (existing) {
+      return c.json({ success: false, error: "A category with this name/slug already exists" }, 400);
+    }
+
+    const res = db.prepare("INSERT INTO categories (name, slug, color) VALUES (?, ?, ?)").run(cleanName, cleanSlug, cleanColor);
+    return c.json({ 
+      success: true, 
+      category: {
+        id: Number(res.lastInsertRowid), 
+        name: cleanName, 
+        slug: cleanSlug, 
+        color: cleanColor 
+      }
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// DELETE category (from CMS)
+apiRouter.delete("/categories/:id", (c) => {
+  const id = Number(c.req.param("id"));
+  const catCount = db.query("SELECT count(*) as count FROM categories").get() as { count: number };
+  if (catCount.count <= 1) {
+    return c.json({ success: false, error: "Cannot delete the only remaining category" }, 400);
+  }
+  const fallback = db.query("SELECT id FROM categories WHERE id != ? LIMIT 1").get(id) as { id: number };
+  if (fallback) {
+    db.prepare("UPDATE posts SET category_id = ? WHERE category_id = ?").run(fallback.id, id);
+  }
+  db.prepare("DELETE FROM categories WHERE id = ?").run(id);
+  return c.json({ success: true, message: "Category deleted" });
+});
+
 // CREATE / UPDATE post (from Next-Gen CMS)
 apiRouter.post("/posts", async (c) => {
   const body = await c.req.json();

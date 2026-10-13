@@ -40,15 +40,11 @@ db.exec(`
   );
 `);
 
-// Seed Categories if empty
+// Seed Categories if empty (only NEWS by default)
 const catCount = db.query("SELECT COUNT(*) as count FROM categories").get() as { count: number };
 if (catCount.count === 0) {
   const insertCat = db.prepare("INSERT INTO categories (name, slug, color) VALUES (?, ?, ?)");
-  insertCat.run("Technology", "technology", "#6366f1");
-  insertCat.run("Business & Economy", "business", "#10b981");
-  insertCat.run("Culture & Life", "culture", "#f59e0b");
-  insertCat.run("World & Politics", "politics", "#ef4444");
-  insertCat.run("Sports", "sports", "#06b6d4");
+  insertCat.run("NEWS", "news", "#c25e3e");
 }
 
 // Clean initial setup - no mock demo posts seeded

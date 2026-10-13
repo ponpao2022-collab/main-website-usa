@@ -12,6 +12,7 @@ adminRouter.get("/", (c) => {
     ORDER BY p.id DESC
   `).all() as any[];
 
+  const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all() as any[];
   const totalViews = posts.reduce((acc, p) => acc + (p.views || 0), 0);
   const breakingCount = posts.filter(p => p.is_breaking === 1).length;
 
@@ -104,9 +105,15 @@ adminRouter.get("/", (c) => {
           <h2 class="font-bold text-lg text-white">Articles & News Feed</h2>
           <p class="text-xs text-slate-400">Manage, edit, or toggle Breaking News banner in real-time</p>
         </div>
-        <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition">
-          + New Article
-        </a>
+        <div class="flex items-center space-x-2.5">
+          <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1.5">
+            <svg class="w-3.5 h-3.5 text-[#D97757]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+            <span>📁 Categories (${categories.length})</span>
+          </button>
+          <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition flex items-center space-x-1 font-bold">
+            <span>+ New Article</span>
+          </a>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
@@ -185,7 +192,101 @@ adminRouter.get("/", (c) => {
     </div>
   </a>
 
+  <!-- Manage Categories Modal -->
+  <div id="catModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-base font-bold text-white">📁 Manage News Categories</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">${categories.length} active</span>
+        </div>
+        <button onclick="closeCategoriesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2">&times;</button>
+      </div>
+
+      <!-- Add New Category Form -->
+      <form onsubmit="handleCreateCategory(event)" class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">+ Add New Category</span>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+          <div class="sm:col-span-8">
+            <input type="text" id="newCatName" required placeholder="Category Name (e.g. World, Politics, Sports)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div class="sm:col-span-4 flex items-center space-x-2">
+            <input type="color" id="newCatColor" value="#c25e3e" class="w-9 h-9 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer p-0.5 flex-shrink-0" title="Badge Color">
+            <button type="submit" id="addCatBtn" class="flex-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition">Add</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Existing Categories List -->
+      <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Current Categories:</span>
+        <div class="space-y-1.5" id="categoriesListContainer">
+          ${categories.map(cat => `
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/80">
+              <div class="flex items-center space-x-2.5">
+                <span class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background-color: ${cat.color}"></span>
+                <span class="font-bold text-xs text-white">${cat.name}</span>
+                <span class="text-[11px] font-mono text-slate-500">/${cat.slug}</span>
+              </div>
+              ${categories.length > 1 ? `
+                <button type="button" onclick="deleteCategory(${cat.id})" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-0.5 rounded hover:bg-rose-500/10 transition">Delete</button>
+              ` : `
+                <span class="text-[10px] text-slate-500">Default (Protected)</span>
+              `}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    function openCategoriesModal() {
+      document.getElementById('catModal').classList.remove('hidden');
+    }
+    function closeCategoriesModal() {
+      document.getElementById('catModal').classList.add('hidden');
+    }
+    async function handleCreateCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('newCatName').value.trim();
+      const color = document.getElementById('newCatColor').value;
+      if (!name) return;
+      const btn = document.getElementById('addCatBtn');
+      btn.textContent = '...';
+      try {
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, color })
+        });
+        const data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to create category'));
+          btn.textContent = 'Add';
+        }
+      } catch (err) {
+        alert('Error creating category: ' + err.message);
+        btn.textContent = 'Add';
+      }
+    }
+    async function deleteCategory(id) {
+      if (!confirm('Are you sure you want to delete this category? Any posts attached will be safely reassigned.')) return;
+      try {
+        const res = await fetch('/api/categories/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete category'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
     async function purgeCache(btn) {
       btn.innerHTML = 'Purging Edge...';
       const res = await fetch('/api/cloudflare/purge', { method: 'POST' });
@@ -504,9 +605,14 @@ const renderEditor = (c: any) => {
         </div>
       </div>
 
-      <!-- Category Picker -->
+      <!-- Category Picker with Quick Add -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Category</label>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs font-semibold text-slate-300">Category</label>
+          <button type="button" onclick="promptAddNewCategory()" class="text-[11px] text-[#D97757] hover:underline font-semibold flex items-center space-x-1">
+            <span>+ Add New</span>
+          </button>
+        </div>
         <select id="categoryInput" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
           ${categories.map(cat => `
             <option value="${cat.id}" ${post && post.category_id === cat.id ? 'selected' : ''}>${cat.name}</option>
@@ -972,6 +1078,32 @@ const renderEditor = (c: any) => {
       const key = document.getElementById('geminiApiKey').value.trim();
       localStorage.setItem('gemini_api_key', key);
       alert('✓ Google Gemini API Key saved in your browser!');
+    }
+
+    async function promptAddNewCategory() {
+      const name = prompt("Enter new category name (e.g. World, Politics, Sports):");
+      if (!name || !name.trim()) return;
+      try {
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim() })
+        });
+        const data = await res.json();
+        if (data.success && data.category) {
+          const select = document.getElementById('categoryInput');
+          const opt = document.createElement('option');
+          opt.value = data.category.id;
+          opt.textContent = data.category.name;
+          opt.selected = true;
+          select.appendChild(opt);
+          alert('✓ Category "' + data.category.name + '" added and selected!');
+        } else {
+          alert('Error: ' + (data.error || 'Failed to add category'));
+        }
+      } catch (err) {
+        alert('Error adding category: ' + err.message);
+      }
     }
 
     // 1. VIEW SWITCHER (POST, HTML, BOTH)
