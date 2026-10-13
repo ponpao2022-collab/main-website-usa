@@ -149,23 +149,53 @@ function layout(title: string, content: string, currentPath = "/") {
         <a href="/terms-and-conditions" class="text-sm font-semibold tracking-wide transition ${currentPath === '/terms-and-conditions' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">Terms & Conditions</a>
       </nav>
 
-      <!-- Visitor Status Badge (Clean, No CMS Links) -->
-      <div class="flex items-center space-x-3 text-xs font-semibold">
-        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#F3F1EC] border border-[#E5E2D9]">
+      <!-- Right Controls: Status Badge (Desktop) & Hamburger Menu Button (Mobile) -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#F3F1EC] border border-[#E5E2D9] text-xs font-semibold">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span class="text-[#2B2926] text-[11px] font-medium">U.S. National Edition</span>
         </div>
+
+        <!-- Mobile Hamburger Menu Button (☰ Like Celeb BNews) -->
+        <button type="button" id="mobileMenuToggleBtn" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-[#1C1B18] hover:bg-[#F3F1EC] border border-[#E5E2D9] transition flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Toggle Navigation Menu">
+          <svg id="menuIconOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <svg id="menuIconClose" class="w-6 h-6 hidden text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <!-- Mobile Navigation (Horizontal Scrollable) -->
-    <div class="lg:hidden flex items-center space-x-4 overflow-x-auto py-2.5 px-4 border-t border-[#EAE8E1] text-xs no-scrollbar bg-white">
-      <a href="/" class="whitespace-nowrap font-semibold ${currentPath === '/' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742]'}">HOME</a>
-      <a href="/news" class="whitespace-nowrap font-semibold ${currentPath.startsWith('/news') ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742]'}">NEWS</a>
-      <a href="/about-us" class="whitespace-nowrap font-semibold ${currentPath === '/about-us' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742]'}">About Us</a>
-      <a href="/contact-us" class="whitespace-nowrap font-semibold ${currentPath === '/contact-us' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742]'}">Contact Us</a>
-      <a href="/privacy-policy" class="whitespace-nowrap font-semibold ${currentPath === '/privacy-policy' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742]'}">Privacy Policy</a>
-      <a href="/terms-and-conditions" class="whitespace-nowrap font-semibold ${currentPath === '/terms-and-conditions' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742]'}">Terms & Conditions</a>
+    <!-- Mobile Navigation Panel (Clean Vertical List like Celeb BNews) -->
+    <div id="mobileNavPanel" class="hidden lg:hidden border-t border-[#EAE8E1] bg-white divide-y divide-[#F0EDE6] shadow-xl">
+      <nav class="flex flex-col text-sm font-semibold">
+        <a href="/" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+          <span>HOME</span>
+          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/news" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath.startsWith('/news') ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+          <span>NEWS</span>
+          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/about-us" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/about-us' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+          <span>About Us</span>
+          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/contact-us" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/contact-us' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+          <span>Contact Us</span>
+          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/privacy-policy" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/privacy-policy' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+          <span>Privacy Policy</span>
+          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="/terms-and-conditions" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/terms-and-conditions' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+          <span>Terms & Conditions</span>
+          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </nav>
     </div>
 
     <!-- Breaking News Ticker in Light Mode -->
@@ -246,6 +276,24 @@ function layout(title: string, content: string, currentPath = "/") {
       </div>
     </div>
   </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      const panel = document.getElementById('mobileNavPanel');
+      const iconOpen = document.getElementById('menuIconOpen');
+      const iconClose = document.getElementById('menuIconClose');
+      if (!panel) return;
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        if (iconOpen) iconOpen.classList.add('hidden');
+        if (iconClose) iconClose.classList.remove('hidden');
+      } else {
+        panel.classList.add('hidden');
+        if (iconOpen) iconOpen.classList.remove('hidden');
+        if (iconClose) iconClose.classList.add('hidden');
+      }
+    }
+  </script>
 
 </body>
 </html>`;
