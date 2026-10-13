@@ -7,6 +7,14 @@ import stylesList from "../data/styles.json";
 
 export const apiRouter = new Hono();
 
+// Disable caching for API responses
+apiRouter.use("*", async (c, next) => {
+  await next();
+  c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+  c.res.headers.set("Pragma", "no-cache");
+  c.res.headers.set("Expires", "0");
+});
+
 // GET all TK Summary styles
 apiRouter.get("/ai/styles", (c) => {
   return c.json({ success: true, data: stylesList });

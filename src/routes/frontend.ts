@@ -3,11 +3,13 @@ import { db } from "../db/index";
 
 export const frontendRouter = new Hono();
 
-// Edge Cache-Control Header for Visitor Pages (<30ms CDN speed)
+// Real-time Cache-Control: Never cache HTML pages in browser or CDN, so published/deleted stories update instantly everywhere!
 frontendRouter.use("*", async (c, next) => {
   await next();
   if (c.req.method === "GET" || c.req.method === "HEAD") {
-    c.res.headers.set("Cache-Control", "public, max-age=60, s-maxage=300");
+    c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0");
+    c.res.headers.set("Pragma", "no-cache");
+    c.res.headers.set("Expires", "0");
   }
 });
 
@@ -415,7 +417,7 @@ frontendRouter.get("/", (c) => {
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.id != ? AND p.status = 'published'
     ORDER BY p.id DESC
-    LIMIT 8
+    LIMIT 24
   `).all(featured ? featured.id : 0) as any[];
 
   const usPosts = db.query(`
@@ -938,14 +940,29 @@ frontendRouter.get("/article/:slug", (c) => {
     db.query("UPDATE posts SET views = views + 1 WHERE id = ?").run(post.id);
   }
 
-  // Must Read Next
-  const related = db.query(`
+  // Related Stories: Prioritize same category, fallback to latest published
+  let related = db.query(`
     SELECT p.*, c.name as category_name, c.color as category_color 
     FROM posts p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.id != ? AND p.status = 'published'
+    WHERE p.id != ? AND p.status = 'published' AND p.category_id = ?
+    ORDER BY p.id DESC
     LIMIT 3
-  `).all(post.id) as any[];
+  `).all(post.id, post.category_id || 1) as any[];
+
+  if (related.length < 3) {
+    const excludeIds = [post.id, ...related.map((r: any) => r.id)];
+    const placeholders = excludeIds.map(() => "?").join(",");
+    const extra = db.query(`
+      SELECT p.*, c.name as category_name, c.color as category_color 
+      FROM posts p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.id NOT IN (${placeholders}) AND p.status = 'published'
+      ORDER BY p.id DESC
+      LIMIT ?
+    `).all(...excludeIds, 3 - related.length) as any[];
+    related = [...related, ...extra];
+  }
 
   // Render article body with Read More strictly after paragraph 2
   const formattedBody = formatArticleWithReadMore(post.content);
@@ -996,20 +1013,55 @@ frontendRouter.get("/article/:slug", (c) => {
         <!-- Article Body with Justified Text & Read More Strictly After Paragraph 2 -->
         ${formattedBody}
 
-        <!-- Bottom Tags / Editorial Desk -->
-        <div class="mt-12 pt-6 border-t border-[#EAE8E1] flex flex-col sm:flex-row justify-between items-center gap-4">
-          ${post.tags && post.tags.trim() ? `
-          <div class="flex flex-wrap items-center gap-2 text-xs">
-            <span class="text-[#8A867E]">Tags:</span>
-            ${post.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0).map((t: string) => `
-              <span class="px-2.5 py-1 rounded bg-[#F3F1EC] text-[#2B2926] font-mono border border-[#E5E2D9]">#${t.replace(/^#+/, '')}</span>
-            `).join('')}
-          </div>` : '<div></div>'}
+        <!-- Tags (if any) -->
+        ${post.tags && post.tags.trim() ? `
+        <div class="mt-8 pt-4 border-t border-[#EAE8E1] flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-[#8A867E]">Tags:</span>
+          ${post.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0).map((t: string) => `
+            <span class="px-2.5 py-1 rounded bg-[#F3F1EC] text-[#2B2926] font-mono border border-[#E5E2D9]">#${t.replace(/^#+/, '')}</span>
+          `).join('')}
+        </div>` : ''}
 
-          <div class="text-xs text-[#6E6B63]">
-            <span>USA NEWS STORY Editorial Desk</span>
+        <!-- Related Stories / Related Posts Grid (3 Cards as requested) -->
+        ${related.length > 0 ? `
+        <section class="mt-10 pt-8 border-t border-[#EAE8E1]">
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center space-x-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#C25E3E]"></span>
+              <h3 class="text-lg sm:text-xl font-bold text-[#1C1B18] font-headline">Related Stories</h3>
+            </div>
+            <a href="/news" class="text-xs font-semibold text-[#C25E3E] hover:underline flex items-center space-x-1">
+              <span>View All News &rarr;</span>
+            </a>
           </div>
-        </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            ${related.map((r: any) => `
+              <article class="bg-[#FAF9F5] border border-[#E8E6DF] rounded-2xl overflow-hidden hover:border-[#C25E3E]/60 transition-all duration-300 flex flex-col group shadow-xs hover:shadow-md">
+                <a href="/article/${r.slug}" class="block relative h-36 overflow-hidden bg-[#EAE8E1]">
+                  <img src="${r.featured_image || 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800'}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                  <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase text-white shadow-xs" style="background-color: ${r.category_color || '#C25E3E'}">
+                    ${r.category_name}
+                  </span>
+                </a>
+                <div class="p-3.5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <a href="/article/${r.slug}">
+                      <h4 class="font-bold text-xs sm:text-sm text-[#1C1B18] group-hover:text-[#C25E3E] transition line-clamp-2 leading-snug mb-1.5 font-headline">
+                        ${r.title}
+                      </h4>
+                    </a>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] text-[#8A867E] pt-2 border-t border-[#EAE8E1] mt-2">
+                    <span class="truncate max-w-[100px]">${r.author_name || 'Editorial'}</span>
+                    <span>${r.read_time || '3 min'}</span>
+                  </div>
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        </section>
+        ` : ''}
       </article>
 
       <!-- Right Sidebar (Col 4) -->

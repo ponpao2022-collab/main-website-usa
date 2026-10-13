@@ -3,6 +3,14 @@ import { db } from "../db/index";
 
 export const adminRouter = new Hono();
 
+// Disable caching for admin CMS
+adminRouter.use("*", async (c, next) => {
+  await next();
+  c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+  c.res.headers.set("Pragma", "no-cache");
+  c.res.headers.set("Expires", "0");
+});
+
 // ADMIN DASHBOARD
 adminRouter.get("/", (c) => {
   const posts = db.query(`
