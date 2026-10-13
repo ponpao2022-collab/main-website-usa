@@ -83,12 +83,12 @@ function layout(title: string, content: string, currentPath = "/") {
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/logo-sm.webp" as="image" type="image/webp">
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
+  <script src="/assets/tailwindcss.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body { 
       font-family: 'Inter', 'Battambang', -apple-system, BlinkMacSystemFont, sans-serif;

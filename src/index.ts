@@ -1,10 +1,14 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
+import { compress } from "hono/compress";
 import { frontendRouter } from "./routes/frontend";
 import { adminRouter } from "./routes/admin";
 import { apiRouter } from "./routes/api";
 
 const app = new Hono();
+
+// Enable Gzip/Deflate compression for all responses
+app.use(compress());
 
 // Serve static assets and favicons from public directory
 app.use("/assets/*", async (c, next) => {

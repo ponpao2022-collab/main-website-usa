@@ -26,7 +26,8 @@ adminRouter.get("/", (c) => {
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
+  <script src="/assets/tailwindcss.min.js"></script>
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
@@ -332,7 +333,8 @@ const renderEditor = (c: any) => {
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
+  <script src="/assets/tailwindcss.min.js"></script>
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
