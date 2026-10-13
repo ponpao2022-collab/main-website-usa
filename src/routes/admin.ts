@@ -240,9 +240,9 @@ const renderEditor = (c: any) => {
         <div class="w-7 h-7 rounded-full bg-amber-600 border-2 border-slate-900 flex items-center justify-center text-xs font-semibold" title="Sarah (Fact-checker)">SJ</div>
       </div>
 
-      <button onclick="openAiModal()" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 flex items-center space-x-1.5 transition">
-        <svg class="w-3.5 h-3.5 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-        <span>AI Importer (Gemini)</span>
+      <button onclick="openAiModal()" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 flex items-center space-x-1.5 transition">
+        <img src="/assets/tk-mascot.png" class="w-4 h-4 object-contain" alt="TK">
+        <span>TK Summary AI</span>
       </button>
 
       <button onclick="saveAndDeploy()" id="saveBtn" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 transition">
@@ -444,28 +444,18 @@ const renderEditor = (c: any) => {
     </aside>
   </div>
 
-  <!-- FLOATING AI ACTION BUTTON ON BOTTOM-RIGHT -->
-  <button onclick="openAiModal()" type="button" class="fixed bottom-6 right-6 z-40 flex items-center space-x-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 hover:from-indigo-500 hover:to-rose-500 text-white font-bold text-xs shadow-2xl shadow-indigo-500/50 border border-white/20 transition transform hover:scale-105 active:scale-95 group">
-    <div class="relative">
-      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block animate-ping absolute -top-0.5 -right-0.5"></span>
-      <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-    </div>
-    <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-    <span class="tracking-wide">AI Article Importer & Formatter</span>
-  </button>
-
   <!-- FLOATING TK SUMMARY MASCOT TRIGGER BUTTON (BOTTOM RIGHT) -->
-  <div id="tkSummaryFloatingBtn" onclick="openAiModal()" class="fixed right-6 bottom-6 z-50 flex items-center group cursor-pointer select-none">
+  <div id="tkSummaryFloatingBtn" onclick="openAiModal()" role="button" tabindex="0" class="fixed right-6 bottom-6 z-50 flex items-center group cursor-pointer select-none focus:outline-none">
     <!-- Tooltip Pill -->
     <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-slate-900/95 border border-blue-500/40 text-xs font-bold text-blue-300 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
       <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
       <span>TK Summary AI</span>
     </div>
 
-    <!-- Character Mascot (Waving / Happy Toggle) -->
-    <div class="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 active:scale-95">
-      <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_10px_20px_rgba(8,124,218,0.45)]" alt="TK Summary">
-      <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_26px_rgba(8,124,218,0.7)] animate-bounce" alt="TK Summary Happy">
+    <!-- Character Mascot (Transparent PNG, No Background) -->
+    <div class="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95">
+      <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(8,124,218,0.5)]" alt="TK Summary">
+      <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(8,124,218,0.75)] animate-bounce" alt="TK Summary Happy">
     </div>
   </div>
 
