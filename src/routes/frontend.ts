@@ -1,3 +1,4 @@
+import publicCss from "../data/public-css.json";
 import { recordPageview } from '../utils/analytics';
 import { splitArticleAfterParagraphs } from "../utils/article-display";
 import { Hono } from "hono";
@@ -99,8 +100,9 @@ function layout(title: string, content: string, currentPath = "/") {
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
   <link rel="preload" href="/assets/logo-sm.webp" as="image" type="image/webp">
-  <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
-  <script src="/assets/tailwindcss.min.js"></script>
+  ${process.env.PUBLIC_STYLE_ENGINE === 'runtime'
+    ? '<link rel="preload" href="/assets/tailwindcss.min.js" as="script"><script src="/assets/tailwindcss.min.js"></script>'
+    : '<link rel="stylesheet" href="' + publicCss.css + '">'}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">

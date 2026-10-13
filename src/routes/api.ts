@@ -800,6 +800,7 @@ apiRouter.all("/system/deploy", async (c) => {
     git fetch --all
     git reset --hard origin/main
     bun install
+    DB_PATH=/var/www/data/news.sqlite bun run build:css
     sleep 1
     systemctl restart news-app
   `;

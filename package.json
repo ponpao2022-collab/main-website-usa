@@ -7,10 +7,12 @@
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
     "typecheck": "bun check",
-    "deploy": "./scripts/auto-deploy.sh"
+    "deploy": "./scripts/auto-deploy.sh",
+    "build:css": "bun run scripts/build-public-css.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "tailwindcss": "3.4.17"
   },
   "peerDependencies": {
     "typescript": "^7"
