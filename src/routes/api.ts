@@ -208,6 +208,52 @@ apiRouter.delete("/posts/:id", (c) => {
   }
 });
 
+// BULK MOVE TO TRASH
+apiRouter.post("/posts/bulk/trash", async (c) => {
+  try {
+    const { ids } = await c.req.json();
+    if (Array.isArray(ids) && ids.length > 0) {
+      const placeholders = ids.map(() => "?").join(",");
+      db.prepare(`UPDATE posts SET status = 'trash', updated_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`).run(...ids);
+      return c.json({ success: true, count: ids.length, message: `${ids.length} articles moved to trash` });
+    }
+    return c.json({ success: false, error: "No post IDs provided" }, 400);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// BULK RESTORE FROM TRASH
+apiRouter.post("/posts/bulk/restore", async (c) => {
+  try {
+    const { ids } = await c.req.json();
+    if (Array.isArray(ids) && ids.length > 0) {
+      const placeholders = ids.map(() => "?").join(",");
+      db.prepare(`UPDATE posts SET status = 'published', updated_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`).run(...ids);
+      return c.json({ success: true, count: ids.length, message: `${ids.length} articles restored` });
+    }
+    return c.json({ success: false, error: "No post IDs provided" }, 400);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// BULK PERMANENT DELETE
+apiRouter.post("/posts/bulk/delete-permanent", async (c) => {
+  try {
+    const { ids } = await c.req.json();
+    if (Array.isArray(ids) && ids.length > 0) {
+      const placeholders = ids.map(() => "?").join(",");
+      db.prepare(`DELETE FROM posts WHERE id IN (${placeholders})`).run(...ids);
+      return c.json({ success: true, count: ids.length, message: `${ids.length} articles permanently deleted` });
+    }
+    return c.json({ success: false, error: "No post IDs provided" }, 400);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+
 // AI COPILOT ENDPOINT: Generate headlines
 apiRouter.post("/ai/headlines", async (c) => {
   const { topic } = await c.req.json();
@@ -806,7 +852,9 @@ apiRouter.post("/track/ping", async (c) => {
       try { body = JSON.parse(text); } catch { body = {}; }
     }
     const ip = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "";
-    recordVisitorPing(body.s, body.p, body.t, ip);
+    const country = c.req.header("cf-ipcountry") || body.country || "US";
+    const userAgent = c.req.header("user-agent") || "";
+    recordVisitorPing(body.s, body.p, body.t, ip, country, userAgent);
     return c.json({ ok: true });
   } catch {
     return c.json({ ok: false }, 400);

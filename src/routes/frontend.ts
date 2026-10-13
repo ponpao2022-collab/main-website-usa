@@ -353,7 +353,21 @@ function layout(title: string, content: string, currentPath = "/") {
           sessionStorage.setItem('_us_sid', sid);
         }
         function pingVisitor() {
-          const payload = JSON.stringify({ s: sid, p: window.location.pathname, t: document.title });
+          let cHint = "";
+          try {
+            const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "").toLowerCase();
+            if (tz.includes("phnom_penh") || tz.includes("asia/phnom_penh")) cHint = "KH";
+            else if (tz.includes("bangkok")) cHint = "TH";
+            else if (tz.includes("tokyo")) cHint = "JP";
+            else if (tz.includes("seoul")) cHint = "KR";
+            else if (tz.includes("singapore")) cHint = "SG";
+            else if (tz.includes("london")) cHint = "GB";
+            else if (tz.includes("paris")) cHint = "FR";
+            else if (tz.includes("berlin")) cHint = "DE";
+            else if (tz.includes("toronto") || tz.includes("vancouver") || tz.includes("montreal")) cHint = "CA";
+            else if (tz.includes("new_york") || tz.includes("chicago") || tz.includes("los_angeles") || tz.includes("denver") || tz.includes("america/")) cHint = "US";
+          } catch(e) {}
+          const payload = JSON.stringify({ s: sid, p: window.location.pathname, t: document.title, country: cHint });
           if (navigator.sendBeacon) {
             navigator.sendBeacon('/api/track/ping', payload);
           } else {

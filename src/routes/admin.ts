@@ -73,262 +73,439 @@ adminRouter.get("/", (c) => {
   </header>
 
   <!-- Main Container -->
-  <div class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8">
-    
-    <!-- Stats Row (5 Cards in Claude AI Light Mode) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      
-      <!-- Whos.amung.us Realtime Live Readers Card -->
-      <div class="bg-white border-2 border-emerald-400/60 p-5 rounded-2xl relative overflow-hidden shadow-sm">
-        <div class="flex items-center justify-between mb-1">
-          <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">Live Readers Now</div>
+  <div class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
+
+    <!-- Top Navigation Tabs (Articles Feed vs Whos.amung.us Live Readers) -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAE8E1] pb-4">
+      <div class="flex items-center space-x-2 bg-[#F3F1EC] p-1.5 rounded-2xl border border-[#E5E2D9]">
+        <button type="button" id="mainTabArticlesBtn" onclick="switchMainTab('articles')" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-[#1C1B18] shadow-sm border border-[#E5E2D9] flex items-center space-x-2 transition cursor-pointer">
+          <span>📰</span>
+          <span>Articles Feed & Stories (${activePosts.length})</span>
+        </button>
+        <button type="button" id="mainTabTrackingBtn" onclick="switchMainTab('tracking')" class="px-4 py-2 rounded-xl font-semibold text-xs text-[#6E6B63] hover:text-[#1C1B18] flex items-center space-x-2 transition cursor-pointer">
           <span class="relative flex h-2.5 w-2.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-        </div>
-        <div id="liveOnlineCount" class="text-3xl font-extrabold text-emerald-600 font-mono">0</div>
-        <div class="text-[11px] text-emerald-700 mt-2 font-mono flex items-center space-x-1 font-medium">
-          <span>📡</span>
-          <span>Whos.amung.us Realtime</span>
-        </div>
-      </div>
-
-      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Total Stories</div>
-        <div class="text-3xl font-extrabold text-[#1C1B18]">${activePosts.length}</div>
-        <div class="text-[11px] text-emerald-600 mt-2 font-medium">Active (${trashPosts.length} in Trash)</div>
-      </div>
-
-      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Breaking News Active</div>
-        <div class="text-3xl font-extrabold text-rose-600">${breakingCount}</div>
-        <div class="text-[11px] text-rose-600/80 mt-2 font-medium">Showing on Top Marquee</div>
-      </div>
-
-      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Global Pageviews</div>
-        <div class="text-3xl font-extrabold text-[#C25E3E]">${totalViews.toLocaleString()}</div>
-        <div class="text-[11px] text-[#6E6B63] mt-2 font-medium">Real Visitors Tracked Live</div>
-      </div>
-
-      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm flex flex-col justify-between">
-        <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Cloudflare Edge Purge</div>
-          <div class="text-xs text-[#6E6B63]">Purge cache across 310+ PoPs</div>
-        </div>
-        <button onclick="purgeCache(this)" class="w-full mt-3 py-2 px-3 rounded-xl bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-xs font-semibold text-[#2B2926] flex items-center justify-center space-x-1.5 transition">
-          <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          <span>Instant Cache Purge</span>
+          <span>Whos.amung.us Live Readers</span>
+          <span id="mainTrackingPill" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">0</span>
         </button>
       </div>
-    </div>
 
-    <!-- Whos.amung.us Real-Time Active Readers Breakdown -->
-    <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
-      <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
-        <div class="flex items-center space-x-2.5">
-          <span class="relative flex h-3 w-3">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-          </span>
-          <h3 class="font-bold text-sm text-[#1C1B18] flex items-center space-x-2">
-            <span>Whos.amung.us Live Readers Tracker</span>
-            <span class="text-[10px] text-emerald-800 font-mono bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Auto-refresh 3s</span>
-          </h3>
-        </div>
-        <div class="text-xs text-[#6E6B63] font-mono">
-          <span id="activePagesSummary">0 pages currently active</span>
-        </div>
-      </div>
-
-      <div id="activePagesList" class="space-y-2">
-        <div class="text-xs text-[#8A867E] italic py-2 text-center">
-          Waiting for live readers to connect... (Open the website in another tab or mobile phone to see real-time tracking)
-        </div>
+      <div class="flex items-center space-x-2 text-xs text-[#6E6B63]">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="font-mono text-[11px]">Realtime Radar Active (3s)</span>
       </div>
     </div>
 
-    <!-- Posts Table with Tabs in Claude Light Mode -->
-    <div class="bg-white border border-[#EAE8E1] rounded-2xl overflow-hidden shadow-sm">
-      <div class="p-5 border-b border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center space-x-3">
-            <h2 class="font-bold text-lg text-[#1C1B18]">Articles & News Feed</h2>
-            <div class="flex items-center space-x-1 bg-[#F3F1EC] p-1 rounded-xl border border-[#E5E2D9] text-xs">
-              <button type="button" id="tabActivePostsBtn" onclick="switchPostsTab('active')" class="px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition">
-                <span>Published (${activePosts.length})</span>
-              </button>
-              <button type="button" id="tabTrashPostsBtn" onclick="switchPostsTab('trash')" class="px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1">
-                <span>🗑️ Trash (${trashPosts.length})</span>
-              </button>
+    <!-- ==================== VIEW 1: ARTICLES FEED ==================== -->
+    <div id="mainArticlesView" class="space-y-6">
+      <!-- Stats Row (5 Cards in Claude AI Light Mode) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- Whos.amung.us Realtime Live Readers Card -->
+        <div onclick="switchMainTab('tracking')" class="bg-white border-2 border-emerald-400/60 p-5 rounded-2xl relative overflow-hidden shadow-sm cursor-pointer hover:border-emerald-500 transition group">
+          <div class="flex items-center justify-between mb-1">
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">Live Readers Now</div>
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+          </div>
+          <div id="liveOnlineCount" class="text-3xl font-extrabold text-emerald-600 font-mono">0</div>
+          <div class="text-[11px] text-emerald-700 mt-2 font-mono flex items-center space-x-1 font-medium group-hover:underline">
+            <span>📡</span>
+            <span>View Live Whos.amung.us Tab &rarr;</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Total Stories</div>
+          <div class="text-3xl font-extrabold text-[#1C1B18]">${activePosts.length}</div>
+          <div class="text-[11px] text-emerald-600 mt-2 font-medium">Active (${trashPosts.length} in Trash)</div>
+        </div>
+
+        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Breaking News Active</div>
+          <div class="text-3xl font-extrabold text-rose-600">${breakingCount}</div>
+          <div class="text-[11px] text-rose-600/80 mt-2 font-medium">Showing on Top Marquee</div>
+        </div>
+
+        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Global Pageviews</div>
+          <div class="text-3xl font-extrabold text-[#C25E3E]">${totalViews.toLocaleString()}</div>
+          <div class="text-[11px] text-[#6E6B63] mt-2 font-medium">Real Visitors Tracked Live</div>
+        </div>
+
+        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Cloudflare Edge Purge</div>
+            <div class="text-xs text-[#6E6B63]">Purge cache across 310+ PoPs</div>
+          </div>
+          <button onclick="purgeCache(this)" class="w-full mt-3 py-2 px-3 rounded-xl bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-xs font-semibold text-[#2B2926] flex items-center justify-center space-x-1.5 transition">
+            <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Instant Cache Purge</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Posts Table with Published and Trash Tabs + Checkboxes -->
+      <div class="bg-white border border-[#EAE8E1] rounded-2xl overflow-hidden shadow-sm">
+        <div class="p-5 border-b border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-3">
+              <h2 class="font-bold text-lg text-[#1C1B18]">Articles & News Feed</h2>
+              <div class="flex items-center space-x-1 bg-[#F3F1EC] p-1 rounded-xl border border-[#E5E2D9] text-xs">
+                <button type="button" id="tabActivePostsBtn" onclick="switchPostsTab('active')" class="px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition cursor-pointer">
+                  <span>Published (${activePosts.length})</span>
+                </button>
+                <button type="button" id="tabTrashPostsBtn" onclick="switchPostsTab('trash')" class="px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1 cursor-pointer">
+                  <span>🗑️ Trash (${trashPosts.length})</span>
+                </button>
+              </div>
+            </div>
+            <p class="text-xs text-[#6E6B63] mt-1" id="tabSubtitle">Manage active stories, tick multiple articles to bulk move to trash or publish</p>
+          </div>
+          <div class="flex items-center space-x-2.5">
+            <div id="trashTabActions" class="hidden flex items-center space-x-2">
+              ${trashPosts.length > 0 ? `
+                <button type="button" onclick="emptyTrash()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition flex items-center space-x-1.5 shadow-xs cursor-pointer">
+                  <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  <span>Empty Trash (${trashPosts.length})</span>
+                </button>
+              ` : ''}
+            </div>
+            <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5 cursor-pointer">
+              <span>💾 Backup</span>
+            </button>
+            <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5 cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+              <span>📁 Categories (${categories.length})</span>
+            </button>
+            <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white transition flex items-center space-x-1 shadow-sm">
+              <span>+ New Article</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- PUBLISHED BULK ACTION BAR -->
+        <div id="publishedBulkBar" class="hidden bg-amber-50/90 border-b border-amber-200 px-5 py-2.5 flex items-center justify-between transition-all">
+          <div class="flex items-center space-x-2 text-xs font-bold text-amber-900">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-600 animate-pulse"></span>
+            <span>បានជ្រើសរើស (Selected): <span id="publishedSelectedCount" class="font-mono text-sm underline font-black">0</span> អត្ថបទ</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="bulkMoveToTrash()" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Move Selected to Trash</span>
+            </button>
+            <button type="button" onclick="deselectAll('published')" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 text-xs font-semibold cursor-pointer">បោះបង់</button>
+          </div>
+        </div>
+
+        <!-- TRASH BULK ACTION BAR -->
+        <div id="trashBulkBar" class="hidden bg-rose-50/90 border-b border-rose-200 px-5 py-2.5 flex items-center justify-between transition-all">
+          <div class="flex items-center space-x-2 text-xs font-bold text-rose-900">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
+            <span>បានជ្រើសរើស (Selected in Trash): <span id="trashSelectedCount" class="font-mono text-sm underline font-black">0</span> អត្ថបទ</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="bulkRestore()" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>♻️ Restore Selected</span>
+            </button>
+            <button type="button" onclick="bulkDeletePermanent()" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>❌ Delete Permanently</span>
+            </button>
+            <button type="button" onclick="deselectAll('trash')" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-rose-100 text-rose-800 border border-rose-300 text-xs font-semibold cursor-pointer">បោះបង់</button>
+          </div>
+        </div>
+
+        <!-- VIEW 1A: ACTIVE PUBLISHED POSTS -->
+        <div id="activePostsView" class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#F3F1EC] border-b border-[#EAE8E1] text-[#6E6B63] uppercase font-semibold">
+              <tr>
+                <th class="py-3 px-4 w-10 text-center">
+                  <input type="checkbox" id="selectAllPublished" onchange="toggleSelectAll('published', this.checked)" class="w-4 h-4 rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-[#C25E3E] cursor-pointer" title="Select all published articles">
+                </th>
+                <th class="py-3 px-4">Headline & Article</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Author</th>
+                <th class="py-3 px-4 text-center">Breaking?</th>
+                <th class="py-3 px-4 text-center">Views</th>
+                <th class="py-3 px-6 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
+              ${activePosts.length === 0 ? `
+                <tr>
+                  <td colspan="7" class="text-center py-12 text-[#8A867E]">
+                    <div class="text-sm font-semibold text-[#6E6B63] mb-1">No published articles</div>
+                    <div class="text-xs text-[#8A867E] mb-4">Start by writing and publishing your first article!</div>
+                    <a href="/admin/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                      <span>+ Publish First Story</span>
+                    </a>
+                  </td>
+                </tr>
+              ` : activePosts.map(p => `
+                <tr class="hover:bg-[#FAF9F5] transition">
+                  <td class="py-4 px-4 text-center">
+                    <input type="checkbox" class="post-check-published w-4 h-4 rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-[#C25E3E] cursor-pointer" value="${p.id}" onchange="updateBulkBar('published')">
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="flex items-center space-x-3">
+                      ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1]">` : ''}
+                      <div>
+                        <a href="/admin/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-1 transition">
+                          ${p.title}
+                        </a>
+                        <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">
+                      ${p.category_name || 'General'}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4 font-medium text-[#2B2926]">${p.author_name}</td>
+                  <td class="py-4 px-4 text-center">
+                    ${p.is_breaking === 1 ? `
+                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
+                        BREAKING
+                      </span>` : `
+                      <span class="text-[#8A867E] text-[11px]">-</span>`}
+                  </td>
+                  <td class="py-4 px-4 text-center font-mono">
+                    <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9] text-xs font-semibold">
+                      <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      <span>${p.views.toLocaleString()}</span>
+                    </span>
+                  </td>
+                  <td class="py-4 px-6 text-center whitespace-nowrap">
+                    <div class="inline-flex items-center space-x-1.5 bg-[#F3F1EC] p-1.5 rounded-xl border border-[#E5E2D9]">
+                      <a href="/article/${p.slug}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-[#EAE8E1] text-[#2B2926] text-xs font-semibold flex items-center space-x-1 transition shadow-xs border border-[#E5E2D9]" title="View live article">
+                        <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <span>View</span>
+                      </a>
+                      <a href="/admin/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs" title="Edit story">
+                        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        <span>Edit</span>
+                      </a>
+                      <button type="button" onclick="moveToTrash(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs cursor-pointer" title="Move story to trash (អាចស្តារមកវិញបាន)">
+                        <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span>Move to Trash</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VIEW 1B: TRASH BIN POSTS -->
+        <div id="trashPostsView" class="hidden overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#FDF2E9] border-b border-[#EAE8E1] text-[#B45309] uppercase font-semibold">
+              <tr>
+                <th class="py-3 px-4 w-10 text-center">
+                  <input type="checkbox" id="selectAllTrash" onchange="toggleSelectAll('trash', this.checked)" class="w-4 h-4 rounded border-[#E5E2D9] text-rose-600 focus:ring-rose-500 cursor-pointer" title="Select all trash">
+                </th>
+                <th class="py-3 px-4">Trashed Article</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Views Recorded</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-6 text-center">Safety Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
+              ${trashPosts.length === 0 ? `
+                <tr>
+                  <td colspan="6" class="text-center py-12 text-[#8A867E]">
+                    <div class="text-base font-bold text-[#1C1B18] mb-1">🎉 Trash bin is clean and empty!</div>
+                    <div class="text-xs text-[#8A867E]">No articles in the trash. When you move an article to trash, it safely rests here.</div>
+                  </td>
+                </tr>
+              ` : trashPosts.map(p => `
+                <tr class="hover:bg-rose-50/30 transition">
+                  <td class="py-4 px-4 text-center">
+                    <input type="checkbox" class="post-check-trash w-4 h-4 rounded border-[#E5E2D9] text-rose-600 focus:ring-rose-500 cursor-pointer" value="${p.id}" onchange="updateBulkBar('trash')">
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="flex items-center space-x-3">
+                      ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1] opacity-60">` : ''}
+                      <div>
+                        <div class="font-bold text-[#1C1B18] text-sm line-clamp-1 line-through opacity-75">
+                          ${p.title}
+                        </div>
+                        <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">
+                      ${p.category_name || 'General'}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4 font-mono text-[#6E6B63]">${p.views.toLocaleString()} views</td>
+                  <td class="py-4 px-4">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                      In Trash (Protected)
+                    </span>
+                  </td>
+                  <td class="py-4 px-6 text-center whitespace-nowrap">
+                    <div class="inline-flex items-center space-x-2 bg-[#F3F1EC] p-1.5 rounded-xl border border-[#E5E2D9]">
+                      <button type="button" onclick="restorePost(${p.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer" title="Restore article back to website">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>♻️ Restore</span>
+                      </button>
+                      <button type="button" onclick="deletePermanently(${p.id})" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer" title="Delete permanently from database">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span>❌ Delete Permanently</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 2: DEDICATED WHOS.AMUNG.US LIVE TRACKER ==================== -->
+    <div id="mainTrackingView" class="hidden space-y-6">
+
+      <!-- Live Counter Hero Header -->
+      <div class="bg-white border-2 border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div class="space-y-2">
+            <div class="flex items-center space-x-2">
+              <span class="relative flex h-3.5 w-3.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+              </span>
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                WHOS.AMUNG.US LIVE ENGINE
+              </span>
+              <span class="text-[11px] font-mono text-[#6E6B63]">3s auto-refresh</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-[#1C1B18] tracking-tight">
+              Real-Time Active Readers & Country Geo-Tracker
+            </h2>
+            <p class="text-xs sm:text-sm text-[#6E6B63]">
+              តាមដានអ្នកអានផ្ទាល់ទូទាំងពិភពលោក (Real-Time Visitors by Country & Device) ជាមួយ Cloudflare Edge
+            </p>
+          </div>
+
+          <div class="bg-[#FAF9F5] border border-[#EAE8E1] rounded-2xl p-4 sm:p-6 text-center min-w-[200px]">
+            <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">ONLINE RIGHT NOW</div>
+            <div id="whosHugeCount" class="text-5xl sm:text-6xl font-black text-emerald-600 font-mono tracking-tight my-1">
+              0
+            </div>
+            <div class="text-[11px] text-[#6E6B63] font-mono">active readers online</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-Column Grid: Countries with Flags + Devices & Popular Pages -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Country Breakdown (ទង់ជាតិ & ចំនួនអ្នកអាន) -->
+        <div class="lg:col-span-7 bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-base">🌍</span>
+              <h3 class="font-bold text-sm text-[#1C1B18]">Readers by Country (អ្នកអានតាមប្រទេស)</h3>
+            </div>
+            <span id="whosCountryCountBadge" class="text-xs font-mono font-bold bg-[#F3F1EC] text-[#2B2926] px-2.5 py-0.5 rounded-full border border-[#E5E2D9]">
+              0 Countries
+            </span>
+          </div>
+
+          <div id="whosCountryList" class="space-y-2.5">
+            <div class="text-xs text-[#8A867E] italic py-8 text-center">
+              កំពុងរង់ចាំអ្នកអាន... (Waiting for active sessions. Visit site in another tab to see your flag!)
             </div>
           </div>
-          <p class="text-xs text-[#6E6B63] mt-1" id="tabSubtitle">Manage active stories, move to trash, or publish breaking alerts</p>
         </div>
-        <div class="flex items-center space-x-2.5">
-          <div id="trashTabActions" class="hidden flex items-center space-x-2">
-            ${trashPosts.length > 0 ? `
-              <button type="button" onclick="emptyTrash()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition flex items-center space-x-1.5 shadow-xs">
-                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                <span>Empty Trash (${trashPosts.length})</span>
-              </button>
-            ` : ''}
+
+        <!-- Right Column: Devices Split & Most Popular Active Pages -->
+        <div class="lg:col-span-5 space-y-6">
+
+          <!-- Device Distribution Card -->
+          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">📱</span>
+                <h3 class="font-bold text-sm text-[#1C1B18]">Device Types (ឧបករណ៍)</h3>
+              </div>
+              <span class="text-[11px] font-mono text-[#6E6B63]">Active split</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2.5 pt-1 text-center">
+              <div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-lg mb-0.5">📱</div>
+                <div class="text-[11px] font-bold text-[#6E6B63]">Mobile</div>
+                <div id="deviceMobileCount" class="text-lg font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-lg mb-0.5">💻</div>
+                <div class="text-[11px] font-bold text-[#6E6B63]">Desktop</div>
+                <div id="deviceDesktopCount" class="text-lg font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+              <div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
+                <div class="text-lg mb-0.5">📟</div>
+                <div class="text-[11px] font-bold text-[#6E6B63]">Tablet</div>
+                <div id="deviceTabletCount" class="text-lg font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
+              </div>
+            </div>
           </div>
-          <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5">
-            <span>💾 Backup</span>
-          </button>
-          <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5">
-            <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-            <span>📁 Categories (${categories.length})</span>
-          </button>
-          <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white transition flex items-center space-x-1 shadow-sm">
-            <span>+ New Article</span>
-          </a>
+
+          <!-- Active Pages List Card -->
+          <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">📄</span>
+                <h3 class="font-bold text-sm text-[#1C1B18]">Pages Being Read (ទំព័រកំពុងបើក)</h3>
+              </div>
+              <span id="whosPagesCountBadge" class="text-xs font-mono font-bold bg-[#F3F1EC] text-[#2B2926] px-2 py-0.5 rounded border border-[#E5E2D9]">
+                0
+              </span>
+            </div>
+
+            <div id="whosActivePages" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div class="text-xs text-[#8A867E] italic py-4 text-center">No active pages right now</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Real-Time Activity Log / Stream -->
+      <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
+        <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-base">⚡</span>
+            <h3 class="font-bold text-sm text-[#1C1B18]">Live Visitor Stream (សកម្មភាពអ្នកអានផ្ទាល់)</h3>
+          </div>
+          <span class="text-[11px] font-mono text-[#6E6B63]">Updated real-time</span>
+        </div>
+
+        <div id="whosRecentStream" class="divide-y divide-[#EAE8E1] max-h-80 overflow-y-auto">
+          <div class="text-xs text-[#8A867E] italic py-6 text-center">
+            No visitor events logged in memory yet.
+          </div>
         </div>
       </div>
 
-      <!-- VIEW 1: ACTIVE PUBLISHED POSTS -->
-      <div id="activePostsView" class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-[#F3F1EC] border-b border-[#EAE8E1] text-[#6E6B63] uppercase font-semibold">
-            <tr>
-              <th class="py-3 px-5">Headline & Article</th>
-              <th class="py-3 px-4">Category</th>
-              <th class="py-3 px-4">Author</th>
-              <th class="py-3 px-4 text-center">Breaking?</th>
-              <th class="py-3 px-4 text-center">Views</th>
-              <th class="py-3 px-6 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
-            ${activePosts.length === 0 ? `
-              <tr>
-                <td colspan="6" class="text-center py-12 text-[#8A867E]">
-                  <div class="text-sm font-semibold text-[#6E6B63] mb-1">No published articles</div>
-                  <div class="text-xs text-[#8A867E] mb-4">Start by writing and publishing your first article!</div>
-                  <a href="/admin/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>+ Publish First Story</span>
-                  </a>
-                </td>
-              </tr>
-            ` : activePosts.map(p => `
-              <tr class="hover:bg-[#FAF9F5] transition">
-                <td class="py-4 px-5">
-                  <div class="flex items-center space-x-3">
-                    ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1]">` : ''}
-                    <div>
-                      <a href="/admin/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-1 transition">
-                        ${p.title}
-                      </a>
-                      <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="py-4 px-4">
-                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">
-                    ${p.category_name || 'General'}
-                  </span>
-                </td>
-                <td class="py-4 px-4 font-medium text-[#2B2926]">${p.author_name}</td>
-                <td class="py-4 px-4 text-center">
-                  ${p.is_breaking === 1 ? `
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
-                      BREAKING
-                    </span>` : `
-                    <span class="text-[#8A867E] text-[11px]">-</span>`}
-                </td>
-                <td class="py-4 px-4 text-center font-mono">
-                  <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9] text-xs font-semibold">
-                    <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    <span>${p.views.toLocaleString()}</span>
-                  </span>
-                </td>
-                <td class="py-4 px-6 text-center whitespace-nowrap">
-                  <div class="inline-flex items-center space-x-1.5 bg-[#F3F1EC] p-1.5 rounded-xl border border-[#E5E2D9]">
-                    <a href="/article/${p.slug}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-[#EAE8E1] text-[#2B2926] text-xs font-semibold flex items-center space-x-1 transition shadow-xs border border-[#E5E2D9]" title="View live article">
-                      <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                      <span>View</span>
-                    </a>
-                    <a href="/admin/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs" title="Edit story">
-                      <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                      <span>Edit</span>
-                    </a>
-                    <button type="button" onclick="moveToTrash(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs cursor-pointer" title="Move story to trash (អាចស្តារមកវិញបាន)">
-                      <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                      <span>Move to Trash</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- VIEW 2: TRASH BIN POSTS -->
-      <div id="trashPostsView" class="hidden overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-[#FDF2E9] border-b border-[#EAE8E1] text-[#B45309] uppercase font-semibold">
-            <tr>
-              <th class="py-3 px-5">Trashed Article</th>
-              <th class="py-3 px-4">Category</th>
-              <th class="py-3 px-4">Views Recorded</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-6 text-center">Safety Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
-            ${trashPosts.length === 0 ? `
-              <tr>
-                <td colspan="5" class="text-center py-12 text-[#8A867E]">
-                  <div class="text-base font-bold text-[#1C1B18] mb-1">🎉 Trash bin is clean and empty!</div>
-                  <div class="text-xs text-[#8A867E]">No articles in the trash. When you move an article to trash, it safely rests here.</div>
-                </td>
-              </tr>
-            ` : trashPosts.map(p => `
-              <tr class="hover:bg-rose-50/30 transition">
-                <td class="py-4 px-5">
-                  <div class="flex items-center space-x-3">
-                    ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1] opacity-60">` : ''}
-                    <div>
-                      <div class="font-bold text-[#1C1B18] text-sm line-clamp-1 line-through opacity-75">
-                        ${p.title}
-                      </div>
-                      <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="py-4 px-4">
-                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">
-                    ${p.category_name || 'General'}
-                  </span>
-                </td>
-                <td class="py-4 px-4 font-mono text-[#6E6B63]">${p.views.toLocaleString()} views</td>
-                <td class="py-4 px-4">
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                    In Trash (Protected)
-                  </span>
-                </td>
-                <td class="py-4 px-6 text-center whitespace-nowrap">
-                  <div class="inline-flex items-center space-x-2 bg-[#F3F1EC] p-1.5 rounded-xl border border-[#E5E2D9]">
-                    <button type="button" onclick="restorePost(${p.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer" title="Restore article back to website">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                      <span>♻️ Restore</span>
-                    </button>
-                    <button type="button" onclick="deletePermanently(${p.id})" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer" title="Delete permanently from database">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                      <span>❌ Delete Permanently</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
     </div>
+
   </div>
 
   <!-- Manage Categories Modal in Claude Light Mode -->
@@ -339,7 +516,7 @@ adminRouter.get("/", (c) => {
           <span class="text-base font-bold text-[#1C1B18]">📁 Manage News Categories</span>
           <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">${categories.length} active</span>
         </div>
-        <button onclick="closeCategoriesModal()" class="text-[#6E6B63] hover:text-[#1C1B18] text-lg font-bold px-2">&times;</button>
+        <button onclick="closeCategoriesModal()" class="text-[#6E6B63] hover:text-[#1C1B18] text-lg font-bold px-2 cursor-pointer">&times;</button>
       </div>
 
       <!-- Add New Category Form -->
@@ -351,7 +528,7 @@ adminRouter.get("/", (c) => {
           </div>
           <div class="sm:col-span-4 flex items-center space-x-2">
             <input type="color" id="newCatColor" value="#c25e3e" class="w-9 h-9 rounded-xl border border-[#E5E2D9] bg-white cursor-pointer p-0.5 flex-shrink-0" title="Badge Color">
-            <button type="submit" id="addCatBtn" class="flex-1 py-2 px-3 bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold rounded-xl text-xs transition shadow-sm">Add</button>
+            <button type="submit" id="addCatBtn" class="flex-1 py-2 px-3 bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer">Add</button>
           </div>
         </div>
       </form>
@@ -368,7 +545,7 @@ adminRouter.get("/", (c) => {
                 <span class="text-[11px] font-mono text-[#8A867E]">/${cat.slug}</span>
               </div>
               ${categories.length > 1 ? `
-                <button type="button" onclick="deleteCategory(${cat.id})" class="text-rose-600 hover:text-rose-700 text-xs px-2 py-0.5 rounded hover:bg-rose-50 transition">Delete</button>
+                <button type="button" onclick="deleteCategory(${cat.id})" class="text-rose-600 hover:text-rose-700 text-xs px-2 py-0.5 rounded hover:bg-rose-50 transition cursor-pointer">Delete</button>
               ` : `
                 <span class="text-[10px] text-[#8A867E]">Default (Protected)</span>
               `}
@@ -390,7 +567,7 @@ adminRouter.get("/", (c) => {
             <p class="text-[11px] text-[#6E6B63]">ការពារ និងរក្សាទុកទិន្នន័យអត្ថបទទាំងអស់</p>
           </div>
         </div>
-        <button onclick="closeBackupModal()" type="button" class="w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center transition">✕</button>
+        <button onclick="closeBackupModal()" type="button" class="w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center transition cursor-pointer">✕</button>
       </div>
 
       <!-- Persistent Storage Security Badge -->
@@ -437,7 +614,7 @@ adminRouter.get("/", (c) => {
           </div>
           <div class="flex items-center space-x-2">
             <input type="file" id="importJsonFileInput" accept=".json" class="hidden" onchange="handleImportJsonFile(event)">
-            <button type="button" onclick="document.getElementById('importJsonFileInput').click()" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#FAF9F5] border border-[#E5E2D9] text-[#1C1B18] font-bold text-xs transition flex items-center justify-center space-x-1.5 shadow-xs">
+            <button type="button" onclick="document.getElementById('importJsonFileInput').click()" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#FAF9F5] border border-[#E5E2D9] text-[#1C1B18] font-bold text-xs transition flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer">
               <span>📤</span>
               <span>Select & Restore JSON Backup File</span>
             </button>
@@ -450,6 +627,226 @@ adminRouter.get("/", (c) => {
   </div>
 
   <script>
+    // ================= MAIN TABS SWITCHER =================
+    function switchMainTab(tab) {
+      const artBtn = document.getElementById('mainTabArticlesBtn');
+      const trkBtn = document.getElementById('mainTabTrackingBtn');
+      const artView = document.getElementById('mainArticlesView');
+      const trkView = document.getElementById('mainTrackingView');
+
+      if (tab === 'articles') {
+        artBtn.className = 'px-4 py-2 rounded-xl font-bold text-xs bg-white text-[#1C1B18] shadow-sm border border-[#E5E2D9] flex items-center space-x-2 transition cursor-pointer';
+        trkBtn.className = 'px-4 py-2 rounded-xl font-semibold text-xs text-[#6E6B63] hover:text-[#1C1B18] flex items-center space-x-2 transition cursor-pointer';
+        artView.classList.remove('hidden');
+        trkView.classList.add('hidden');
+      } else {
+        trkBtn.className = 'px-4 py-2 rounded-xl font-bold text-xs bg-emerald-600 text-white shadow-sm flex items-center space-x-2 transition cursor-pointer';
+        artBtn.className = 'px-4 py-2 rounded-xl font-semibold text-xs text-[#6E6B63] hover:text-[#1C1B18] flex items-center space-x-2 transition cursor-pointer';
+        trkView.classList.remove('hidden');
+        artView.classList.add('hidden');
+      }
+    }
+
+    // ================= POSTS SUB-TABS (PUBLISHED / TRASH) =================
+    function switchPostsTab(tab) {
+      const activeBtn = document.getElementById('tabActivePostsBtn');
+      const trashBtn = document.getElementById('tabTrashPostsBtn');
+      const activeBox = document.getElementById('activePostsView');
+      const trashBox = document.getElementById('trashPostsView');
+      const trashActions = document.getElementById('trashTabActions');
+      const subtitle = document.getElementById('tabSubtitle');
+
+      if (tab === 'active') {
+        activeBtn.className = 'px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition cursor-pointer';
+        trashBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1 cursor-pointer';
+        activeBox.classList.remove('hidden');
+        trashBox.classList.add('hidden');
+        if (trashActions) trashActions.classList.add('hidden');
+        if (subtitle) subtitle.textContent = 'Manage active stories, tick multiple articles to bulk move to trash or publish';
+      } else {
+        trashBtn.className = 'px-3 py-1 rounded-lg font-bold bg-rose-700 text-white shadow-xs transition flex items-center space-x-1 cursor-pointer';
+        activeBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition cursor-pointer';
+        trashBox.classList.remove('hidden');
+        activeBox.classList.add('hidden');
+        if (trashActions) trashActions.classList.remove('hidden');
+        if (subtitle) subtitle.textContent = 'Articles in trash bin. You can tick multiple to restore or delete permanently.';
+      }
+    }
+
+    // ================= BULK ACTIONS ENGINE =================
+    function toggleSelectAll(type, checked) {
+      const selector = type === 'published' ? '.post-check-published' : '.post-check-trash';
+      const checkboxes = document.querySelectorAll(selector);
+      checkboxes.forEach(cb => { cb.checked = checked; });
+      updateBulkBar(type);
+    }
+
+    function deselectAll(type) {
+      const master = document.getElementById(type === 'published' ? 'selectAllPublished' : 'selectAllTrash');
+      if (master) master.checked = false;
+      toggleSelectAll(type, false);
+    }
+
+    function getSelectedIds(type) {
+      const selector = type === 'published' ? '.post-check-published:checked' : '.post-check-trash:checked';
+      const checkboxes = document.querySelectorAll(selector);
+      const ids = [];
+      checkboxes.forEach(cb => {
+        const val = Number(cb.value);
+        if (val) ids.push(val);
+      });
+      return ids;
+    }
+
+    function updateBulkBar(type) {
+      const ids = getSelectedIds(type);
+      const bar = document.getElementById(type === 'published' ? 'publishedBulkBar' : 'trashBulkBar');
+      const countEl = document.getElementById(type === 'published' ? 'publishedSelectedCount' : 'trashSelectedCount');
+      if (!bar || !countEl) return;
+
+      countEl.textContent = String(ids.length);
+      if (ids.length > 0) {
+        bar.classList.remove('hidden');
+      } else {
+        bar.classList.add('hidden');
+        const master = document.getElementById(type === 'published' ? 'selectAllPublished' : 'selectAllTrash');
+        if (master) master.checked = false;
+      }
+    }
+
+    async function bulkMoveToTrash() {
+      const ids = getSelectedIds('published');
+      if (ids.length === 0) return alert('សូមជ្រើសរើសអត្ថបទយ៉ាងតិចមួយ (Please select at least 1 article)');
+      if (!confirm('តើអ្នកចង់ Move អត្ថបទដែលបានជ្រើសរើសចំនួន ' + ids.length + ' ទៅកាន់ធុងសម្រាម (Trash)?\\n\\n✓ អត្ថបទនឹងមិនទាន់បាត់បង់ទេ អ្នកអាច Restore មកវិញបានគ្រប់ពេល។')) return;
+
+      try {
+        const res = await fetch('/api/posts/bulk/trash', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ បានផ្លាស់ទី ' + data.count + ' អត្ថបទទៅកាន់ធុងសម្រាមដោយជោគជ័យ!');
+          window.location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to move articles'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function bulkRestore() {
+      const ids = getSelectedIds('trash');
+      if (ids.length === 0) return alert('សូមជ្រើសរើសអត្ថបទយ៉ាងតិចមួយ (Please select at least 1 article)');
+      if (!confirm('តើអ្នកចង់ Restore អត្ថបទដែលបានជ្រើសរើសចំនួន ' + ids.length + ' ត្រឡប់មក Website វិញមែនទេ?')) return;
+
+      try {
+        const res = await fetch('/api/posts/bulk/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ បានស្តារឡើងវិញ (Restored) ' + data.count + ' អត្ថបទដោយជោគជ័យ!');
+          window.location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to restore'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function bulkDeletePermanent() {
+      const ids = getSelectedIds('trash');
+      if (ids.length === 0) return alert('សូមជ្រើសរើសអត្ថបទយ៉ាងតិចមួយ (Please select at least 1 article)');
+      if (!confirm('⚠️ តើអ្នកពិតជាចង់លុបអត្ថបទចំនួន ' + ids.length + ' នេះជាអចិន្ត្រៃយ៍មែនទេ?\\n\\n🚨 ការព្រមាន៖ អត្ថបទទាំងនេះនឹងត្រូវលុបចេញពី Database រហូត មិនអាចយកមកវិញបានឡើយ!')) return;
+
+      try {
+        const res = await fetch('/api/posts/bulk/delete-permanent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ បានលុបជាអចិន្ត្រៃយ៍ ' + data.count + ' អត្ថបទរួចរាល់!');
+          window.location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    // ================= SINGLE ITEM ACTIONS =================
+    async function moveToTrash(id) {
+      if (!confirm('Move this story to Trash?\\n\\n✓ អត្ថបទនឹងមិនទាន់បាត់បង់ទេ អ្នកអាច Restore មកវិញបានគ្រប់ពេល។')) return;
+      try {
+        const res = await fetch('/api/posts/' + id + '/trash', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Error moving to trash: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function restorePost(id) {
+      try {
+        const res = await fetch('/api/posts/' + id + '/restore', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ អត្ថបទត្រូវបានស្តារឡើងវិញ (Restored) ដោយជោគជ័យ!');
+          window.location.reload();
+        } else {
+          alert('Error restoring post: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function deletePermanently(id) {
+      if (!confirm('⚠️ តើអ្នកពិតជាចង់លុបអត្ថបទនេះជាអចិន្ត្រៃយ៍មែនទេ?\\n\\n🚨 ការព្រមាន៖ អត្ថបទនេះនឹងត្រូវលុបចេញពី Database រហូត មិនអាចយកមកវិញបានឡើយ!')) return;
+      try {
+        const res = await fetch('/api/posts/' + id + '?permanent=true', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ អត្ថបទត្រូវបានលុបជាអចិន្ត្រៃយ៍រួចរាល់!');
+          window.location.reload();
+        } else {
+          alert('Error deleting post: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function emptyTrash() {
+      if (!confirm('⚠️ តើអ្នកប្រាកដថាចង់សម្អាតធុងសម្រាមទាំងមូល (Empty Trash)?\\n\\n🚨 រាល់អត្ថបទទាំងអស់ក្នុងធុងសម្រាម នឹងត្រូវលុបជាអចិន្ត្រៃយ៍!')) return;
+      try {
+        const res = await fetch('/api/posts/trash/empty', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ ធុងសម្រាមត្រូវបានសម្អាតស្អាតជាស្ថាពរ!');
+          window.location.reload();
+        } else {
+          alert('Error emptying trash: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    // ================= BACKUP & MODALS =================
     function openBackupModal() {
       document.getElementById('backupModal').classList.remove('hidden');
     }
@@ -533,129 +930,114 @@ adminRouter.get("/", (c) => {
       btn.innerHTML = 'Instant Cache Purge';
     }
 
-    function switchPostsTab(tab) {
-      const activeBtn = document.getElementById('tabActivePostsBtn');
-      const trashBtn = document.getElementById('tabTrashPostsBtn');
-      const activeBox = document.getElementById('activePostsView');
-      const trashBox = document.getElementById('trashPostsView');
-      const trashActions = document.getElementById('trashTabActions');
-      const subtitle = document.getElementById('tabSubtitle');
-
-      if (tab === 'active') {
-        activeBtn.className = 'px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition';
-        trashBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1';
-        activeBox.classList.remove('hidden');
-        trashBox.classList.add('hidden');
-        if (trashActions) trashActions.classList.add('hidden');
-        if (subtitle) subtitle.textContent = 'Manage active stories, move to trash, or publish breaking alerts';
-      } else {
-        trashBtn.className = 'px-3 py-1 rounded-lg font-bold bg-rose-700 text-white shadow-xs transition flex items-center space-x-1';
-        activeBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition';
-        trashBox.classList.remove('hidden');
-        activeBox.classList.add('hidden');
-        if (trashActions) trashActions.classList.remove('hidden');
-        if (subtitle) subtitle.textContent = 'Articles in trash bin. You can restore them anytime or delete them permanently.';
-      }
-    }
-
-    async function moveToTrash(id) {
-      if (!confirm('Move this story to Trash?\\n\\n✓ អត្ថបទនឹងមិនទាន់បាត់បង់ទេ អ្នកអាច Restore មកវិញបានគ្រប់ពេល។')) return;
-      try {
-        const res = await fetch('/api/posts/' + id + '/trash', { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-          window.location.reload();
-        } else {
-          alert('Error moving to trash: ' + (data.error || 'Failed'));
-        }
-      } catch (err) {
-        alert('Network error: ' + err.message);
-      }
-    }
-
-    async function restorePost(id) {
-      try {
-        const res = await fetch('/api/posts/' + id + '/restore', { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-          alert('✓ អត្ថបទត្រូវបានស្តារឡើងវិញ (Restored) ដោយជោគជ័យ!');
-          window.location.reload();
-        } else {
-          alert('Error restoring post: ' + (data.error || 'Failed'));
-        }
-      } catch (err) {
-        alert('Network error: ' + err.message);
-      }
-    }
-
-    async function deletePermanently(id) {
-      if (!confirm('⚠️ តើអ្នកពិតជាចង់លុបអត្ថបទនេះជាអចិន្ត្រៃយ៍មែនទេ?\\n\\n🚨 ការព្រមាន៖ អត្ថបទនេះនឹងត្រូវលុបចេញពី Database រហូត មិនអាចយកមកវិញបានឡើយ!')) return;
-      try {
-        const res = await fetch('/api/posts/' + id + '?permanent=true', { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-          alert('✓ អត្ថបទត្រូវបានលុបជាអចិន្ត្រៃយ៍រួចរាល់!');
-          window.location.reload();
-        } else {
-          alert('Error deleting post: ' + (data.error || 'Failed'));
-        }
-      } catch (err) {
-        alert('Network error: ' + err.message);
-      }
-    }
-
-    async function emptyTrash() {
-      if (!confirm('⚠️ តើអ្នកប្រាកដថាចង់សម្អាតធុងសម្រាមទាំងមូល (Empty Trash)?\\n\\n🚨 រាល់អត្ថបទទាំងអស់ក្នុងធុងសម្រាម នឹងត្រូវលុបជាអចិន្ត្រៃយ៍!')) return;
-      try {
-        const res = await fetch('/api/posts/trash/empty', { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-          alert('✓ ធុងសម្រាមត្រូវបានសម្អាតស្អាតជាស្ថាពរ!');
-          window.location.reload();
-        } else {
-          alert('Error emptying trash: ' + (data.error || 'Failed'));
-        }
-      } catch (err) {
-        alert('Network error: ' + err.message);
-      }
-    }
-
-    // Whos.amung.us Real-Time Live Readers Polling Engine
+    // ================= WHOS.AMUNG.US LIVE TRACKER POLLING ENGINE =================
     async function pollLiveVisitors() {
       try {
         const res = await fetch('/api/track/live');
         const data = await res.json();
+        const total = data.totalOnline || 0;
+
+        // 1. Update counters
         const countEl = document.getElementById('liveOnlineCount');
-        if (countEl) countEl.innerText = String(data.totalOnline || 0);
-        
-        const summaryEl = document.getElementById('activePagesSummary');
-        if (summaryEl) {
-          const len = (data.activePages || []).length;
-          summaryEl.innerText = len + ' active ' + (len === 1 ? 'page' : 'pages');
+        if (countEl) countEl.innerText = String(total);
+        const hugeEl = document.getElementById('whosHugeCount');
+        if (hugeEl) hugeEl.innerText = String(total);
+        const pillEl = document.getElementById('mainTrackingPill');
+        if (pillEl) pillEl.innerText = String(total);
+
+        // 2. Update Country List
+        const countryBadge = document.getElementById('whosCountryCountBadge');
+        const countryList = document.getElementById('whosCountryList');
+        if (countryBadge) countryBadge.innerText = (data.countries || []).length + ' Countries';
+        if (countryList) {
+          if (!data.countries || data.countries.length === 0) {
+            countryList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-8 text-center">No active visitors right now. Open the site in a tab or on phone to see your country flag!</div>';
+          } else {
+            countryList.innerHTML = data.countries.map(function(c) {
+              return '<div class="p-3 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1] hover:border-[#C25E3E]/40 transition space-y-2">' +
+                '<div class="flex items-center justify-between">' +
+                  '<div class="flex items-center space-x-2.5">' +
+                    '<span class="text-2xl leading-none">' + (c.flag || '🌐') + '</span>' +
+                    '<div>' +
+                      '<span class="font-bold text-xs text-[#1C1B18]">' + c.name + '</span>' +
+                      '<span class="text-[10px] text-[#8A867E] font-mono ml-1.5 uppercase">(' + c.code + ')</span>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="flex items-center space-x-2">' +
+                    '<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-xs font-bold border border-emerald-200">' +
+                      c.count + ' ' + (c.count === 1 ? 'reader' : 'readers') +
+                    '</span>' +
+                    '<span class="text-xs font-mono font-bold text-[#6E6B63]">' + c.percent + '%</span>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="w-full bg-[#EAE8E1] h-1.5 rounded-full overflow-hidden">' +
+                  '<div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500" style="width: ' + Math.max(5, c.percent) + '%"></div>' +
+                '</div>' +
+              '</div>';
+            }).join('');
+          }
         }
 
-        const listEl = document.getElementById('activePagesList');
-        if (listEl) {
+        // 3. Update Devices
+        if (data.devices) {
+          const mEl = document.getElementById('deviceMobileCount');
+          const dEl = document.getElementById('deviceDesktopCount');
+          const tEl = document.getElementById('deviceTabletCount');
+          if (mEl) mEl.innerText = String(data.devices.mobile || 0);
+          if (dEl) dEl.innerText = String(data.devices.desktop || 0);
+          if (tEl) tEl.innerText = String(data.devices.tablet || 0);
+        }
+
+        // 4. Update Active Pages
+        const pagesBadge = document.getElementById('whosPagesCountBadge');
+        const pagesList = document.getElementById('whosActivePages');
+        if (pagesBadge) pagesBadge.innerText = String((data.activePages || []).length);
+        if (pagesList) {
           if (!data.activePages || data.activePages.length === 0) {
-            listEl.innerHTML = '<div class="text-xs text-slate-500 italic py-2 text-center">No active readers at this exact moment. Open the site in a tab or on phone to see live tracking!</div>';
+            pagesList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-4 text-center">No active pages right now</div>';
           } else {
-            listEl.innerHTML = data.activePages.map(function(p) {
-              return '<div class="flex items-center justify-between py-2 px-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition text-xs">' +
-                '<div class="flex items-center space-x-2.5 truncate mr-3">' +
-                  '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>' +
-                  '<a href="' + p.path + '" target="_blank" class="text-slate-200 hover:text-indigo-300 truncate font-medium">' +
+            pagesList.innerHTML = data.activePages.map(function(p) {
+              return '<div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1] text-xs hover:border-[#C25E3E]/40 transition">' +
+                '<div class="truncate mr-2">' +
+                  '<a href="' + p.path + '" target="_blank" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' +
                     (p.title || p.path) +
                   '</a>' +
-                  '<span class="text-slate-500 font-mono text-[10px] hidden sm:inline">(' + p.path + ')</span>' +
+                  '<span class="text-[10px] text-[#8A867E] font-mono">' + p.path + '</span>' +
                 '</div>' +
-                '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/30 flex-shrink-0 flex items-center space-x-1">' +
-                  '<span>🟢</span>' +
-                  '<span>' + p.count + ' ' + (p.count === 1 ? 'reader' : 'readers') + ' online</span>' +
+                '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[11px] font-bold flex-shrink-0">' +
+                  p.count + ' ' + (p.count === 1 ? 'reader' : 'readers') +
                 '</span>' +
               '</div>';
             }).join('');
           }
         }
+
+        // 5. Update Recent Stream
+        const streamList = document.getElementById('whosRecentStream');
+        if (streamList) {
+          if (!data.recentVisitors || data.recentVisitors.length === 0) {
+            streamList.innerHTML = '<div class="text-xs text-[#8A867E] italic py-6 text-center">No visitor events logged in memory yet.</div>';
+          } else {
+            streamList.innerHTML = data.recentVisitors.map(function(v) {
+              return '<div class="py-2.5 px-3 flex items-center justify-between hover:bg-[#FAF9F5] transition text-xs">' +
+                '<div class="flex items-center space-x-3 truncate mr-3">' +
+                  '<span class="text-xl flex-shrink-0">' + (v.flag || '🌐') + '</span>' +
+                  '<div class="truncate">' +
+                    '<div class="flex items-center space-x-1.5">' +
+                      '<span class="font-bold text-[#1C1B18]">' + v.country + '</span>' +
+                      '<span class="text-[10px] px-1.5 py-0.2 rounded bg-[#F3F1EC] text-[#6E6B63] font-mono border border-[#E5E2D9]">' + v.device + '</span>' +
+                    '</div>' +
+                    '<div class="text-[11px] text-[#6E6B63] truncate">' + (v.title || v.path) + '</div>' +
+                  '</div>' +
+                '</div>' +
+                '<span class="text-[10px] font-mono text-emerald-700 font-medium flex-shrink-0 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">' +
+                  v.agoSec + 's ago' +
+                '</span>' +
+              '</div>';
+            }).join('');
+          }
+        }
+
       } catch(e) {}
     }
     setInterval(pollLiveVisitors, 3000);
