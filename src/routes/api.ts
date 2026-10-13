@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { db, dbPath } from "../db/index";
 import fs from "fs";
+import path from "node:path";
+import { fetchRemoteImage } from "../utils/remote-image";
+import { absoluteWebUrl, extractArticleHtml } from "../utils/article-import";
 import { recordVisitorPing, removeVisitorSession, getLiveStats } from "../utils/tracker";
 import stylePrompts from "../data/style-prompts.json";
 import stylesList from "../data/styles.json";
@@ -13,6 +16,36 @@ apiRouter.use("*", async (c, next) => {
   c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
   c.res.headers.set("Pragma", "no-cache");
   c.res.headers.set("Expires", "0");
+});
+
+// Image Studio uses a same-origin preview and saves an independent WebP asset.
+function editorAuthorized(c: any) {
+  return /(?:^|;\s*)usa_cms_token=usa_news_cms_auth_token_secret_2026(?:;|$)/.test(c.req.header('cookie') || '');
+}
+apiRouter.get('/media/import', async (c) => {
+  if (!editorAuthorized(c)) return c.json({ success: false, error: 'Please sign in again.' }, 401);
+  try {
+    const blob = await fetchRemoteImage(c.req.query('url') || '');
+    return new Response(blob, { headers: { 'Content-Type': blob.type, 'Cache-Control': 'no-store' } });
+  } catch (error: any) { return c.json({ success: false, error: error.message }, 400); }
+});
+apiRouter.post('/media/upload', async (c) => {
+  if (!editorAuthorized(c)) return c.json({ success: false, error: 'Please sign in again.' }, 401);
+  try {
+    const declaredLength = Number(c.req.header('content-length'));
+    if (declaredLength > 12 * 1024 * 1024) return c.json({ success: false, error: 'Image exceeds 12 MB.' }, 413);
+    const body = await c.req.parseBody();
+    const file = body.image;
+    if (!(file instanceof File) || file.size >= 50 * 1024) return c.json({ success: false, error: 'Save an edited WebP under 50 KB.' }, 400);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const signature = new TextDecoder().decode(bytes.slice(0, 12));
+    if (!signature.startsWith('RIFF') || signature.slice(8, 12) !== 'WEBP') return c.json({ success: false, error: 'Export your edited image as WebP first.' }, 400);
+    const directory = path.join(path.dirname(dbPath), 'media');
+    fs.mkdirSync(directory, { recursive: true });
+    const name = crypto.randomUUID() + '.webp';
+    await Bun.write(path.join(directory, name), bytes);
+    return c.json({ success: true, url: '/media/' + name });
+  } catch (error: any) { return c.json({ success: false, error: error.message }, 500); }
 });
 
 // GET all TK Summary styles
@@ -316,6 +349,7 @@ apiRouter.post("/ai/fetch-article", async (c) => {
 
     let res = await fetch(targetUrl, {
       redirect: "follow",
+      signal: AbortSignal.timeout(20000),
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -416,55 +450,20 @@ apiRouter.post("/ai/fetch-article", async (c) => {
       }
     }
 
-    if (image) {
-      if (image.startsWith("//")) image = "https:" + image;
-      try {
-        const parsedImg = new URL(image);
-        image = parsedImg.origin + parsedImg.pathname;
-      } catch (e) {}
+    image = absoluteWebUrl(image, res.url || targetUrl);
+    const imported = await extractArticleHtml(html, res.url || targetUrl);
+    if (!imported.content || !imported.text) {
+      return c.json({ success: false, error: "No readable article found. The source may require login or block imports." }, 422);
     }
-
-    // Cut off everything from the comments section downward (WordPress #comments, .comments-area, #respond, etc.)
-    const commentIndex = html.search(/(?:id=["']comments["']|class=["'][^"']*comments-area|id=["']respond["']|id=["']commentform["']|Your email address will not be published|wp-comments-post\.php)/i);
-    let mainHtml = commentIndex > 0 ? html.substring(0, commentIndex) : html;
-
-    // Clean HTML to extract actual text paragraphs
-    let cleanedHtml = mainHtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-                              .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-                              .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, "")
-                              .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, "")
-                              .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, "")
-                              .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, "");
-
-    const paragraphs: string[] = [];
-    const pRegex = /<p[^>]*>(.*?)<\/p>/gis;
-    let match;
-    while ((match = pRegex.exec(cleanedHtml)) !== null) {
-      if (!match[1]) continue;
-      let text = decodeHtml(match[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
-      const lower = text.toLowerCase();
-      if (text.length > 35 && 
-          !lower.includes("email address will not be published") && 
-          !lower.includes("save my name") && 
-          !lower.includes("required fields are marked") && 
-          !lower.includes("leave a reply") && 
-          !lower.includes("leave a comment") && 
-          !lower.includes("all rights reserved") && 
-          !lower.includes("cookie policy") && 
-          !lower.includes("subscribe to") &&
-          !lower.includes("advertisement")) {
-        paragraphs.push(text);
-      }
-    }
-
-    const content = paragraphs.slice(0, 18).map(p => `<p>${p}</p>`).join("\n\n");
-    const rawText = paragraphs.slice(0, 18).join("\n\n");
+    const content = imported.content;
+    const rawText = imported.text;
 
     return c.json({
       success: true,
       title: title || "Fetched News Headline",
-      summary: summary || (paragraphs[0] ? paragraphs[0].substring(0, 160) + "..." : ""),
-      image,
+      summary: summary || rawText.substring(0, 160),
+      image: image || imported.images[0] || "",
+      images: [...new Set([image, ...imported.images].filter(Boolean))],
       content: content || "<p>Article text imported.</p>",
       rawText: rawText || "",
       url

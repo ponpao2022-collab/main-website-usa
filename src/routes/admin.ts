@@ -1438,6 +1438,7 @@ const renderEditor = (c: any) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014c">
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
@@ -1686,7 +1687,7 @@ const renderEditor = (c: any) => {
     window.switchTkTab = switchTkTab;
   </script>
 </head>
-<body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen selection:bg-[#C25E3E] selection:text-white relative">
+<body class="editor-shell bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen selection:bg-[#C25E3E] selection:text-white relative">
 
   <!-- Top Navigation Bar -->
   <header class="h-14 border-b border-[#EAE8E1] bg-white/95 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
@@ -1703,7 +1704,7 @@ const renderEditor = (c: any) => {
     <div class="flex items-center space-x-3">
       <button onclick="openAiModal()" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 flex items-center space-x-1.5 transition">
         <img src="/assets/tk-mascot.webp" class="w-4 h-4 object-contain" alt="TK" loading="eager" width="16" height="16">
-        <span>TK Summary AI</span>
+        <span>TK Tools</span>
       </button>
 
       <button onclick="saveAndDeploy('draft')" id="draftBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] flex items-center space-x-1.5 transition">
@@ -1718,10 +1719,10 @@ const renderEditor = (c: any) => {
   </header>
 
   <!-- Editor Container -->
-  <div class="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+  <div id="editorLayout" class="flex h-[calc(100vh-3.5rem)] overflow-hidden">
     
     <!-- Center Editor Canvas -->
-    <main class="flex-1 overflow-y-auto px-6 lg:px-10 py-6 max-w-5xl mx-auto space-y-5">
+    <main id="editorMain" class="flex-1 overflow-y-auto px-6 lg:px-10 py-6 max-w-5xl mx-auto space-y-5">
       
       <!-- Headline & Excerpt -->
       <div>
@@ -1740,7 +1741,7 @@ const renderEditor = (c: any) => {
           <span>•</span>
           <div class="flex items-center space-x-1 text-[#6E6B63]">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Autosaved to VPS SQLite</span>
+            <span id="editorSaveStatus">Unsaved changes · Save draft to keep your work</span>
           </div>
         </div>
       </div>
@@ -1759,18 +1760,8 @@ const renderEditor = (c: any) => {
           </button>
         </div>
 
-        <div class="flex items-center space-x-2 text-xs">
-          <button type="button" onclick="openAiModal()" style="touch-action: manipulation;" class="px-2.5 py-1 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-xs transition text-[11px] font-bold flex items-center space-x-1 cursor-pointer">
-            <img src="/assets/tk-mascot.webp" class="w-3.5 h-3.5 object-contain" alt="TK">
-            <span>TK Summary AI</span>
-          </button>
-          <button type="button" onclick="aiFormatCurrent('cnn')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FAF9F5] text-[#2B2926] border border-[#E5E2D9] transition text-[11px] font-semibold">
-            ⚡ Quick CNN Format
-          </button>
-          <button type="button" onclick="aiKhmerTranslate()" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition text-[11px] font-semibold">
-            🇰🇭 បកប្រែខ្មែរ
-          </button>
-        </div>
+        <button type="button" onclick="openImageStudio()" class="studio-trigger">Image Studio</button>
+
       </div>
 
       <!-- EDITOR WORKSPACES (Post, HTML, Both) -->
@@ -1796,16 +1787,15 @@ const renderEditor = (c: any) => {
               <button type="button" onmousedown="event.preventDefault()" onclick="insertEditorLink()" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#C25E3E] font-medium transition text-[11px] cursor-pointer" title="Insert Link">🔗 Link</button>
               <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('removeFormat')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#8A867E] transition text-[11px] cursor-pointer" title="Clear Formatting">🧹 Clear</button>
               <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
-              <button type="button" onmousedown="event.preventDefault()" onclick="openAiModal()" style="touch-action: manipulation;" class="p-1 px-2.5 rounded-lg bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 font-bold transition text-[11px] flex items-center space-x-1 cursor-pointer" title="Open TK Summary AI Drawer">
-                <img src="/assets/tk-mascot.webp" class="w-3.5 h-3.5 object-contain" alt="TK">
-                <span>TK Summary AI</span>
-              </button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="openImageStudio()" class="studio-trigger">＋ Image</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('unlink')" class="studio-trigger">Unlink</button>
             </div>
 
             <!-- Content Canvas -->
+            <p class="editor-media-hint">Double-click an article image to edit it or remove its source link.</p>
             <div class="p-6 min-h-[380px]">
-              <div id="postVisualEditor" contenteditable="true" class="prose max-w-none text-[#2B2926] text-base leading-relaxed focus:outline-none min-h-[340px]">
-                ${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}
+              <div id="postVisualEditor" data-placeholder="Write your story, or import an article with TK Tools…" contenteditable="true" class="prose max-w-none text-[#2B2926] text-base leading-relaxed focus:outline-none min-h-[340px]">
+                ${post ? post.content : ''}
               </div>
             </div>
           </div>
@@ -1814,7 +1804,7 @@ const renderEditor = (c: any) => {
         <!-- 2. HTML VIEW (Raw Code Editor) -->
         <div id="htmlViewWrapper" style="display: none;">
           <div class="border border-[#EAE8E1] bg-white rounded-2xl p-4 shadow-sm">
-            <textarea id="htmlCodeEditor" rows="18" class="w-full bg-[#1C1B18] font-mono text-sm text-emerald-300 rounded-xl p-4 leading-relaxed focus:outline-none resize-y">${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}</textarea>
+            <textarea id="htmlCodeEditor" rows="18" class="w-full bg-[#1C1B18] font-mono text-sm text-emerald-300 rounded-xl p-4 leading-relaxed focus:outline-none resize-y">${post ? post.content : ''}</textarea>
           </div>
         </div>
 
@@ -1835,7 +1825,7 @@ const renderEditor = (c: any) => {
                 <span>📝 LIVE POST PREVIEW</span>
                 <span class="text-emerald-600 font-bold">60 FPS</span>
               </div>
-              <div id="splitPostEditor" contenteditable="true" class="prose max-w-none text-[#2B2926] text-sm leading-relaxed focus:outline-none"></div>
+              <div id="splitPostEditor" data-placeholder="Write your story…" contenteditable="true" class="prose max-w-none text-[#2B2926] text-sm leading-relaxed focus:outline-none"></div>
             </div>
           </div>
         </div>
@@ -1845,35 +1835,10 @@ const renderEditor = (c: any) => {
     </main>
 
     <!-- Right Settings Inspector Panel in Claude Light Mode -->
-    <aside class="w-80 border-l border-[#EAE8E1] bg-white p-5 overflow-y-auto space-y-6 shadow-xs">
+    <aside id="editorInspector" class="w-80 border-l border-[#EAE8E1] bg-white p-5 overflow-y-auto space-y-6 shadow-xs">
       
-      <!-- Dedicated Publish Action Box -->
-      <div class="p-4 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] shadow-xs space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-[#6E6B63]">Publishing Status</span>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${post && post.status === 'draft' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
-            ${post ? (post.status === 'draft' ? 'Draft' : 'Published') : 'New Article'}
-          </span>
-        </div>
-        
-        <button type="button" onclick="saveAndDeploy('published')" class="w-full py-2.5 px-3 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-[#C25E3E]/20 transition transform active:scale-95">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          <span>Publish Article Now</span>
-        </button>
-
-        <div class="flex items-center space-x-2 pt-1">
-          <button type="button" onclick="saveAndDeploy('draft')" class="flex-1 py-1.5 px-2 rounded-lg bg-white hover:bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9] text-[11px] font-semibold transition text-center shadow-xs">
-            Save as Draft
-          </button>
-          ${post ? `
-            <a href="/article/${post.slug}" target="_blank" class="py-1.5 px-2.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-semibold transition text-center shadow-xs">
-              View Live
-            </a>
-          ` : ''}
-        </div>
-      </div>
-
-      <!-- Breaking News Switch -->
+      <div class="inspector-heading">Post settings</div>
+            <!-- Breaking News Switch -->
       <div class="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200">
         <div>
           <div class="text-xs font-bold text-rose-800">Mark as Breaking News</div>
@@ -1889,7 +1854,7 @@ const renderEditor = (c: any) => {
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <label class="block text-xs font-semibold text-[#1C1B18]">Featured Image (Thumbnail)</label>
-          <span class="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">WebP Auto</span>
+          <span class="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Small WebP</span>
         </div>
 
         <!-- Drag & Drop Container -->
@@ -1906,18 +1871,18 @@ const renderEditor = (c: any) => {
           <div id="dropZoneEmpty" class="${post && post.featured_image ? 'hidden' : 'block'} py-3">
             <svg class="w-8 h-8 text-[#8A867E] group-hover:text-[#C25E3E] mx-auto mb-2 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             <div class="text-xs font-bold text-[#2B2926]">Drag & Drop Image or Click</div>
-            <div class="text-[10px] text-[#6E6B63] mt-1">Converts automatically to clean WebP</div>
+            <div class="text-[10px] text-[#6E6B63] mt-1">Edit and save a small WebP</div>
           </div>
 
           <!-- Preview State -->
           <div id="dropZonePreview" class="${post && post.featured_image ? 'block' : 'hidden'} relative rounded-xl overflow-hidden group/img">
             <img id="imagePreviewImg" src="${post ? (post.featured_image || '') : ''}" class="w-full h-36 object-cover rounded-lg border border-[#EAE8E1]">
             <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center space-x-2">
-              <button type="button" onclick="event.stopPropagation(); unlinkAndCleanImage();" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-[#1C1B18] rounded-lg text-[11px] font-bold shadow">Unlink Site</button>
+              <button type="button" onclick="event.stopPropagation(); openImageStudio();" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-[#1C1B18] rounded-lg text-[11px] font-bold shadow">Edit image</button>
               <button type="button" onclick="event.stopPropagation(); removeImage();" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-bold shadow">Remove</button>
             </div>
             <div class="absolute bottom-1 right-1 bg-white/95 text-emerald-700 text-[9px] font-mono px-1.5 py-0.5 rounded border border-emerald-200">
-              WebP Unlinked
+              Featured image
             </div>
           </div>
         </div>
@@ -1926,8 +1891,8 @@ const renderEditor = (c: any) => {
         <input type="hidden" id="imageInput" value="${post ? (post.featured_image || '') : ''}">
         
         <div class="flex items-center justify-between text-[11px] text-[#6E6B63] pt-1">
-          <button type="button" onclick="unlinkAndCleanImage()" class="text-[#C25E3E] hover:underline font-semibold">Unlink original post reference</button>
-          <span class="text-emerald-600 font-medium">100% Clean</span>
+          <button type="button" onclick="unlinkAndCleanImage()" class="text-[#C25E3E] hover:underline font-semibold">Edit / save independent image</button>
+          <span class="text-[#6E6B63]">Crop · resize · insert</span>
         </div>
       </div>
 
@@ -2019,38 +1984,15 @@ const renderEditor = (c: any) => {
         `}
       </div>
 
-      <!-- Cloudflare Edge Webhook Status -->
-      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] text-xs space-y-1">
-        <div class="text-[#1C1B18] font-semibold flex items-center justify-between">
-          <span>Edge Webhook:</span>
-          <span class="text-emerald-700 font-mono text-[11px] font-bold">Enabled</span>
-        </div>
-        <p class="text-[11px] text-[#6E6B63]">On Save, Cloudflare CDN automatically invalidates the cache worldwide in &lt;30ms.</p>
-      </div>
 
     </aside>
   </div>
-
-  <!-- FLOATING TK SUMMARY MASCOT TRIGGER BUTTON (BOTTOM RIGHT) -->
-  <button id="tkSummaryFloatingBtn" onclick="openAiModal()" type="button" aria-label="Open TK Summary AI" style="z-index: 9990; touch-action: manipulation;" class="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 flex items-center group cursor-pointer select-none focus:outline-none bg-transparent border-0 p-0">
-    <!-- Tooltip Pill -->
-    <div class="mr-2 sm:mr-3 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-2xl bg-white/95 border border-[#EAE8E1] text-xs font-bold text-[#1C1B18] shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
-      <span class="w-2 h-2 rounded-full bg-[#C25E3E] animate-ping"></span>
-      <span>TK Summary AI</span>
-    </div>
-
-    <!-- Character Mascot (Transparent PNG, No Background) -->
-    <div class="relative w-14 h-14 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95 cursor-pointer">
-      <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(194,94,62,0.35)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
-      <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(194,94,62,0.5)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
-    </div>
-  </button>
 
   <!-- BACKDROP OVERLAY FOR TK SUMMARY MODAL -->
   <div id="aiModalBackdrop" onclick="closeAiModal()" style="display: none; z-index: 9998;" class="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-200"></div>
 
   <!-- RIGHT-SIDE TK SUMMARY SLIDE-OUT PANEL (POPUP ON EDITOR) -->
-  <div id="aiModal" style="display: none; z-index: 9999;" class="fixed top-0 right-0 bottom-0 h-full h-screen h-[100dvh] w-full sm:w-[560px] lg:w-[620px] bg-[#FAF9F5] border-l border-[#EAE8E1] shadow-2xl flex flex-col">
+  <div id="aiModal" style="display: none; z-index: 9999;" role="dialog" aria-modal="true" aria-label="TK Editorial tools" class="fixed top-0 right-0 bottom-0 h-full h-screen h-[100dvh] w-full sm:w-[560px] lg:w-[620px] bg-[#FAF9F5] border-l border-[#EAE8E1] shadow-2xl flex flex-col">
     
     <!-- Drawer Header -->
     <div class="p-3 sm:p-5 border-b border-[#EAE8E1] bg-white flex items-center justify-between flex-shrink-0">
@@ -2060,10 +2002,10 @@ const renderEditor = (c: any) => {
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h2 class="text-xs sm:text-base font-black text-[#1C1B18] tracking-wide">TK SUMMARY CLASSIC</h2>
-            <span class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-[#C25E3E]/15 text-[#C25E3E] border border-[#C25E3E]/30">v2.5 AI</span>
+            <h2 class="text-xs sm:text-base font-black text-[#1C1B18] tracking-wide">TK Editorial tools</h2>
+            <span class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-[#C25E3E]/15 text-[#C25E3E] border border-[#C25E3E]/30">Studio</span>
           </div>
-          <p class="text-[10px] sm:text-[11px] text-[#6E6B63] truncate max-w-[220px] sm:max-w-none">15 Newsroom Presets • Rule-Based Formatter • WebP Image Studio</p>
+          <p class="text-[10px] sm:text-[11px] text-[#6E6B63] truncate max-w-[220px] sm:max-w-none">Import an article, then choose how to format it.</p>
         </div>
       </div>
       <button onclick="closeAiModal()" type="button" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center font-bold text-sm transition cursor-pointer" title="Close Panel">✕</button>
@@ -2072,37 +2014,22 @@ const renderEditor = (c: any) => {
     <!-- Mode Selector Tabs (AI Styles vs Free Presets) -->
     <div class="px-4 sm:px-6 pt-3 pb-2 bg-[#F8F7F3] border-b border-[#EAE8E1] flex items-center space-x-2 flex-shrink-0">
       <button type="button" id="tabAiStyles" onclick="switchTkTab('ai')" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-[#C25E3E] text-white shadow-sm">
-        <span>⚡ AI Style Rewrite (15 Presets)</span>
+        <span>Editorial styles</span>
       </button>
       <button type="button" id="tabFreePresets" onclick="switchTkTab('free')" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9]">
-        <span>🎨 Free Presets (No AI)</span>
+        <span>Quick layouts</span>
       </button>
     </div>
 
     <!-- Drawer Scrollable Content -->
     <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-[#1C1B18]">
 
-      <!-- Gemini API Key Input Bar -->
-      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div class="flex-1">
-          <label class="block font-bold text-[#1C1B18] mb-1">Google Gemini API Key (Free):</label>
-          <div class="flex items-center space-x-2">
-            <input type="password" id="geminiApiKey" class="w-full bg-white border border-[#E5E2D9] rounded-lg px-3 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="AIzaSy... (Saved in browser)">
-            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white font-semibold shadow-xs">Save</button>
-          </div>
-        </div>
-        <div class="text-[11px] text-[#6E6B63] sm:text-right">
-          <span>Get Free Key:</span>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#C25E3E] hover:underline block font-semibold">aistudio.google.com &rarr;</a>
-        </div>
-      </div>
-
       <!-- TAB 1: AI STYLES & LINK SCRAPER -->
       <div id="tkAiTabContent" class="space-y-6">
 
         <!-- Step 1: Input URL and Fetch Article -->
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">1. Paste Article Post Link:</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">Import from a link</label>
           <div class="flex items-center space-x-2">
             <input type="url" id="fetchUrlInput" class="flex-1 bg-white border border-[#E5E2D9] rounded-xl px-4 py-2.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="https://edition.cnn.com/... or https://topstoryusa.info/...">
             <button type="button" id="btnFetchUrl" onclick="fetchArticleFromLink()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-sm flex items-center space-x-2 transition">
@@ -2123,7 +2050,7 @@ const renderEditor = (c: any) => {
               <h4 id="fetchedTitlePreview" class="font-bold text-[#1C1B18] text-sm line-clamp-2"></h4>
               <p id="fetchedSummaryPreview" class="text-[#6E6B63] line-clamp-2 leading-relaxed"></p>
               <div class="flex items-center space-x-3 text-[11px] text-[#8A867E] pt-1">
-                <span class="text-emerald-700 font-mono">✓ Unlinked & Ready for WebP</span>
+                <span class="text-emerald-700 font-mono">Links preserved · images available in Image Studio</span>
               </div>
             </div>
           </div>
@@ -2138,7 +2065,7 @@ const renderEditor = (c: any) => {
         <!-- Step 2: Choose from 15 TK Summary Styles (With Real Brand Logos) -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">2. Choose Editorial News Style (15 Official Presets):</label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">Editorial style</label>
             <span class="text-[11px] text-[#C25E3E] font-mono font-bold" id="selectedStyleBadge">CNN Digital</span>
           </div>
 
@@ -2378,12 +2305,7 @@ const renderEditor = (c: any) => {
           </div>
 
           <!-- Image Unlink & WebP check -->
-          <div class="flex items-center pt-5">
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" id="aiCleanImageCheckbox" checked class="rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-0">
-              <span class="text-[#1C1B18] text-[11px] font-semibold">Unlink site & WebP Image</span>
-            </label>
-          </div>
+          <div class="flex items-center pt-5"><button type="button" onclick="openImageStudio()" class="studio-trigger">Edit image · WebP under 50 KB</button></div>
 
         </div>
 
@@ -2465,6 +2387,23 @@ const renderEditor = (c: any) => {
       </div>
 
       <!-- Result Applied Alert / Preview -->
+      <details id="aiConnection" class="ai-connection"><summary>AI connection · for rewrite and Khmer translation</summary>
+      <!-- Gemini API Key Input Bar -->
+      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div class="flex-1">
+          <label class="block font-bold text-[#1C1B18] mb-1">Google Gemini API Key (Free):</label>
+          <div class="flex items-center space-x-2">
+            <input type="password" id="geminiApiKey" class="w-full bg-white border border-[#E5E2D9] rounded-lg px-3 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="AIzaSy... (Saved in browser)">
+            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white font-semibold shadow-xs">Save</button>
+          </div>
+        </div>
+        <div class="text-[11px] text-[#6E6B63] sm:text-right">
+          <span>Get Free Key:</span>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#C25E3E] hover:underline block font-semibold">aistudio.google.com &rarr;</a>
+        </div>
+      </div>
+
+      </details>
       <div id="aiProcessingState" class="hidden p-4 rounded-2xl bg-[#C25E3E]/10 border border-[#C25E3E]/30 text-center text-xs text-[#C25E3E]">
         <span class="animate-spin inline-block mr-2">🌀</span>
         <span id="aiProcessingText">Processing with TK Summary...</span>
@@ -2777,7 +2716,7 @@ const renderEditor = (c: any) => {
     function syncInitialContent() {
       const htmlEditor = document.getElementById('htmlCodeEditor');
       const postVis = document.getElementById('postVisualEditor');
-      if (htmlEditor && postVis && htmlEditor.value) {
+      if (htmlEditor && postVis) {
         postVis.innerHTML = htmlEditor.value;
       }
     }
@@ -3057,7 +2996,7 @@ const renderEditor = (c: any) => {
         openAiModal();
         switchTkTab('ai');
         const keyInput = document.getElementById('geminiApiKey');
-        if (keyInput) keyInput.focus();
+        if (keyInput) { document.getElementById('aiConnection').open = true; keyInput.focus(); }
         alert('សូមបញ្ចូល Google Gemini API Key (ឥតគិតថ្លៃ) ក្នុងប្រអប់ TK Summary AI ជាមុនសិន ដើម្បីឱ្យប្រព័ន្ធ AI អាចបកប្រែជាភាសាខ្មែរបាន!');
         return;
       }
@@ -3081,7 +3020,6 @@ const renderEditor = (c: any) => {
 
       const targetWords = parseInt(document.getElementById('aiTargetWords')?.value) || 500;
       const injectTarget = document.getElementById('aiInjectTarget')?.value || 'both';
-      const cleanImage = document.getElementById('aiCleanImageCheckbox')?.checked ?? true;
 
       const activeStyle = window.currentSelectedStyle || currentSelectedStyle || 'cnn';
 
@@ -3125,14 +3063,8 @@ const renderEditor = (c: any) => {
           }
 
           // Handle Image Injection
-          if (fetchedArticleData && fetchedArticleData.image) {
+          if (fetchedArticleData && fetchedArticleData.image && !document.getElementById('imageInput').value) {
             let imgUrl = fetchedArticleData.image;
-            if (cleanImage) {
-              try {
-                const parsed = new URL(imgUrl);
-                imgUrl = parsed.origin + parsed.pathname;
-              } catch(e) {}
-            }
             setImagePreview(imgUrl);
           }
 
@@ -3208,7 +3140,7 @@ const renderEditor = (c: any) => {
         title: document.getElementById('titleInput').value.trim() || 'Untitled Article',
         slug: document.getElementById('slugInput').value.trim(),
         summary: document.getElementById('summaryInput').value.trim(),
-        content: document.getElementById('htmlCodeEditor').value || document.getElementById('postVisualEditor').innerHTML,
+        content: getActiveEditorContent(),
         category_id: parseInt(document.getElementById('categoryInput').value),
         featured_image: document.getElementById('imageInput').value,
         author_name: document.getElementById('authorInput').value.trim() || 'Editorial Staff',
@@ -3274,6 +3206,30 @@ const renderEditor = (c: any) => {
     window.processImageFileToWebp = processImageFileToWebp;
     window.setImagePreview = setImagePreview;
   </script>
+  <dialog id="imageStudio" aria-labelledby="imageStudioTitle">
+    <div class="studio-head"><div><span class="studio-eyebrow">MEDIA WORKSPACE</span><h2 id="imageStudioTitle">Image Studio</h2></div><button type="button" onclick="closeImageStudio()" aria-label="Close Image Studio">✕</button></div>
+    <div class="studio-body">
+      <div class="studio-preview"><canvas id="studioCanvas"></canvas><p id="studioEmpty">Choose an image to crop, resize and insert.</p></div>
+      <div class="studio-controls">
+        <label class="studio-upload">Upload image<input id="studioFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="loadStudioFile(this.files[0])"></label>
+        <label>Image URL<div class="studio-url"><input id="studioUrl" type="url" placeholder="https://…"><button type="button" onclick="loadStudioUrl()">Load</button></div></label>
+        <div id="studioGallery" aria-label="Imported article images"></div>
+        <label>Crop ratio<select id="studioRatio" onchange="renderStudioImage()"><option value="original">Original</option><option value="1.7777778">16:9 · landscape</option><option value="1.3333333">4:3 · editorial</option><option value="1">1:1 · square</option><option value="0.8">4:5 · portrait</option></select></label>
+        <label>Zoom<input id="studioZoom" type="range" min="1" max="3" step="0.05" value="1" oninput="renderStudioImage()"></label>
+        <label>Horizontal crop position<input id="studioX" type="range" min="0" max="100" value="50" oninput="renderStudioImage()"></label>
+        <label>Vertical crop position<input id="studioY" type="range" min="0" max="100" value="50" oninput="renderStudioImage()"></label>
+        <label>Output width (pixels)<input id="studioWidth" type="number" min="120" max="2400" value="1200" onchange="renderStudioImage()"></label>
+        <label>WebP size target (KB · under 50)<input id="studioFileSize" type="number" min="20" max="49" value="49"></label>
+        <label>Alt text<input id="studioAlt" type="text" placeholder="Describe the image"></label>
+        <label>Caption<input id="studioCaption" type="text" placeholder="Optional caption / credit"></label>
+      </div>
+    </div>
+    <p id="studioStatus" role="status" aria-live="polite">Edited images are saved on this site, without links to the source post.</p>
+    <div class="studio-footer"><button type="button" onclick="closeImageStudio()">Cancel</button><button type="button" onclick="injectStudioImage('thumbnail')">Set thumbnail</button><button type="button" onclick="injectStudioImage('inline')">Insert at cursor</button><button type="button" onclick="injectStudioImage('both')">Use for both</button></div>
+  </dialog>
+  <div id="editorToast" role="status" aria-live="polite"></div>
+  <script src="/assets/editor-studio.js?v=20261014c"></script>
+
 </body>
 </html>`);
 };

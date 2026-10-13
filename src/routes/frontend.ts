@@ -1,3 +1,4 @@
+import { splitArticleAfterParagraphs } from "../utils/article-display";
 import { Hono } from "hono";
 import { db } from "../db/index";
 
@@ -27,10 +28,9 @@ frontendRouter.use("*", async (c, next) => {
 
 // Helper: Format Article with Read More strictly after Paragraph 2 with Smooth Blur & Balanced Justified Text
 function formatArticleWithReadMore(content: string) {
-  const pRegex = /<p[\s\S]*?<\/p>/gi;
-  const paragraphs = content.match(pRegex);
+  const parts = splitArticleAfterParagraphs(content);
 
-  if (!paragraphs || paragraphs.length <= 2) {
+  if (!parts) {
     return `
       <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-4 sm:space-y-6 max-w-none font-normal article-justified">
         ${content}
@@ -39,9 +39,9 @@ function formatArticleWithReadMore(content: string) {
   }
 
   // Paragraph 1 & 2 (Fully Visible, 100% Crisp & Balanced Justified)
-  const para1And2 = paragraphs.slice(0, 2).join("\n");
+  const para1And2 = parts.lead;
   // Paragraph 3 onwards (Collapsible with Progressive Gradient Blur - No Sharp Cut-off Line)
-  const remainingParas = paragraphs.slice(2).join("\n");
+  const remainingParas = parts.rest;
 
   return `
     <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-4 sm:space-y-6 max-w-none font-normal">

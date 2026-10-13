@@ -1,3 +1,5 @@
+import { dbPath } from "./db/index";
+import path from "node:path";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { compress } from "hono/compress";
@@ -19,6 +21,14 @@ app.use("/assets/*", serveStatic({ root: "./public" }));
 app.use("/favicon.ico", serveStatic({ path: "./public/favicon.ico" }));
 app.use("/favicon.png", serveStatic({ path: "./public/favicon.png" }));
 app.use("/apple-touch-icon.png", serveStatic({ path: "./public/apple-touch-icon.png" }));
+
+app.get('/media/:name', async (c) => {
+  const name = c.req.param('name');
+  if (!/^[a-f0-9-]{36}\.webp$/.test(name)) return c.notFound();
+  const file = Bun.file(path.join(path.dirname(dbPath), 'media', name));
+  if (!(await file.exists())) return c.notFound();
+  return new Response(file, { headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' } });
+});
 
 // Mount Routers
 app.route("/api", apiRouter);
