@@ -32,7 +32,7 @@ function formatArticleWithReadMore(content: string) {
 
   if (!paragraphs || paragraphs.length <= 2) {
     return `
-      <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-6 max-w-none font-normal article-justified">
+      <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-4 sm:space-y-6 max-w-none font-normal article-justified">
         ${content}
       </div>
     `;
@@ -44,17 +44,17 @@ function formatArticleWithReadMore(content: string) {
   const remainingParas = paragraphs.slice(2).join("\n");
 
   return `
-    <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-6 max-w-none font-normal">
+    <div id="articleBodyText" class="article-prose text-base sm:text-lg text-[#2B2926] leading-relaxed space-y-4 sm:space-y-6 max-w-none font-normal">
       <!-- Paragraphs 1 & 2 (Fully Visible, Crisp, Justified) -->
-      <div class="space-y-6 article-justified">
+      <div class="space-y-4 sm:space-y-6 article-justified">
         ${para1And2}
       </div>
 
       <!-- Collapsible Section Strictly Starting After Paragraph 2 (100% Smooth Transparent Fade, Zero Hard Line) -->
-      <div class="relative mt-6">
+      <div class="relative mt-4 sm:mt-6">
         <!-- Container for Paragraph 3 Onwards with Smooth CSS Gradient Mask -->
         <div id="articleRestContainer" class="max-h-[140px] overflow-hidden relative transition-all duration-700 ease-in-out" style="-webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%); mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 25%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0) 100%);">
-          <div class="space-y-6 article-justified">
+          <div class="space-y-4 sm:space-y-6 article-justified">
             ${remainingParas}
           </div>
         </div>
@@ -215,9 +215,9 @@ function layout(title: string, content: string, currentPath = "/") {
         text-justify: inter-word;
         hyphens: auto;
         -webkit-hyphens: auto;
-        word-spacing: -0.015em;
-        letter-spacing: -0.01em;
-        line-height: 1.75;
+        word-spacing: normal;
+        letter-spacing: normal;
+        line-height: 1.68;
       }
     }
   </style>

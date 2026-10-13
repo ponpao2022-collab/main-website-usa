@@ -186,6 +186,11 @@ adminRouter.get("/", (c) => {
         <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
       </a>
 
+      <a href="/admin/new?open_ai=1" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 flex items-center space-x-1.5 transition">
+        <img src="/assets/tk-mascot.webp" class="w-4 h-4 object-contain" alt="TK" width="16" height="16">
+        <span>TK Summary AI</span>
+      </a>
+
       <a href="/admin/new" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-md shadow-[#C25E3E]/20 flex items-center space-x-1.5 transition">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         <span>Write New Story</span>
@@ -1440,6 +1445,37 @@ const renderEditor = (c: any) => {
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
     .style-card.selected { border-color: #C25E3E; background-color: rgba(194, 94, 62, 0.08); ring: 2px; }
   </style>
+  <script>
+    function openAiModal() {
+      const modal = document.getElementById('aiModal');
+      const backdrop = document.getElementById('aiModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'block';
+        backdrop.classList.remove('hidden');
+      }
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+      }
+      document.body.style.overflow = 'hidden';
+    }
+    window.openAiModal = openAiModal;
+
+    function closeAiModal() {
+      const modal = document.getElementById('aiModal');
+      const backdrop = document.getElementById('aiModalBackdrop');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
+      if (backdrop) {
+        backdrop.style.display = 'none';
+        backdrop.classList.add('hidden');
+      }
+      document.body.style.overflow = '';
+    }
+    window.closeAiModal = closeAiModal;
+  </script>
 </head>
 <body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen selection:bg-[#C25E3E] selection:text-white relative">
 
@@ -1515,6 +1551,10 @@ const renderEditor = (c: any) => {
         </div>
 
         <div class="flex items-center space-x-2 text-xs">
+          <button type="button" onclick="openAiModal()" style="touch-action: manipulation;" class="px-2.5 py-1 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-xs transition text-[11px] font-bold flex items-center space-x-1 cursor-pointer">
+            <img src="/assets/tk-mascot.webp" class="w-3.5 h-3.5 object-contain" alt="TK">
+            <span>TK Summary AI</span>
+          </button>
           <button type="button" onclick="aiFormatCurrent('cnn')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FAF9F5] text-[#2B2926] border border-[#E5E2D9] transition text-[11px] font-semibold">
             ⚡ Quick CNN Format
           </button>
@@ -1546,6 +1586,11 @@ const renderEditor = (c: any) => {
               <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
               <button type="button" onmousedown="event.preventDefault(); insertEditorLink()" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#C25E3E] font-medium transition" title="Insert Link">🔗 Link</button>
               <button type="button" onmousedown="event.preventDefault(); execFormat('removeFormat')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#8A867E] transition text-[11px]" title="Clear Formatting">🧹 Clear</button>
+              <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
+              <button type="button" onmousedown="event.preventDefault(); openAiModal();" style="touch-action: manipulation;" class="p-1 px-2.5 rounded-lg bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 font-bold transition text-[11px] flex items-center space-x-1 cursor-pointer" title="Open TK Summary AI Drawer">
+                <img src="/assets/tk-mascot.webp" class="w-3.5 h-3.5 object-contain" alt="TK">
+                <span>TK Summary AI</span>
+              </button>
             </div>
 
             <!-- Content Canvas -->
@@ -1778,41 +1823,41 @@ const renderEditor = (c: any) => {
   </div>
 
   <!-- FLOATING TK SUMMARY MASCOT TRIGGER BUTTON (BOTTOM RIGHT) -->
-  <div id="tkSummaryFloatingBtn" onclick="openAiModal()" role="button" tabindex="0" class="fixed right-6 bottom-6 z-40 flex items-center group cursor-pointer select-none focus:outline-none">
+  <button id="tkSummaryFloatingBtn" onclick="openAiModal()" type="button" aria-label="Open TK Summary AI" style="z-index: 9990; touch-action: manipulation;" class="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 flex items-center group cursor-pointer select-none focus:outline-none bg-transparent border-0 p-0">
     <!-- Tooltip Pill -->
-    <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-white/95 border border-[#EAE8E1] text-xs font-bold text-[#1C1B18] shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
+    <div class="mr-2 sm:mr-3 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-2xl bg-white/95 border border-[#EAE8E1] text-xs font-bold text-[#1C1B18] shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
       <span class="w-2 h-2 rounded-full bg-[#C25E3E] animate-ping"></span>
       <span>TK Summary AI</span>
     </div>
 
     <!-- Character Mascot (Transparent PNG, No Background) -->
-    <div class="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95 pointer-events-none">
+    <div class="relative w-14 h-14 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95 cursor-pointer">
       <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(194,94,62,0.35)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
       <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(194,94,62,0.5)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
     </div>
-  </div>
+  </button>
 
   <!-- BACKDROP OVERLAY FOR TK SUMMARY MODAL -->
-  <div id="aiModalBackdrop" onclick="closeAiModal()" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300"></div>
+  <div id="aiModalBackdrop" onclick="closeAiModal()" style="display: none; z-index: 9998;" class="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-200"></div>
 
   <!-- RIGHT-SIDE TK SUMMARY SLIDE-OUT PANEL (POPUP ON EDITOR) -->
-  <div id="aiModal" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-[560px] lg:w-[620px] bg-[#FAF9F5] backdrop-blur-2xl border-l border-[#EAE8E1] shadow-[-16px_0_40px_rgba(0,0,0,0.15)] flex flex-col transition-all duration-300">
+  <div id="aiModal" style="display: none; z-index: 9999;" class="fixed top-0 right-0 bottom-0 h-full h-screen h-[100dvh] w-full sm:w-[560px] lg:w-[620px] bg-[#FAF9F5] border-l border-[#EAE8E1] shadow-2xl flex flex-col">
     
     <!-- Drawer Header -->
-    <div class="p-4 sm:p-5 border-b border-[#EAE8E1] bg-white flex items-center justify-between flex-shrink-0">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-[#C25E3E]/10 border border-[#C25E3E]/20 p-1 flex items-center justify-center text-white shadow-xs">
+    <div class="p-3 sm:p-5 border-b border-[#EAE8E1] bg-white flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center space-x-2.5 sm:space-x-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#C25E3E]/10 border border-[#C25E3E]/20 p-1 flex items-center justify-center text-white shadow-xs">
           <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain" alt="TK Summary" loading="eager" width="40" height="40">
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h2 class="text-sm sm:text-base font-black text-[#1C1B18] tracking-wide">TK SUMMARY CLASSIC</h2>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C25E3E]/15 text-[#C25E3E] border border-[#C25E3E]/30">v2.5 AI</span>
+            <h2 class="text-xs sm:text-base font-black text-[#1C1B18] tracking-wide">TK SUMMARY CLASSIC</h2>
+            <span class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-[#C25E3E]/15 text-[#C25E3E] border border-[#C25E3E]/30">v2.5 AI</span>
           </div>
-          <p class="text-[11px] text-[#6E6B63]">15 Newsroom Presets • Rule-Based Formatter • WebP Image Studio</p>
+          <p class="text-[10px] sm:text-[11px] text-[#6E6B63] truncate max-w-[220px] sm:max-w-none">15 Newsroom Presets • Rule-Based Formatter • WebP Image Studio</p>
         </div>
       </div>
-      <button onclick="closeAiModal()" type="button" class="w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center transition" title="Close Panel">✕</button>
+      <button onclick="closeAiModal()" type="button" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center font-bold text-sm transition cursor-pointer" title="Close Panel">✕</button>
     </div>
 
     <!-- Mode Selector Tabs (AI Styles vs Free Presets) -->
@@ -2211,6 +2256,13 @@ const renderEditor = (c: any) => {
       if (postId) {
         loadShortLinks(postId);
       }
+      if (new URLSearchParams(window.location.search).get('open_ai') === '1') {
+        setTimeout(openAiModal, 150);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAiModal();
     });
 
     // ================= SHORT LINKS CLIENT FUNCTIONS =================
@@ -2522,28 +2574,32 @@ const renderEditor = (c: any) => {
     function openAiModal() {
       const modal = document.getElementById('aiModal');
       const backdrop = document.getElementById('aiModalBackdrop');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-      }
       if (backdrop) {
-        backdrop.classList.remove('hidden');
         backdrop.style.display = 'block';
+        backdrop.classList.remove('hidden');
       }
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+      }
+      document.body.style.overflow = 'hidden';
     }
+    window.openAiModal = openAiModal;
 
     function closeAiModal() {
       const modal = document.getElementById('aiModal');
       const backdrop = document.getElementById('aiModalBackdrop');
       if (modal) {
-        modal.classList.add('hidden');
         modal.style.display = 'none';
+        modal.classList.add('hidden');
       }
       if (backdrop) {
-        backdrop.classList.add('hidden');
         backdrop.style.display = 'none';
+        backdrop.classList.add('hidden');
       }
+      document.body.style.overflow = '';
     }
+    window.closeAiModal = closeAiModal;
 
     function getActiveEditorContent() {
       if (currentViewMode === 'html') {
