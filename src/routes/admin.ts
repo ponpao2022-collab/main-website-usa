@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/index";
+import { dashboardIcon as icon, dashboardEscape as escapeDashboard } from "../utils/dashboard-icons";
 
 export const adminRouter = new Hono();
 
@@ -136,6 +137,8 @@ adminRouter.get("/", (c) => {
   const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all() as any[];
   const activePosts = posts.filter(p => p.status !== 'trash');
   const trashPosts = posts.filter(p => p.status === 'trash');
+  const publishedCount = activePosts.filter(p => p.status === 'published').length;
+  const draftCount = activePosts.filter(p => p.status === 'draft').length;
   const totalViews = activePosts.reduce((acc, p) => acc + (p.views || 0), 0);
   const breakingCount = activePosts.filter(p => p.is_breaking === 1).length;
 
@@ -151,150 +154,64 @@ adminRouter.get("/", (c) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="/assets/cms-dashboard.css?v=20261014b">
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
   </style>
 </head>
-<body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen flex flex-col selection:bg-[#C25E3E] selection:text-white">
+<body class="cms-dashboard bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen flex flex-col selection:bg-[#C25E3E] selection:text-white">
 
-  <!-- Top Header -->
-  <header class="h-16 border-b border-[#EAE8E1] bg-white/95 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-50 shadow-xs">
-    <div class="flex items-center space-x-3">
-      <img src="/assets/logo-sm.webp" class="h-9 w-9 rounded-full object-contain shadow-sm border border-[#EAE8E1]" alt="USA NEWS STORY">
-      <div>
-        <div class="flex items-center space-x-2">
-          <span class="font-bold text-base tracking-wide text-[#1C1B18]">USA NEWS STORY CMS</span>
-          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F3F1EC] text-[#C25E3E] border border-[#E5E2D9]">Newsroom Panel</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Controls -->
-    <div class="flex items-center space-x-3">
-      <div class="hidden sm:flex items-center space-x-2 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs text-emerald-800 font-medium">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="font-mono text-[11px]">Cloudflare Edge: 100% Operational (24ms)</span>
-      </div>
-
-      <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-[#2B2926] flex items-center space-x-1.5 transition">
-        <span>💾 Backup & Restore</span>
-      </button>
-
-      <a href="/" target="_blank" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-[#2B2926] flex items-center space-x-1.5 transition">
-        <span>View Live Site</span>
-        <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-      </a>
-
-      <a href="/admin/new?open_ai=1" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 flex items-center space-x-1.5 transition">
-        <img src="/assets/tk-mascot.webp" class="w-4 h-4 object-contain" alt="TK" width="16" height="16">
-        <span>TK Summary AI</span>
-      </a>
-
-      <a href="/admin/new" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-md shadow-[#C25E3E]/20 flex items-center space-x-1.5 transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        <span>Write New Story</span>
-      </a>
-
-      <a href="/admin/logout" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 flex items-center space-x-1 transition cursor-pointer" title="Sign out of CMS">
-        <span>🚪 Logout</span>
-      </a>
-    </div>
+  <aside id="cmsSidebar" class="cms-sidebar" aria-label="CMS navigation">
+    <a href="/admin" class="cms-brand"><img src="/assets/logo-sm.webp" alt="USA News Story"><span>USA NEWS STORY<small>Editorial workspace</small></span></a>
+    <div class="cms-nav-label">Workspace</div>
+    <nav>
+      <button id="mainTabArticlesBtn" type="button" onclick="switchMainTab('articles')" class="cms-nav-item" aria-current="page">${icon('articles')}<span>Articles</span><small>${activePosts.length}</small></button>
+      <button id="mainTabTrackingBtn" type="button" onclick="switchMainTab('tracking')" class="cms-nav-item">${icon('audience')}<span>Live audience</span><small id="mainTrackingPill">0</small></button>
+      <button type="button" onclick="openCategoriesModal()" class="cms-nav-item">${icon('folder')}<span>Categories</span><small>${categories.length}</small></button>
+      <a href="/admin/new?open_ai=1" class="cms-nav-item">${icon('sparkles')}<span>TK Editorial tools</span></a>
+    </nav>
+    <div class="cms-nav-label">Manage</div>
+    <nav>
+      <button type="button" onclick="openBackupModal()" class="cms-nav-item">${icon('backup')}<span>Backup & restore</span></button>
+      <a href="/" target="_blank" class="cms-nav-item">${icon('external')}<span>View website</span></a>
+      <button type="button" onclick="purgeCache(this)" class="cms-nav-item">${icon('refresh')}<span>Refresh cache</span></button>
+    </nav>
+    <div class="cms-sidebar-bottom"><div class="cms-account"><span class="cms-avatar">ES</span><div>Editorial Staff<small>CMS workspace</small></div></div><a href="/admin/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
+  </aside>
+  <button id="cmsNavOverlay" class="cms-nav-overlay" aria-label="Close navigation" onclick="toggleDashboardNav(false)"></button>
+  <header class="cms-header">
+    <div class="cms-header-left"><button type="button" class="cms-menu" onclick="toggleDashboardNav()" aria-label="Open navigation" aria-expanded="false">${icon('menu')}</button><span>Workspace <span class="cms-breadcrumb">/</span> <strong id="cmsPageName">Articles</strong></span></div>
+    <div class="cms-header-actions"><a href="/" target="_blank" class="cms-view-site">${icon('external')}<span>View website</span></a><a href="/admin/new" class="cms-primary">${icon('plus')}<span>New article</span></a></div>
   </header>
-
-  <!-- Main Container -->
-  <div class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
-
-    <!-- Top Navigation Tabs (Articles Feed vs Whos.amung.us Live Readers) -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAE8E1] pb-4">
-      <div class="flex items-center space-x-2 bg-[#F3F1EC] p-1.5 rounded-2xl border border-[#E5E2D9]">
-        <button type="button" id="mainTabArticlesBtn" onclick="switchMainTab('articles')" class="px-4 py-2 rounded-xl font-bold text-xs bg-white text-[#1C1B18] shadow-sm border border-[#E5E2D9] flex items-center space-x-2 transition cursor-pointer">
-          <span>📰</span>
-          <span>Articles Feed & Stories (${activePosts.length})</span>
-        </button>
-        <button type="button" id="mainTabTrackingBtn" onclick="switchMainTab('tracking')" class="px-4 py-2 rounded-xl font-semibold text-xs text-[#6E6B63] hover:text-[#1C1B18] flex items-center space-x-2 transition cursor-pointer">
-          <span class="relative flex h-2.5 w-2.5">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-          </span>
-          <span>Whos.amung.us Live Readers</span>
-          <span id="mainTrackingPill" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">0</span>
-        </button>
-      </div>
-
-      <div class="flex items-center space-x-2 text-xs text-[#6E6B63]">
-        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="font-mono text-[11px]">Realtime Radar Active (3s)</span>
-      </div>
-    </div>
+  <main id="cmsMain" class="cms-main">
+    <div class="cms-page-heading"><div><span class="cms-eyebrow">EDITORIAL WORKSPACE</span><h1 id="cmsPageHeading">Manage your stories</h1><p id="cmsPageDescription">Write, publish and keep your newsroom moving.</p></div><div class="cms-live-state"><span></span> Audience updates every 3 seconds</div></div>
 
     <!-- ==================== VIEW 1: ARTICLES FEED ==================== -->
     <div id="mainArticlesView" class="space-y-6">
-      <!-- Stats Row (5 Cards in Claude AI Light Mode) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        
-        <!-- Whos.amung.us Realtime Live Readers Card -->
-        <div onclick="switchMainTab('tracking')" class="bg-white border-2 border-emerald-400/60 p-5 rounded-2xl relative overflow-hidden shadow-sm cursor-pointer hover:border-emerald-500 transition group">
-          <div class="flex items-center justify-between mb-1">
-            <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">Live Readers Now</div>
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-          </div>
-          <div id="liveOnlineCount" class="text-3xl font-extrabold text-emerald-600 font-mono">0</div>
-          <div class="text-[11px] text-emerald-700 mt-2 font-mono flex items-center space-x-1 font-medium group-hover:underline">
-            <span>📡</span>
-            <span>View Live Whos.amung.us Tab &rarr;</span>
-          </div>
-        </div>
-
-        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
-          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Total Stories</div>
-          <div class="text-3xl font-extrabold text-[#1C1B18]">${activePosts.length}</div>
-          <div class="text-[11px] text-emerald-600 mt-2 font-medium">Active (${trashPosts.length} in Trash)</div>
-        </div>
-
-        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
-          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Breaking News Active</div>
-          <div class="text-3xl font-extrabold text-rose-600">${breakingCount}</div>
-          <div class="text-[11px] text-rose-600/80 mt-2 font-medium">Showing on Top Marquee</div>
-        </div>
-
-        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
-          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Global Pageviews</div>
-          <div class="text-3xl font-extrabold text-[#C25E3E]">${totalViews.toLocaleString()}</div>
-          <div class="text-[11px] text-[#6E6B63] mt-2 font-medium">Real Visitors Tracked Live</div>
-        </div>
-
-        <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm flex flex-col justify-between">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Cloudflare Edge Purge</div>
-            <div class="text-xs text-[#6E6B63]">Purge cache across 310+ PoPs</div>
-          </div>
-          <button onclick="purgeCache(this)" class="w-full mt-3 py-2 px-3 rounded-xl bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-xs font-semibold text-[#2B2926] flex items-center justify-center space-x-1.5 transition">
-            <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span>Instant Cache Purge</span>
-          </button>
-        </div>
-      </div>
+      <section class="cms-stats" aria-label="Newsroom overview">
+        <button type="button" onclick="switchMainTab('tracking')" class="cms-stat cms-stat-live"><div class="cms-stat-top"><span>Live readers</span>${icon('audience')}</div><strong id="liveOnlineCount">0</strong><small><span class="cms-dot"></span> View live audience</small></button>
+        <div class="cms-stat"><div class="cms-stat-top"><span>Published articles</span>${icon('articles')}</div><strong>${publishedCount}</strong><small>${draftCount} drafts · ${activePosts.length} total articles</small></div>
+        <div class="cms-stat"><div class="cms-stat-top"><span>Total pageviews</span>${icon('eye')}</div><strong>${totalViews.toLocaleString()}</strong><small>Across your active articles</small></div>
+        <div class="cms-stat"><div class="cms-stat-top"><span>Breaking stories</span>${icon('pulse')}</div><strong>${breakingCount}</strong><small>Featured in the news ticker</small></div>
+      </section>
 
       <!-- Posts Table with Published and Trash Tabs + Checkboxes -->
-      <div class="bg-white border border-[#EAE8E1] rounded-2xl overflow-hidden shadow-sm">
+      <section id="cmsArticlesPanel" class="cms-articles-panel">
         <div class="p-5 border-b border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center space-x-3">
-              <h2 class="font-bold text-lg text-[#1C1B18]">Articles & News Feed</h2>
+              <h2 class="font-bold text-lg text-[#1C1B18]">All articles</h2>
               <div class="flex items-center space-x-1 bg-[#F3F1EC] p-1 rounded-xl border border-[#E5E2D9] text-xs">
                 <button type="button" id="tabActivePostsBtn" onclick="switchPostsTab('active')" class="px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition cursor-pointer">
-                  <span>Published (${activePosts.length})</span>
+                  <span>All posts (${activePosts.length})</span>
                 </button>
                 <button type="button" id="tabTrashPostsBtn" onclick="switchPostsTab('trash')" class="px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1 cursor-pointer">
-                  <span>🗑️ Trash (${trashPosts.length})</span>
+                  <span>Trash (${trashPosts.length})</span>
                 </button>
               </div>
             </div>
-            <p class="text-xs text-[#6E6B63] mt-1" id="tabSubtitle">Manage active stories, tick multiple articles to bulk move to trash or publish</p>
+            <p class="text-xs text-[#6E6B63] mt-1" id="tabSubtitle">Find an article, review a draft or manage published stories.</p>
           </div>
           <div class="flex items-center space-x-2.5">
             <div id="trashTabActions" class="hidden flex items-center space-x-2">
@@ -305,19 +222,16 @@ adminRouter.get("/", (c) => {
                 </button>
               ` : ''}
             </div>
-            <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5 cursor-pointer">
-              <span>💾 Backup</span>
-            </button>
-            <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5 cursor-pointer">
-              <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-              <span>📁 Categories (${categories.length})</span>
-            </button>
-            <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white transition flex items-center space-x-1 shadow-sm">
-              <span>+ New Article</span>
-            </a>
+
           </div>
         </div>
 
+        <div class="cms-filter-bar">
+          <label class="cms-search">${icon('search')}<input id="cmsArticleSearch" type="search" placeholder="Search articles…" aria-label="Search articles"></label>
+          <select id="cmsStatusFilter" aria-label="Filter by status"><option value="all">All statuses</option><option value="published">Published</option><option value="draft">Drafts</option><option value="scheduled">Scheduled</option></select>
+          <select id="cmsCategoryFilter" aria-label="Filter by category"><option value="all">All categories</option>${categories.map(cat => '<option value="' + escapeDashboard(cat.name) + '">' + escapeDashboard(cat.name) + '</option>').join('')}</select>
+          <span id="cmsResultCount" class="cms-result-count" role="status" aria-live="polite">${activePosts.length} ${activePosts.length === 1 ? 'article' : 'articles'}</span>
+        </div>
         <!-- PUBLISHED BULK ACTION BAR -->
         <div id="publishedBulkBar" class="hidden bg-amber-50/90 border-b border-amber-200 px-5 py-2.5 flex items-center justify-between transition-all">
           <div class="flex items-center space-x-2 text-xs font-bold text-amber-900">
@@ -362,8 +276,8 @@ adminRouter.get("/", (c) => {
                 </th>
                 <th class="py-3 px-4">Headline & Article</th>
                 <th class="py-3 px-4">Category</th>
-                <th class="py-3 px-4">Author</th>
-                <th class="py-3 px-4 text-center">Breaking?</th>
+
+
                 <th class="py-3 px-4 text-center">Views</th>
                 <th class="py-3 px-6 text-center">Actions</th>
               </tr>
@@ -371,7 +285,7 @@ adminRouter.get("/", (c) => {
             <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
               ${activePosts.length === 0 ? `
                 <tr>
-                  <td colspan="7" class="text-center py-12 text-[#8A867E]">
+                  <td colspan="5" class="text-center py-12 text-[#8A867E]">
                     <div class="text-sm font-semibold text-[#6E6B63] mb-1">No published articles</div>
                     <div class="text-xs text-[#8A867E] mb-4">Start by writing and publishing your first article!</div>
                     <a href="/admin/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
@@ -381,7 +295,7 @@ adminRouter.get("/", (c) => {
                   </td>
                 </tr>
               ` : activePosts.map(p => `
-                <tr class="hover:bg-[#FAF9F5] transition">
+                <tr class="cms-post-row hover:bg-[#FAF9F5] transition" data-status="${escapeDashboard(p.status)}" data-category="${escapeDashboard(p.category_name || 'General')}">
                   <td class="py-4 px-4 text-center">
                     <input type="checkbox" class="post-check-published w-4 h-4 rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-[#C25E3E] cursor-pointer" value="${p.id}" onchange="updateBulkBar('published')">
                   </td>
@@ -389,10 +303,10 @@ adminRouter.get("/", (c) => {
                     <div class="flex items-center space-x-3">
                       ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1]">` : ''}
                       <div>
-                        <a href="/admin/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-1 transition">
-                          ${p.title}
-                        </a>
-                        <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
+                        <a href="/admin/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-2 transition">
+                          ${escapeDashboard(p.title)}
+                        </a><span class="cms-status-badge cms-status-${escapeDashboard(p.status)}">${escapeDashboard(p.status)}</span>${p.is_breaking ? '<span class="cms-status-badge cms-status-draft">Breaking</span>' : ''}
+                        <div class="cms-post-meta">${escapeDashboard(p.author_name)} · /article/${escapeDashboard(p.slug)}</div>
                       </div>
                     </div>
                   </td>
@@ -401,14 +315,7 @@ adminRouter.get("/", (c) => {
                       ${p.category_name || 'General'}
                     </span>
                   </td>
-                  <td class="py-4 px-4 font-medium text-[#2B2926]">${p.author_name}</td>
-                  <td class="py-4 px-4 text-center">
-                    ${p.is_breaking === 1 ? `
-                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
-                        BREAKING
-                      </span>` : `
-                      <span class="text-[#8A867E] text-[11px]">-</span>`}
-                  </td>
+
                   <td class="py-4 px-4 text-center font-mono">
                     <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9] text-xs font-semibold">
                       <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -427,7 +334,7 @@ adminRouter.get("/", (c) => {
                       </a>
                       <button type="button" onclick="moveToTrash(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs cursor-pointer" title="Move story to trash (អាចស្តារមកវិញបាន)">
                         <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        <span>Move to Trash</span>
+                        <span>Trash</span>
                       </button>
                     </div>
                   </td>
@@ -461,7 +368,7 @@ adminRouter.get("/", (c) => {
                   </td>
                 </tr>
               ` : trashPosts.map(p => `
-                <tr class="hover:bg-rose-50/30 transition">
+                <tr class="cms-post-row hover:bg-rose-50/30 transition" data-status="trash" data-category="${escapeDashboard(p.category_name || 'General')}">
                   <td class="py-4 px-4 text-center">
                     <input type="checkbox" class="post-check-trash w-4 h-4 rounded border-[#E5E2D9] text-rose-600 focus:ring-rose-500 cursor-pointer" value="${p.id}" onchange="updateBulkBar('trash')">
                   </td>
@@ -472,7 +379,7 @@ adminRouter.get("/", (c) => {
                         <div class="font-bold text-[#1C1B18] text-sm line-clamp-1 line-through opacity-75">
                           ${p.title}
                         </div>
-                        <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
+                        <div class="cms-post-meta">/article/${escapeDashboard(p.slug)}</div>
                       </div>
                     </div>
                   </td>
@@ -504,18 +411,18 @@ adminRouter.get("/", (c) => {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
 
-    <!-- ==================== VIEW 2: DEDICATED WHOS.AMUNG.US LIVE TRACKER ==================== -->
+    <!-- ==================== VIEW 2: DEDICATED LIVE AUDIENCE LIVE TRACKER ==================== -->
     <div id="mainTrackingView" class="hidden space-y-5">
 
-      <!-- Whos.amung.us Authentic Brand Navigation Bar -->
+      <!-- Live audience Authentic Brand Navigation Bar -->
       <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <!-- Logo & Title -->
         <div class="flex items-center space-x-3">
           <div class="flex items-center space-x-1.5 select-none">
-            <span class="text-xl sm:text-2xl font-black font-serif italic text-[#1C1B18] tracking-tight">wh<span class="text-[#C25E3E] font-bold">o</span>'s.amung.us</span>
+            <span class="cms-audience-title">${icon('audience')} Audience overview</span>
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-black shadow-xs">🏃</span>
           </div>
           <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -526,10 +433,10 @@ adminRouter.get("/", (c) => {
         <!-- Sub Tabs (Dashboard vs Readers) -->
         <div class="flex items-center bg-[#FAF9F5] border border-[#E5E2D9] p-1 rounded-xl space-x-1">
           <button type="button" onclick="switchWhosSubTab('dashboard')" id="whosSubTabDashboardBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-[#1C1B18] shadow-xs border border-[#E5E2D9] transition cursor-pointer flex items-center space-x-1.5 underline decoration-[#C25E3E] decoration-2">
-            <span>📊 DASHBOARD</span>
+            <span>Overview</span>
           </button>
           <button type="button" onclick="switchWhosSubTab('readers')" id="whosSubTabReadersBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition cursor-pointer flex items-center space-x-1.5">
-            <span>👥 READERS</span>
+            <span>Readers</span>
             <span id="whosSubTabCount" class="bg-rose-100 text-rose-800 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full">0</span>
           </button>
         </div>
@@ -541,7 +448,7 @@ adminRouter.get("/", (c) => {
         <!-- Header row matching screenshot: Speedometer icon + Dashboard (count) -->
         <div class="flex items-center justify-between border-b-2 border-dotted border-[#D5D2C9] pb-3">
           <div class="flex items-center space-x-2.5">
-            <span class="text-2xl text-slate-700">🧭</span>
+            <span class="text-2xl text-slate-700">${icon('audience')}</span>
             <h2 class="text-xl sm:text-2xl font-bold text-[#1C1B18] font-sans">
               Dashboard (<span id="whosDashCount" class="font-mono text-[#C25E3E]">0</span>)
             </h2>
@@ -686,7 +593,7 @@ adminRouter.get("/", (c) => {
 
       </div>
 
-      <!-- ================= SUB-VIEW 2: READERS (AUTHENTIC WHOS.AMUNG.US) ================= -->
+      <!-- ================= SUB-VIEW 2: READERS (AUTHENTIC LIVE AUDIENCE) ================= -->
       <div id="whosSubViewReaders" class="hidden space-y-4">
         
         <!-- Header row matching screenshot: List icon + Readers (count) + 2 Interactive Toggle Buttons -->
@@ -722,10 +629,10 @@ adminRouter.get("/", (c) => {
 
     </div>
 
-  </div>
+  </main>
 
   <!-- Manage Categories Modal in Claude Light Mode -->
-  <div id="catModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div id="catModal" role="dialog" aria-modal="true" aria-label="Manage categories" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white border border-[#EAE8E1] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-[#1C1B18]">
       <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
         <div class="flex items-center space-x-2">
@@ -773,7 +680,7 @@ adminRouter.get("/", (c) => {
   </div>
 
   <!-- BACKUP & DATA PROTECTION MODAL -->
-  <div id="backupModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+  <div id="backupModal" role="dialog" aria-modal="true" aria-label="Backup and restore" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE8E1] space-y-5">
       <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
         <div class="flex items-center space-x-2">
@@ -863,7 +770,7 @@ adminRouter.get("/", (c) => {
       }
     }
 
-    // ================= WHOS.AMUNG.US SUB-TABS SWITCHER =================
+    // ================= LIVE AUDIENCE SUB-TABS SWITCHER =================
     function switchWhosSubTab(sub) {
       const dashBtn = document.getElementById('whosSubTabDashboardBtn');
       const readBtn = document.getElementById('whosSubTabReadersBtn');
@@ -898,7 +805,7 @@ adminRouter.get("/", (c) => {
         activeBox.classList.remove('hidden');
         trashBox.classList.add('hidden');
         if (trashActions) trashActions.classList.add('hidden');
-        if (subtitle) subtitle.textContent = 'Manage active stories, tick multiple articles to bulk move to trash or publish';
+        if (subtitle) subtitle.textContent = 'Find an article, review a draft or manage published stories.';
       } else {
         trashBtn.className = 'px-3 py-1 rounded-lg font-bold bg-rose-700 text-white shadow-xs transition flex items-center space-x-1 cursor-pointer';
         activeBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition cursor-pointer';
@@ -1166,7 +1073,7 @@ adminRouter.get("/", (c) => {
       btn.innerHTML = 'Instant Cache Purge';
     }
 
-    // ================= WHOS.AMUNG.US LIVE TRACKER POLLING ENGINE =================
+    // ================= LIVE AUDIENCE LIVE TRACKER POLLING ENGINE =================
     async function pollLiveVisitors() {
       try {
         const res = await fetch('/api/track/live');
@@ -1330,7 +1237,7 @@ adminRouter.get("/", (c) => {
       if (!readersTable) return;
 
       if (currentReadersMode === 'pages') {
-        // Authentic Page-by-Page Breakdown (Whos.amung.us Person Icon View)
+        // Authentic Page-by-Page Breakdown (Live audience Person Icon View)
         if (!data.activePages || data.activePages.length === 0) {
           readersTable.innerHTML = '<div class="text-xs text-[#8A867E] italic py-12 text-center">កំពុងរង់ចាំអ្នកអាន... (No active readers online. Open your website in another window or phone to see live updates!)</div>';
           return;
@@ -1412,6 +1319,7 @@ adminRouter.get("/", (c) => {
     setInterval(pollLiveVisitors, 3000);
     pollLiveVisitors();
   </script>
+  <script src="/assets/cms-dashboard.js?v=20261014b"></script>
 </body>
 </html>`);
 });
