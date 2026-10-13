@@ -154,7 +154,7 @@ adminRouter.get("/", (c) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
-  <link rel="stylesheet" href="/assets/cms-dashboard.css?v=20261014b">
+  <link rel="stylesheet" href="/assets/cms-dashboard.css?v=20261014c">
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
@@ -469,7 +469,7 @@ adminRouter.get("/", (c) => {
           <div class="lg:col-span-6 bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-xs space-y-4">
             <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2.5">
               <div class="flex items-center space-x-2">
-                <span class="text-sm font-bold text-[#6E6B63]">½</span>
+                <span class="text-sm font-bold text-[#6E6B63]">${icon('audience')}</span>
                 <h3 class="font-bold text-sm text-[#1C1B18]">Readers</h3>
               </div>
               <span class="text-[11px] font-mono text-[#6E6B63]">Active split</span>
@@ -485,7 +485,7 @@ adminRouter.get("/", (c) => {
           <div class="lg:col-span-6 bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-xs space-y-4">
             <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2.5">
               <div class="flex items-center space-x-2">
-                <span class="text-sm">🚩</span>
+                <span class="text-sm">${icon('globe')}</span>
                 <h3 class="font-bold text-sm text-[#1C1B18]">Countries</h3>
               </div>
               <span id="whosCountryCountBadge" class="text-xs font-mono font-bold bg-[#FAF9F5] text-[#2B2926] px-2 py-0.5 rounded border border-[#E5E2D9]">
@@ -510,24 +510,24 @@ adminRouter.get("/", (c) => {
           <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 shadow-xs space-y-2.5">
             <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2">
               <h4 class="font-bold text-xs text-[#1C1B18] flex items-center space-x-1.5">
-                <span>💻</span>
+                <span>${icon('desktop')}</span>
                 <span>Devices</span>
               </h4>
               <span class="text-[10px] font-mono text-[#6E6B63]">Active</span>
             </div>
             <div class="grid grid-cols-3 gap-2 text-center pt-1">
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-base">📱</div>
+                <div class="text-base">${icon('mobile')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Mobile</div>
                 <div id="deviceMobileCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-base">💻</div>
+                <div class="text-base">${icon('desktop')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Desktop</div>
                 <div id="deviceDesktopCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-base">📟</div>
+                <div class="text-base">${icon('tablet')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Tablet</div>
                 <div id="deviceTabletCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
@@ -538,24 +538,24 @@ adminRouter.get("/", (c) => {
           <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 shadow-xs space-y-2.5">
             <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-2">
               <h4 class="font-bold text-xs text-[#1C1B18] flex items-center space-x-1.5">
-                <span>🤖</span>
+                <span>${icon('android')}</span>
                 <span>Operating Systems</span>
               </h4>
               <span class="text-[10px] font-mono text-[#6E6B63]">Active</span>
             </div>
             <div class="grid grid-cols-3 gap-2 text-center pt-1">
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-base">🤖</div>
+                <div class="text-base">${icon('android')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Android</div>
                 <div id="osAndroidCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-base">🍏</div>
+                <div class="text-base">${icon('apple')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Apple/iOS</div>
                 <div id="osAppleCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="text-base">🪟</div>
+                <div class="text-base">${icon('windows')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Windows</div>
                 <div id="osWindowsCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
@@ -573,17 +573,17 @@ adminRouter.get("/", (c) => {
             </div>
             <div class="grid grid-cols-3 gap-2 text-center pt-1">
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="w-5 h-5 mx-auto bg-[#1877F2] text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">f</div>
+                <div class="w-5 h-5 mx-auto bg-white text-[#1877F2] rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">${icon('facebook')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Facebook</div>
                 <div id="refFacebookCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="w-5 h-5 mx-auto bg-red-500 text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">G</div>
+                <div class="w-5 h-5 mx-auto bg-white text-red-500 rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">${icon('google')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Google</div>
                 <div id="refGoogleCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
               <div class="p-2 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
-                <div class="w-5 h-5 mx-auto bg-slate-700 text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">🔗</div>
+                <div class="w-5 h-5 mx-auto bg-slate-700 text-white rounded-full text-[11px] font-black flex items-center justify-center mb-0.5">${icon('link')}</div>
                 <div class="text-[10px] font-bold text-[#6E6B63]">Direct</div>
                 <div id="refDirectCount" class="text-sm font-bold text-[#1C1B18] font-mono mt-0.5">0</div>
               </div>
@@ -599,7 +599,7 @@ adminRouter.get("/", (c) => {
         <!-- Header row matching screenshot: List icon + Readers (count) + 2 Interactive Toggle Buttons -->
         <div class="flex items-center justify-between border-b-2 border-dotted border-[#B0B0B0] pb-3">
           <div class="flex items-center space-x-2.5">
-            <span class="text-xl font-black text-[#555] select-none">½ ≡</span>
+            <span class="text-xl font-black text-[#555] select-none">${icon('articles')}</span>
             <h2 class="text-2xl sm:text-3xl font-extrabold text-[#1C1B18] font-sans tracking-tight">
               Readers (<span id="whosReadersCount" class="font-mono text-[#1C1B18]">0</span>)
             </h2>
@@ -1073,6 +1073,11 @@ adminRouter.get("/", (c) => {
       btn.innerHTML = 'Instant Cache Purge';
     }
 
+    function countryFlagHtml(code, name, large) {
+      const countryCode = /^[a-z]{2}$/i.test(code || '') ? code.toLowerCase() : 'xx';
+      return '<img class="cms-country-flag' + (large ? ' cms-country-flag-large' : '') + '" src="/assets/flags/' + countryCode + '.svg" alt="' + p_escape(name || 'Unknown country') + ' flag" width="32" height="24" onerror="this.onerror=null;this.src=&quot;/assets/flags/xx.svg&quot;">';
+    }
+
     // ================= LIVE AUDIENCE LIVE TRACKER POLLING ENGINE =================
     async function pollLiveVisitors() {
       try {
@@ -1105,7 +1110,7 @@ adminRouter.get("/", (c) => {
                 '<span class="text-2xl font-black font-mono text-[#1C1B18] w-8 text-right flex-shrink-0">' + p.count + '</span>' +
                 '<div class="flex-1 min-w-0">' +
                   '<div class="flex items-center space-x-1.5 truncate">' +
-                    '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+                    '<span class="text-slate-400 text-xs flex-shrink-0">${icon('globe')}</span>' +
                     '<a href="' + p.path + '" target="_blank" class="text-xs font-semibold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' + (p.title || p.path) + '</a>' +
                   '</div>' +
                   '<div class="flex items-center space-x-1 text-[11px] font-bold text-rose-600 mt-0.5">' +
@@ -1130,7 +1135,7 @@ adminRouter.get("/", (c) => {
             flagsMosaic.innerHTML = data.countries.map(function(c) {
               const size = c.percent > 40 ? 'text-4xl sm:text-5xl p-3' : c.percent > 20 ? 'text-3xl p-2' : 'text-xl p-1.5';
               return '<div class="inline-flex flex-col items-center justify-center rounded-xl bg-white border border-[#EAE8E1] shadow-xs ' + size + ' hover:scale-105 transition cursor-pointer" title="' + c.name + ': ' + c.count + ' readers (' + c.percent + '%)">' +
-                '<span>' + (c.flag || '🌐') + '</span>' +
+                countryFlagHtml(c.code, c.name, true) +
                 '<span class="text-[9px] font-mono font-bold text-slate-600 mt-0.5">' + c.count + ' (' + c.percent + '%)</span>' +
               '</div>';
             }).join('');
@@ -1146,7 +1151,7 @@ adminRouter.get("/", (c) => {
               return '<div class="p-2.5 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1] space-y-1.5">' +
                 '<div class="flex items-center justify-between">' +
                   '<div class="flex items-center space-x-2">' +
-                    '<span class="text-xl leading-none">' + (c.flag || '🌐') + '</span>' +
+                    countryFlagHtml(c.code, c.name) +
                     '<span class="font-bold text-xs text-[#1C1B18]">' + c.name + '</span>' +
                     '<span class="text-[10px] text-[#8A867E] font-mono">(' + c.code + ')</span>' +
                   '</div>' +
@@ -1254,7 +1259,7 @@ adminRouter.get("/", (c) => {
               '<div class="w-20 flex-shrink-0 text-left font-mono font-bold text-xs text-red-600 flex items-center space-x-0.5">' +
                 stars + '<span>' + percentStr + '</span>' +
               '</div>' +
-              '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+              '<span class="text-slate-400 text-xs flex-shrink-0">${icon('globe')}</span>' +
               '<a href="' + p_escape(p.path) + '" target="_blank" class="text-xs sm:text-sm font-medium text-[#222] group-hover:text-[#C25E3E] group-hover:underline truncate block flex-1" title="' + p_escape(p.title) + '">' +
                 p_escape(p.title || p.path) +
               '</a>' +
@@ -1269,21 +1274,16 @@ adminRouter.get("/", (c) => {
         }
 
         readersTable.innerHTML = data.recentVisitors.map(function(v) {
-          const devIcon = v.device === 'Mobile' ?
-            '<span title="Mobile" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-pink-100 text-pink-600 font-bold shadow-xs">📱</span>' :
-            '<span title="Desktop" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-emerald-100 text-emerald-600 font-bold shadow-xs">💻</span>';
-
-          const osIcon = v.os === 'Android' ?
-            '<span title="Android" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-lime-100 text-lime-700 font-bold shadow-xs">🤖</span>' :
-            v.os === 'Apple' ?
-            '<span title="Apple / iOS" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-slate-200 text-slate-700 font-bold shadow-xs">🍏</span>' :
-            '<span title="Windows" class="w-6 h-6 rounded flex items-center justify-center text-xs bg-sky-100 text-sky-600 font-bold shadow-xs">🪟</span>';
+          const deviceIcons = ${JSON.stringify({Mobile: icon('mobile'), Desktop: icon('desktop'), Tablet: icon('tablet')})};
+          const osIcons = ${JSON.stringify({Android: icon('android'), Apple: icon('apple'), Windows: icon('windows')})};
+          const devIcon = '<span class="cms-visitor-icon" title="' + p_escape(v.device) + '">' + (deviceIcons[v.device] || ${JSON.stringify(icon('globe'))}) + '</span>';
+          const osIcon = '<span class="cms-visitor-icon" title="' + p_escape(v.os) + '">' + (osIcons[v.os] || ${JSON.stringify(icon('globe'))}) + '</span>';
 
           const refIcon = v.referrer === 'facebook' ?
-            '<span title="Facebook Referral" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-[#1877F2] text-white font-black shadow-xs">f</span>' :
+            '<span title="Facebook Referral" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-white text-[#1877F2] font-black shadow-xs">${icon('facebook')}</span>' :
             v.referrer === 'google' ?
-            '<span title="Google Search" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-red-500 text-white font-black shadow-xs">G</span>' :
-            '<span title="Direct Traffic" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-slate-600 text-white font-bold shadow-xs">🔗</span>';
+            '<span title="Google Search" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-white text-red-500 font-black shadow-xs">${icon('google')}</span>' :
+            '<span title="Direct Traffic" class="w-6 h-6 rounded-full flex items-center justify-center text-xs bg-slate-600 text-white font-bold shadow-xs">${icon('link')}</span>';
 
           const loc = (v.city ? v.city + ', ' : '') + v.country;
 
@@ -1292,11 +1292,11 @@ adminRouter.get("/", (c) => {
               '<span class="text-base sm:text-lg font-black font-mono text-[#1C1B18] w-14 flex-shrink-0">' + v.formattedTime + '</span>' +
               '<div class="min-w-0 space-y-0.5">' +
                 '<div class="flex items-center space-x-1.5 truncate">' +
-                  '<span class="text-slate-400 text-xs flex-shrink-0">🌐</span>' +
+                  '<span class="text-slate-400 text-xs flex-shrink-0">${icon('globe')}</span>' +
                   '<a href="' + p_escape(v.path) + '" target="_blank" class="font-semibold text-[#1C1B18] hover:text-[#C25E3E] truncate block">' + p_escape(v.title || v.path) + '</a>' +
                 '</div>' +
                 '<div class="flex items-center space-x-1.5 text-[11px] text-[#6E6B63]">' +
-                  '<span class="text-sm flex-shrink-0">' + (v.flag || '🌐') + '</span>' +
+                  countryFlagHtml(v.countryCode, v.country) +
                   '<span class="truncate">' + p_escape(loc) + '</span>' +
                 '</div>' +
               '</div>' +
@@ -1319,7 +1319,7 @@ adminRouter.get("/", (c) => {
     setInterval(pollLiveVisitors, 3000);
     pollLiveVisitors();
   </script>
-  <script src="/assets/cms-dashboard.js?v=20261014b"></script>
+  <script src="/assets/cms-dashboard.js?v=20261014c"></script>
 </body>
 </html>`);
 });

@@ -46,3 +46,8 @@
 @media(max-width:760px) { .cms-dashboard { padding-left:0; }.cms-sidebar { transform:translateX(-100%); transition:transform .2s; width:236px; }.cms-dashboard.nav-open .cms-sidebar { transform:translateX(0); }.cms-nav-overlay { display:none; position:fixed; inset:0; background:#202d4560; z-index:54; border:0; }.cms-dashboard.nav-open .cms-nav-overlay { display:block; }.cms-header { height:64px; padding:0 18px; }.cms-menu { display:block; padding:4px; color:#8794a7; }.cms-view-site { display:none; }.cms-main { padding:24px 16px; }.cms-page-heading h1 { font-size:24px; }.cms-stats { gap:10px; }.cms-stat { padding:16px; }.cms-stat strong { font-size:25px; }.cms-stat small { font-size:9px; }#cmsArticlesPanel > div:first-child { padding:18px 16px; }.cms-filter-bar { padding:14px 16px; gap:8px; }.cms-search { max-width:none; flex-basis:100%; }.cms-filter-bar select { flex:1; } }
 .cms-audience-title { display:flex; align-items:center; gap:9px; font-size:16px; font-weight:600; color:#536278; }
 #catModal,#backupModal { z-index:70; }
+.cms-country-flag { display:inline-block; width:24px; height:18px; object-fit:cover; border-radius:3px; box-shadow:0 0 0 1px #1e2c4412; flex-shrink:0; vertical-align:middle; }
+.cms-country-flag-large { width:52px; height:39px; margin-bottom:5px; border-radius:4px; }
+#mainTrackingView .text-base > .cms-icon { display:block; width:24px; height:24px; margin:3px auto 8px; color:#74889e; }
+.cms-visitor-icon { display:inline-flex; width:28px; height:28px; align-items:center; justify-content:center; border-radius:6px; color:#748ba2; background:#edf2f7; }
+.cms-visitor-icon .cms-icon { width:18px; height:18px; }

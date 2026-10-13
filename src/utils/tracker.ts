@@ -148,6 +148,7 @@ export function getLiveStats() {
   const referrers = { facebook: 0, google: 0, direct: 0, other: 0 };
   const recentVisitors: Array<{
     flag: string;
+    countryCode: string;
     country: string;
     city: string;
     device: string;
@@ -212,6 +213,7 @@ export function getLiveStats() {
 
     // Recent Visitors list
     recentVisitors.push({
+      countryCode: cCode,
       flag: session.flag || getFlagEmoji(cCode),
       country: session.countryName || COUNTRY_NAMES[cCode] || cCode,
       city: session.city,
