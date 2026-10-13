@@ -23,16 +23,20 @@ fi
 ln -sf /root/.bun/bin/bun /usr/local/bin/bun || true
 
 echo ">>> 4. Setting up app directory in /var/www/news..."
-mkdir -p /var/www/news
-
-# If news-production.tar.gz exists in current directory or /root, unpack it
-if [ -f "news-production.tar.gz" ]; then
-  tar -xzf news-production.tar.gz -C /var/www/news
-elif [ -f "/root/news-production.tar.gz" ]; then
-  tar -xzf /root/news-production.tar.gz -C /var/www/news
+CURRENT_DIR="$(pwd)"
+if [ "$CURRENT_DIR" != "/var/www/news" ]; then
+  mkdir -p /var/www/news
+  if [ -f "news-production.tar.gz" ]; then
+    tar -xzf news-production.tar.gz -C /var/www/news
+  elif [ -f "/root/news-production.tar.gz" ]; then
+    tar -xzf /root/news-production.tar.gz -C /var/www/news
+  else
+    cp -r "$CURRENT_DIR"/* /var/www/news/ 2>/dev/null || true
+  fi
 fi
 
 cd /var/www/news
+export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
 bun install
 
 echo ">>> 5. Creating Systemd Service (Runs 24/7 in background)..."
