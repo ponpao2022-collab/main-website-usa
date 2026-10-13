@@ -30,6 +30,7 @@ db.exec(`
     is_trending INTEGER DEFAULT 0,
     status TEXT DEFAULT 'published', -- 'draft', 'published', 'scheduled'
     views INTEGER DEFAULT 1420,
+    tags TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
@@ -39,6 +40,13 @@ db.exec(`
     value TEXT
   );
 `);
+
+// Safe migration for existing DB
+try {
+  db.exec("ALTER TABLE posts ADD COLUMN tags TEXT;");
+} catch (e) {
+  // column already exists
+}
 
 // Seed Categories if empty (only NEWS by default)
 const catCount = db.query("SELECT COUNT(*) as count FROM categories").get() as { count: number };

@@ -196,13 +196,8 @@ function layout(title: string, content: string, currentPath = "/") {
         <a href="/terms-and-conditions" class="text-sm font-semibold tracking-wide transition ${currentPath === '/terms-and-conditions' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">Terms & Conditions</a>
       </nav>
 
-      <!-- Right Controls: Status Badge (Desktop) & Hamburger Menu Button (Mobile) -->
+      <!-- Right Controls: Hamburger Menu Button (Mobile) -->
       <div class="flex items-center space-x-3">
-        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#F3F1EC] border border-[#E5E2D9] text-xs font-semibold">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-[#2B2926] text-[11px] font-medium">U.S. National Edition</span>
-        </div>
-
         <!-- Mobile Animated Hamburger Menu Button (☰ ➔ ✕ Like Celeb BNews) -->
         <button type="button" id="mobileMenuToggleBtn" onclick="toggleMobileMenu()" class="lg:hidden p-2.5 rounded-xl text-[#1C1B18] hover:bg-[#F3F1EC] border border-[#E5E2D9] transition flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Toggle Navigation Menu">
           <div class="w-5 h-3.5 relative flex flex-col justify-between" id="hamburgerBox">
@@ -962,14 +957,15 @@ frontendRouter.get("/article/:slug", (c) => {
         <!-- Article Body with Justified Text & Read More Strictly After Paragraph 2 -->
         ${formattedBody}
 
-        <!-- Bottom Tags -->
+        <!-- Bottom Tags / Editorial Desk -->
         <div class="mt-12 pt-6 border-t border-[#EAE8E1] flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div class="flex items-center space-x-2 text-xs">
+          ${post.tags && post.tags.trim() ? `
+          <div class="flex flex-wrap items-center gap-2 text-xs">
             <span class="text-[#8A867E]">Tags:</span>
-            <span class="px-2.5 py-1 rounded bg-[#F3F1EC] text-[#2B2926] font-mono border border-[#E5E2D9]">#USANews</span>
-            <span class="px-2.5 py-1 rounded bg-[#F3F1EC] text-[#2B2926] font-mono border border-[#E5E2D9]">#NationalDispatch</span>
-            <span class="px-2.5 py-1 rounded bg-[#F3F1EC] text-[#2B2926] font-mono border border-[#E5E2D9]">#Reporting</span>
-          </div>
+            ${post.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0).map((t: string) => `
+              <span class="px-2.5 py-1 rounded bg-[#F3F1EC] text-[#2B2926] font-mono border border-[#E5E2D9]">#${t.replace(/^#+/, '')}</span>
+            `).join('')}
+          </div>` : '<div></div>'}
 
           <div class="text-xs text-[#6E6B63]">
             <span>USA NEWS STORY Editorial Desk</span>

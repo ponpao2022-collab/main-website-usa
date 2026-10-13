@@ -135,7 +135,8 @@ apiRouter.post("/posts", async (c) => {
     read_time,
     is_breaking,
     is_featured,
-    status
+    status,
+    tags
   } = body;
 
   const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -146,12 +147,12 @@ apiRouter.post("/posts", async (c) => {
       UPDATE posts SET 
         title = ?, slug = ?, summary = ?, content = ?, category_id = ?, 
         author_name = ?, featured_image = ?, read_time = ?, 
-        is_breaking = ?, is_featured = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+        is_breaking = ?, is_featured = ?, status = ?, tags = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       title, generatedSlug, summary || "", content, category_id || 1,
       author_name || "Editorial Staff", featured_image || "", read_time || "4 min read",
-      is_breaking ? 1 : 0, is_featured ? 1 : 0, status || "published",
+      is_breaking ? 1 : 0, is_featured ? 1 : 0, status || "published", tags || "",
       id
     );
 
@@ -160,12 +161,12 @@ apiRouter.post("/posts", async (c) => {
     // Insert new post
     const result = db.prepare(`
       INSERT INTO posts 
-        (title, slug, summary, content, category_id, author_name, featured_image, read_time, is_breaking, is_featured, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (title, slug, summary, content, category_id, author_name, featured_image, read_time, is_breaking, is_featured, status, tags)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       title, generatedSlug, summary || "", content, category_id || 1,
       author_name || "Editorial Staff", featured_image || "", read_time || "4 min read",
-      is_breaking ? 1 : 0, is_featured ? 1 : 0, status || "published"
+      is_breaking ? 1 : 0, is_featured ? 1 : 0, status || "published", tags || ""
     );
 
     return c.json({ success: true, message: "Post created", id: result.lastInsertRowid });
