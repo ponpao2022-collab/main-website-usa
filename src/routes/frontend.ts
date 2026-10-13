@@ -253,7 +253,7 @@ function layout(title: string, content: string, currentPath = "/") {
       </a>
 
       <!-- Primary Navigation (Desktop) -->
-      <nav aria-label="Primary navigation" class="hidden lg:flex items-center flex-wrap justify-end gap-x-5 gap-y-3 min-w-0">
+      <nav aria-label="Primary navigation" class="uppercase hidden lg:flex items-center flex-wrap justify-end gap-x-5 gap-y-3 min-w-0">
         <a href="/" class="text-sm font-semibold tracking-wide transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">HOME</a>
         <a href="/news" class="text-sm font-semibold tracking-wide transition ${currentPath.startsWith('/news') ? 'text-[#C25E3E] font-bold' : 'text-[#4A4742] hover:text-[#C25E3E]'}">NEWS</a>
         ${categoryMenu()}
@@ -284,7 +284,7 @@ function layout(title: string, content: string, currentPath = "/") {
         <button type="submit" class="px-4 py-2.5 bg-[#C25E3E] hover:bg-[#B05335] text-white text-xs font-bold rounded-xl transition shadow-sm">Go</button>
       </form>
 
-      <nav aria-label="Mobile navigation" class="flex flex-col text-sm font-semibold divide-y divide-[#2C2A26] py-1">
+      <nav aria-label="Mobile navigation" class="uppercase flex flex-col text-sm font-semibold divide-y divide-[#2C2A26] py-1">
         <a href="/" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>Home</span>
           <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
