@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="USA Viral">
+  <rect width="256" height="256" rx="48" fill="#EA580C"/>
+  <path fill="#1D4ED8" d="M40 40h176v88H40z"/>
+  <path fill="#fff" d="M128 52l10 30h32l-26 19 10 30-26-19-26 19 10-30-26-19h32z"/>
+  <rect x="40" y="128" width="176" height="18" fill="#fff"/>
+  <rect x="40" y="146" width="176" height="18" fill="#B91C1C"/>
+  <rect x="40" y="164" width="176" height="18" fill="#fff"/>
+  <path fill="#FACC15" d="M128 132c22 26 48 44 48 70a48 48 0 1 1-96 0c0-26 26-44 48-70z"/>
+  <path fill="#fff" opacity=".9" d="M128 158c12 14 24 24 24 40a24 24 0 1 1-48 0c0-16 12-26 24-40z"/>
+</svg>

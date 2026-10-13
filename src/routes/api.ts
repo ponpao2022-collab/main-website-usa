@@ -1,7 +1,14 @@
 import { Hono } from "hono";
 import { db } from "../db/index";
+import stylePrompts from "../data/style-prompts.json";
+import stylesList from "../data/styles.json";
 
 export const apiRouter = new Hono();
+
+// GET all TK Summary styles
+apiRouter.get("/ai/styles", (c) => {
+  return c.json({ success: true, data: stylesList });
+});
 
 // GET all posts (with optional category or filter)
 apiRouter.get("/posts", (c) => {
@@ -310,33 +317,27 @@ apiRouter.post("/ai/fetch-article", async (c) => {
   }
 });
 
-// AI ENDPOINT: Format or Rewrite in 10 News Styles (Gemini AI + Fallback)
+// AI ENDPOINT: Format or Rewrite in 15 TK Summary News Styles (Gemini AI + Fallback)
 apiRouter.post("/ai/format-or-rewrite", async (c) => {
   try {
     const { apiKey, mode, style, title, content, targetWords, customPrompt } = await c.req.json();
     const selectedStyle = (style || "cnn").toLowerCase();
-    const styleNames: Record<string, string> = {
-      cnn: "CNN (Facts First, breaking news urgency, structured bullet highlights)",
-      bbc: "BBC News (Neutral, British analytical reporting, 'At a Glance' summary)",
-      nyt: "The New York Times (Literary prose, refined drop-cap typography, deep narrative)",
-      reuters: "Reuters (Rapid wire format, DATELINE location upfront, pure factual bullets)",
-      bloomberg: "Bloomberg (Market, finance, and economic data impact, executive summary)",
-      verge: "The Verge (Modern tech spec design, bold callouts, futuristic aesthetic)",
-      guardian: "The Guardian (Progressive investigative journalism, human-impact focus)",
-      aljazeera: "Al Jazeera (Geopolitical background, deep historical context timeline)",
-      ap: "Associated Press (Inverted pyramid wire format, punchy essential lead)",
-      techcrunch: "TechCrunch (Silicon Valley startup, VC funding and venture angle)"
-    };
-
-    const targetStyleName = styleNames[selectedStyle] || "CNN";
+    
+    // Get official TK Summary style guidelines
+    const specificPrompt = (stylePrompts as any)[selectedStyle] || `News Style: ${selectedStyle}`;
+    const targetStyleObj = (stylesList as any[]).find(s => s.id === selectedStyle);
+    const targetStyleName = targetStyleObj ? targetStyleObj.label : selectedStyle.toUpperCase();
 
     // If Gemini API Key is provided, call Google Gemini 2.0 Flash / 1.5 Flash
     if (apiKey && apiKey.trim().length > 10) {
       const geminiPrompt = mode === "format"
         ? `You are an elite news copy editor for ${targetStyleName}.
-TASK: Reformat this news story into the signature editorial structure and visual HTML style of ${targetStyleName}.
+OFFICIAL STYLE GUIDELINES:
+${specificPrompt}
+
+TASK: Reformat this news story into the signature editorial structure, HTML layout, and styled callout boxes of ${targetStyleName}.
 CRITICAL CONSTRAINT: KEEP ALL ORIGINAL WORDS, SENTENCES, FACTS, AND QUOTES COMPLETELY UNCHANGED. DO NOT REWRITE OR PARAPHRASE.
-Only reorganize into clean, semantic HTML (<p>, <h2>, <blockquote>, and styled callout boxes characteristic of ${targetStyleName}).
+Only reorganize into clean, semantic HTML (<p>, <h2>, <blockquote>, and styled callouts as specified in the style guidelines).
 
 Title: ${title}
 Article Body:
@@ -348,8 +349,11 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
   "summary": "original executive summary",
   "formatted_html": "clean semantic HTML string with styled callout boxes"
 }`
-        : `You are a senior investigative journalist writing for ${targetStyleName}.
-TASK: REWRITE this news story completely in the distinctive editorial voice, vocabulary, and reporting standard of ${targetStyleName}.
+        : `You are an elite journalist writing in the authentic newsroom standard of ${targetStyleName}.
+OFFICIAL STYLE GUIDELINES:
+${specificPrompt}
+
+TASK: REWRITE this news story completely according to the structural format, length, sentence-level voice, and rules described above.
 Target length: approximately ${targetWords || 450} words.
 ${customPrompt ? `Special instructions: ${customPrompt}` : ""}
 
@@ -359,9 +363,9 @@ ${content}
 
 Return ONLY a valid JSON object in this exact schema without markdown backticks:
 {
-  "title": "irresistible headline in ${targetStyleName} style",
+  "title": "headline strictly matching the ${targetStyleName} guidelines",
   "summary": "compelling 2-sentence executive summary",
-  "formatted_html": "full rewritten article body in semantic HTML with styled callouts"
+  "formatted_html": "full rewritten article body in semantic HTML matching the style structure"
 }`;
 
       try {
@@ -397,7 +401,7 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
     // Built-in High-Fidelity Style Transformer (Works 100% even without Gemini Key!)
     let styledBox = "";
     let formattedTitle = title;
-    let formattedSummary = `Executive briefing formatted in ${selectedStyle.toUpperCase()} editorial standard.`;
+    let formattedSummary = `Executive briefing formatted in ${targetStyleName} standard.`;
 
     switch (selectedStyle) {
       case "cnn":
@@ -405,89 +409,151 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
 <div class="p-4 rounded-xl bg-red-950/30 border-l-4 border-red-600 my-5 shadow-lg">
   <div class="flex items-center space-x-2 text-xs font-black tracking-wider text-red-500 uppercase mb-2">
     <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-    <span>CNN NEWSROOM • FACTS FIRST</span>
+    <span>CNN DIGITAL • FACTS FIRST</span>
   </div>
-  <ul class="space-y-1.5 text-sm text-slate-200 list-disc list-inside">
-    <li>Primary development reported across national and international bureaus.</li>
-    <li>Official statements confirm key strategic shifts effective immediately.</li>
-    <li>Analysts project broad implications across upcoming quarters.</li>
+  <p class="text-sm text-slate-200 leading-relaxed italic">5W1H Lede: Key development confirmed as regional and national leaders react to the newly announced policy shifts.</p>
+</div>`;
+        formattedTitle = mode === "rewrite" ? `CNN: ${title}` : title;
+        break;
+
+      case "dailymail":
+        styledBox = `
+<div class="p-4 rounded-xl bg-blue-950/40 border border-blue-500/40 my-5 shadow-lg">
+  <p class="font-extrabold text-blue-400 text-xs tracking-wider uppercase mb-2">WHAT WE KNOW:</p>
+  <ul class="space-y-1 text-xs text-slate-200 list-disc list-inside">
+    <li><strong>Major Revelations:</strong> Key details emerge following intense public interest.</li>
+    <li><strong>Verified Sources:</strong> Multiple direct witnesses confirm the timeline.</li>
+    <li><strong>Next Steps:</strong> Official announcements expected in coming hours.</li>
+  </ul>
+</div>`;
+        formattedTitle = mode === "rewrite" ? `REVEALED: ${title}` : title;
+        break;
+
+      case "foxnews":
+        styledBox = `
+<div class="p-4 rounded-xl bg-red-950/40 border-l-4 border-red-600 my-5 shadow-lg">
+  <p class="font-black text-red-500 text-xs uppercase tracking-wider mb-2">KEY TAKEAWAYS</p>
+  <ul class="space-y-1.5 text-xs text-slate-200 list-disc list-inside">
+    <li>High-stakes political showdown erupts over core national policy priorities.</li>
+    <li>Critics slam new measures while supporters vow decisive defense.</li>
+    <li>Battle shifts to key committees amid heightened scrutiny.</li>
+  </ul>
+</div>`;
+        formattedTitle = mode === "rewrite" ? `SHOWDOWN: ${title}` : title;
+        break;
+
+      case "ap":
+        styledBox = `
+<div class="p-3 bg-slate-900 border-l-4 border-slate-400 my-4 text-xs text-slate-200">
+  <strong>WASHINGTON (AP) —</strong> Essential facts delivered upfront with strict wire attribution and neutral framing.
+</div>`;
+        break;
+
+      case "people":
+        styledBox = `
+<blockquote class="my-5 p-4 rounded-xl bg-pink-950/20 border-l-4 border-pink-500 text-sm italic text-pink-100">
+  "She opened up about the moment that changed everything — and the quiet strength that carried everyone forward."
+</blockquote>`;
+        break;
+
+      case "tmz":
+        styledBox = `
+<div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/30 my-4 text-xs text-amber-200">
+  <strong>Here's the deal...</strong> We've learned exclusive details behind today's sudden developments straight from insider sources.
+</div>`;
+        formattedTitle = mode === "rewrite" ? `EXCLUSIVE: ${title}` : title;
+        break;
+
+      case "buzzfeed":
+        styledBox = `
+<div class="p-4 rounded-xl bg-red-950/30 border-l-4 border-rose-500 my-5 text-xs text-slate-200 space-y-1">
+  <p class="font-bold text-rose-400">Here is everything you need to know about today's story — and why everyone is talking about it:</p>
+</div>`;
+        break;
+
+      case "breaking":
+        styledBox = `
+<div class="p-4 rounded-xl bg-red-950/60 border-2 border-red-600 my-5 shadow-xl">
+  <div class="flex items-center space-x-2 text-xs font-black text-red-400 uppercase tracking-widest mb-2">
+    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+    <span>BREAKING NEWS BULLETIN</span>
+  </div>
+  <p class="text-xs text-slate-200 font-bold mb-2">What We Know (Confirmed Facts Only):</p>
+  <ul class="space-y-1 text-xs text-slate-300 list-disc list-inside">
+    <li>Primary development verified by on-scene authorities.</li>
+    <li>Operations underway with emergency updates pending.</li>
   </ul>
 </div>`;
         formattedTitle = mode === "rewrite" ? `BREAKING: ${title}` : title;
         break;
 
-      case "bbc":
+      case "tabloid":
         styledBox = `
-<div class="p-4 rounded-xl bg-red-950/20 border-l-4 border-red-700 my-5 shadow-md">
-  <h4 class="text-xs font-bold uppercase tracking-wider text-red-400 mb-2">AT A GLANCE // BBC NEWS</h4>
-  <p class="text-sm text-slate-200 leading-relaxed">
-    Key developments synthesized by BBC correspondents on the ground with verified sources and impartial contextual analysis.
-  </p>
+<div class="p-4 rounded-xl bg-red-950/50 border border-red-500 my-5 text-center">
+  <h4 class="text-sm font-black text-red-400 uppercase tracking-widest mb-1">🔥 BOMBSHELL REVELATION 🔥</h4>
+  <p class="text-xs text-slate-200 font-bold">The dramatic secret behind today's sudden announcement is finally coming to light!</p>
+</div>`;
+        formattedTitle = mode === "rewrite" ? `SHOCK REVELATION: ${title}` : title;
+        break;
+
+      case "analysis":
+        styledBox = `
+<div class="p-4 rounded-xl bg-slate-900 border border-slate-700 my-5">
+  <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">NEWS ANALYSIS: WHAT IT MEANS</h4>
+  <p class="text-xs text-slate-300 leading-relaxed">The stakes go far beyond today's headlines, reshaping the institutional landscape and setting precedents for years ahead.</p>
 </div>`;
         break;
 
-      case "nyt":
+      case "axios":
         styledBox = `
-<blockquote class="my-6 border-l-2 border-slate-400 pl-6 py-2 italic text-lg text-slate-200 font-serif bg-slate-900/40 rounded-r-lg">
-  "The broader implications extend far beyond immediate policy, touching on core structural currents shaping our era."
-</blockquote>`;
-        break;
-
-      case "reuters":
-        styledBox = `
-<div class="p-3.5 rounded-lg bg-amber-950/30 border-l-4 border-amber-500 my-4 text-xs text-slate-200 font-mono">
-  <span class="font-bold text-amber-400">REUTERS WIRE DISPATCH:</span> Verified transmission from global bureau correspondents.
-</div>`;
-        break;
-
-      case "bloomberg":
-        styledBox = `
-<div class="p-4 rounded-xl bg-blue-950/40 border-l-4 border-blue-500 my-5 shadow-lg">
-  <div class="text-xs font-black tracking-wider text-blue-400 uppercase mb-2">BLOOMBERG MARKETS & DATA INTELLIGENCE</div>
-  <div class="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300">
-    <div class="bg-slate-900 p-2 rounded border border-slate-800">Macro Impact: <span class="text-emerald-400 font-bold">+High</span></div>
-    <div class="bg-slate-900 p-2 rounded border border-slate-800">Market Sentiment: <span class="text-blue-400 font-bold">Bullish</span></div>
+<div class="p-4 rounded-xl bg-blue-950/40 border-l-4 border-blue-500 my-5 shadow-lg space-y-2">
+  <p class="text-xs font-bold text-blue-400"><strong>Why it matters:</strong> The milestone fundamentally accelerates execution timelines while removing key historical bottlenecks.</p>
+  <div class="pt-2 border-t border-slate-800 text-xs text-slate-300">
+    <strong>By the numbers:</strong>
+    <ul class="list-disc list-inside mt-1 space-y-0.5">
+      <li><strong>100%</strong> operational uptime achieved.</li>
+      <li><strong>3x</strong> improvement across target efficiency benchmarks.</li>
+    </ul>
   </div>
 </div>`;
         break;
 
-      case "verge":
+      case "usaviral":
         styledBox = `
-<div class="p-4 rounded-2xl bg-violet-950/40 border border-violet-500/40 my-5 shadow-xl">
-  <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-violet-600 text-white">THE VERGE // TECH SPEC</span>
-  <h4 class="text-sm font-bold text-violet-200 mt-2 mb-1">Architecture & Engineering Breakdown</h4>
-  <p class="text-xs text-slate-300 leading-relaxed">How next-generation infrastructure is radically upending the legacy paradigm.</p>
+<div class="p-4 rounded-xl bg-orange-950/30 border border-orange-500/40 my-5 text-xs text-slate-200">
+  <strong class="text-orange-400 block mb-1">Nobody expected this sudden turn of events:</strong>
+  <p class="text-slate-300">The reaction sweeping the internet is something you have to see to believe.</p>
 </div>`;
         break;
 
-      case "guardian":
+      case "nytexplainer":
         styledBox = `
-<div class="p-4 rounded-xl bg-blue-950/30 border-l-4 border-amber-400 my-5">
-  <h4 class="text-xs font-bold uppercase text-amber-400 mb-1">THE GUARDIAN // INVESTIGATION</h4>
-  <p class="text-sm text-slate-300">Independent reporting funded by readers worldwide, centering on human stories and global accountability.</p>
+<div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700 my-5 font-serif">
+  <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-1">WHAT TO KNOW: CONTEXT & CONTROVERSY</h4>
+  <p class="text-xs text-slate-300 leading-relaxed">To understand the impact of today's decision, one must look at the institutional precedents and core tensions that led here.</p>
 </div>`;
         break;
 
-      case "aljazeera":
+      case "newsletter":
         styledBox = `
-<div class="p-4 rounded-xl bg-amber-950/30 border-l-4 border-orange-500 my-5">
-  <h4 class="text-xs font-bold uppercase text-orange-400 mb-2">GEOPOLITICAL CONTEXT & TIMELINE</h4>
-  <p class="text-sm text-slate-200 leading-relaxed">Examines the historical roots, regional reverberations, and multilateral perspectives often overlooked by Western coverage.</p>
+<div class="p-4 rounded-xl bg-purple-950/30 border-l-4 border-purple-500 my-5 text-xs text-slate-200 space-y-1.5">
+  <p class="font-bold text-purple-300">Good morning, readers ☕ — Here's the one thing that matters today:</p>
+  <p class="text-slate-300">We broke down the complete story before you start your day, served in quick, punchy takeaways.</p>
 </div>`;
         break;
 
-      case "ap":
+      case "investigative":
         styledBox = `
-<div class="p-3 bg-red-950/20 border-l-4 border-red-500 my-4 text-xs text-slate-200">
-  <strong>WASHINGTON (AP) —</strong> Fast-breaking wire report delivering essential facts upfront.
+<div class="p-4 rounded-xl bg-teal-950/40 border-l-4 border-teal-500 my-5 text-xs text-slate-200 space-y-2">
+  <h4 class="font-bold text-teal-400 uppercase tracking-wider">INVESTIGATIVE FINDINGS // THE PAPER TRAIL</h4>
+  <p class="text-slate-300">A rigorous review of official filings, procurement logs, and on-record testimonies reveals an undocumented pattern dating back years.</p>
 </div>`;
         break;
 
-      case "techcrunch":
+      default:
         styledBox = `
-<div class="p-4 rounded-xl bg-emerald-950/40 border-l-4 border-emerald-500 my-5 shadow-lg">
-  <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold block mb-1">TECHCRUNCH // THE BIG PICTURE</span>
-  <p class="text-sm text-slate-200 leading-relaxed">What founders, venture capitalists, and ecosystem leaders need to know about this market move.</p>
+<div class="p-4 rounded-xl bg-indigo-950/30 border-l-4 border-indigo-500 my-5 text-xs text-slate-200">
+  <strong>KEY HIGHLIGHT:</strong> Core developments verified and formatted in modern digital newsroom standard.
 </div>`;
         break;
     }
@@ -501,7 +567,7 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
     }
 
     if (mode === "rewrite") {
-      formattedTitle = `[${selectedStyle.toUpperCase()}] ${title}`;
+      formattedTitle = `[${targetStyleName.toUpperCase()}] ${title}`;
     }
 
     return c.json({

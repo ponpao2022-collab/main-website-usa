@@ -1,0 +1,242 @@
+[
+  {
+    "id": "cnn",
+    "label": "CNN Digital",
+    "category": "Editorial News",
+    "logo": "assets/styles/cnn.png",
+    "accent": "#CC0000",
+    "tone": "Neutral & Authoritative",
+    "tagline": "Inverted Pyramid • 5W1H Lede",
+    "rewriteWords": "400–800 words",
+    "previewSample": "PHNOM PENH — A sweeping institutional framework was officially introduced today, establishing new regional policy benchmarks across key sectors.",
+    "traits": [
+      "5W1H Inverted Lede",
+      "Attributed Quotes",
+      "No body bullets"
+    ]
+  },
+  {
+    "id": "dailymail",
+    "label": "Daily Mail",
+    "category": "Tabloid & Drama",
+    "logo": "assets/styles/dailymail.png",
+    "accent": "#004DB3",
+    "tone": "Sensational & Emotional",
+    "tagline": "Bold Standfirst • WHAT WE KNOW Box",
+    "rewriteWords": "500–900 words",
+    "previewSample": "REVEALED: Shocking behind-the-scenes negotiations emerge amid intense public scrutiny following dramatic new revelations.",
+    "traits": [
+      "Bold Standfirst",
+      "WHAT WE KNOW Box",
+      "Bold numbers & names"
+    ]
+  },
+  {
+    "id": "foxnews",
+    "label": "Fox News",
+    "category": "Hard News",
+    "logo": "assets/styles/foxnews.png",
+    "accent": "#003580",
+    "tone": "Opinionated Prime-Time",
+    "tagline": "Conflict Frame • Soundbites",
+    "rewriteWords": "400–700 words",
+    "previewSample": "High-Stakes Showdown: Lawmakers traded fierce blows this morning over national economic policy as intense political battles reached a boiling point.",
+    "traits": [
+      "Conflict Frame Lede",
+      "Critics vs Supporters",
+      "Political Fallout"
+    ]
+  },
+  {
+    "id": "ap",
+    "label": "AP Wire",
+    "category": "Wire Service",
+    "logo": "assets/styles/ap.png",
+    "accent": "#222222",
+    "tone": "Neutral Wire Service",
+    "tagline": "CITY (AP) — Dateline • Zero Adjectives",
+    "rewriteWords": "300–500 words",
+    "previewSample": "PHNOM PENH, Cambodia (AP) — Government officials announced a new national infrastructure package Thursday, allocating targeted funding across provincial hubs.",
+    "traits": [
+      "CITY (AP) — Dateline",
+      "Strict Attribution",
+      "Zero adjectives"
+    ]
+  },
+  {
+    "id": "people",
+    "label": "People Magazine",
+    "category": "Celebrity & Culture",
+    "logo": "assets/styles/people.png",
+    "accent": "#C0005A",
+    "tone": "Warm & Emotional",
+    "tagline": "Human-centered lede • Warm quotes",
+    "rewriteWords": "400–700 words",
+    "previewSample": "She opened up about the moment that changed everything — and the quiet strength that carried her through.",
+    "traits": [
+      "Person-first lede",
+      "Warm quotes",
+      "Hopeful close"
+    ]
+  },
+  {
+    "id": "tmz",
+    "label": "TMZ",
+    "category": "Gossip Fast",
+    "logo": "assets/styles/tmz.png",
+    "accent": "#E65C00",
+    "tone": "Gossipy & Punchy",
+    "tagline": "Here's the deal… • Insider sources",
+    "rewriteWords": "150–400 words",
+    "previewSample": "Here's the deal... we've learned the exclusive details behind today's sudden turn of events.",
+    "traits": [
+      "Scoop-first lede",
+      "1-sentence paras",
+      "Insider framing"
+    ]
+  },
+  {
+    "id": "buzzfeed",
+    "label": "BuzzFeed",
+    "category": "Internet Culture",
+    "logo": "assets/styles/buzzfeed.png",
+    "accent": "#E6293A",
+    "tone": "Casual & Relatable",
+    "tagline": "Here's what happened • Numbered takeaways",
+    "rewriteWords": "300–600 words",
+    "previewSample": "Here's everything you need to know about today's story — and why everyone is talking about it.",
+    "traits": [
+      "Conversational hook",
+      "Numbered H2s",
+      "Shareable tone"
+    ]
+  },
+  {
+    "id": "breaking",
+    "label": "Breaking Express",
+    "category": "Urgent Alert",
+    "logo": "assets/styles/breaking.png",
+    "accent": "#DC2626",
+    "tone": "Urgent Bulleted Alert",
+    "tagline": "BREAKING • What We Know / Don't Know",
+    "rewriteWords": "150–350 words",
+    "previewSample": "BREAKING: A newly confirmed development is unfolding in real time. Here is what we know so far.",
+    "traits": [
+      "Breaking banner",
+      "Confirmed facts only",
+      "Developing status"
+    ]
+  },
+  {
+    "id": "tabloid",
+    "label": "Tabloid",
+    "category": "Outrage Click",
+    "logo": "assets/styles/tabloid.png",
+    "accent": "#B91C1C",
+    "tone": "High Energy Revelations",
+    "tagline": "BOMBSHELL opener • Dramatic CAPS",
+    "rewriteWords": "300–500 words",
+    "previewSample": "SHOCK REVELATION: The dramatic secret behind today's decision is finally coming to light.",
+    "traits": [
+      "Bombshell opener",
+      "Bold revelations",
+      "Cliffhanger close"
+    ]
+  },
+  {
+    "id": "analysis",
+    "label": "News Analysis",
+    "category": "Interpretive",
+    "logo": "assets/styles/analysis.png",
+    "accent": "#475569",
+    "tone": "Deep Substantive Policy",
+    "tagline": "What it means • Drivers • Outlook",
+    "rewriteWords": "700–1200 words",
+    "previewSample": "What today's decision means: the stakes go far beyond the headline, reshaping the policy landscape for years.",
+    "traits": [
+      "Thesis lede",
+      "Why it matters",
+      "Strategic outlook"
+    ]
+  },
+  {
+    "id": "axios",
+    "label": "Axios Express",
+    "category": "Smart Brevity",
+    "logo": "assets/styles/axios.svg",
+    "accent": "#2563EB",
+    "tone": "Smart Brevity",
+    "tagline": "1 Big Thing • Why it matters • By the numbers",
+    "rewriteWords": "200–400 words",
+    "previewSample": "1 big thing: Strategic milestone achieved. Why it matters: Redefines efficiency standards.",
+    "traits": [
+      "1 Big Thing",
+      "By the numbers",
+      "Yes, but"
+    ]
+  },
+  {
+    "id": "usaviral",
+    "label": "USA Viral Hook",
+    "category": "Social Traffic",
+    "logo": "assets/styles/usaviral.svg",
+    "accent": "#EA580C",
+    "tone": "High-Engagement Click-Worthy",
+    "tagline": "Curiosity gap • Cliffhangers • Share CTA",
+    "rewriteWords": "250–500 words",
+    "previewSample": "Nobody expected this sudden turn of events — and the reaction sweeping the internet is something you have to see.",
+    "traits": [
+      "Curiosity gap",
+      "Cliffhangers",
+      "Share CTA"
+    ]
+  },
+  {
+    "id": "nytexplainer",
+    "label": "NYT Explainer",
+    "category": "Contextual",
+    "logo": "assets/styles/nyt.svg",
+    "accent": "#334155",
+    "tone": "Calm Q&A Pedagogy",
+    "tagline": "What to know • H2 questions • Zero jargon",
+    "rewriteWords": "600–1000 words",
+    "previewSample": "What to know about today's decision: to understand the impact, look at the institutional precedents that led here.",
+    "traits": [
+      "Question headline",
+      "H2 Q&A",
+      "Zero jargon"
+    ]
+  },
+  {
+    "id": "newsletter",
+    "label": "Substack / Brew",
+    "category": "Newsletter",
+    "logo": "assets/styles/substack.svg",
+    "accent": "#8B5CF6",
+    "tone": "Conversational & Punchy",
+    "tagline": "☕ Greeting • 1st person • P.S. box",
+    "rewriteWords": "400–800 words",
+    "previewSample": "Good morning, readers ☕ — Here's the complete story before you start your day, served in 3 quick takeaways.",
+    "traits": [
+      "Coffee greeting",
+      "First person",
+      "The Big Takeaway"
+    ]
+  },
+  {
+    "id": "investigative",
+    "label": "Investigative",
+    "category": "Evidence-driven",
+    "logo": "assets/styles/investigative.svg",
+    "accent": "#0F766E",
+    "tone": "Deep Evidence & Investigation",
+    "tagline": "Document trail • Chronology • Accused response",
+    "rewriteWords": "1200–2500 words",
+    "previewSample": "A review of official records and on-record testimonies reveals an undocumented pattern of transactions dating back years.",
+    "traits": [
+      "Chronology box",
+      "Document trail",
+      "Accused response"
+    ]
+  }
+]

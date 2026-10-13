@@ -162,6 +162,18 @@ adminRouter.get("/", (c) => {
     </div>
   </div>
 
+  <!-- Floating TK Summary Mascot Trigger Button (Bottom Right) -->
+  <a href="/admin/new" class="fixed right-6 bottom-6 z-50 flex items-center group cursor-pointer select-none">
+    <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-slate-900/95 border border-blue-500/40 text-xs font-bold text-blue-300 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+      <span>Create with TK Summary AI</span>
+    </div>
+    <div class="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 active:scale-95">
+      <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_10px_20px_rgba(8,124,218,0.45)]" alt="TK Summary">
+      <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_26px_rgba(8,124,218,0.7)] animate-bounce" alt="TK Summary Happy">
+    </div>
+  </a>
+
   <script>
     async function purgeCache(btn) {
       btn.innerHTML = 'Purging Edge...';
@@ -442,219 +454,419 @@ const renderEditor = (c: any) => {
     <span class="tracking-wide">AI Article Importer & Formatter</span>
   </button>
 
-  <!-- RIGHT-SIDE AI ARTICLE IMPORTER & FORMATTER DRAWER PANEL (SIDE-BY-SIDE WITH EDITOR) -->
-  <div id="aiModal" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-[540px] lg:w-[600px] bg-slate-900/95 backdrop-blur-2xl border-l border-slate-700/80 shadow-[-20px_0_50px_rgba(0,0,0,0.6)] flex flex-col transition-all duration-300">
+  <!-- FLOATING TK SUMMARY MASCOT TRIGGER BUTTON (BOTTOM RIGHT) -->
+  <div id="tkSummaryFloatingBtn" onclick="openAiModal()" class="fixed right-6 bottom-6 z-50 flex items-center group cursor-pointer select-none">
+    <!-- Tooltip Pill -->
+    <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-slate-900/95 border border-blue-500/40 text-xs font-bold text-blue-300 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+      <span>TK Summary AI</span>
+    </div>
+
+    <!-- Character Mascot (Waving / Happy Toggle) -->
+    <div class="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 active:scale-95">
+      <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_10px_20px_rgba(8,124,218,0.45)]" alt="TK Summary">
+      <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_26px_rgba(8,124,218,0.7)] animate-bounce" alt="TK Summary Happy">
+    </div>
+  </div>
+
+  <!-- RIGHT-SIDE TK SUMMARY SLIDE-OUT PANEL (POPUP ON EDITOR) -->
+  <div id="aiModal" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-[560px] lg:w-[620px] bg-slate-900/95 backdrop-blur-2xl border-l border-slate-700/80 shadow-[-24px_0_60px_rgba(0,0,0,0.7)] flex flex-col transition-all duration-300">
     
-    <!-- Drawer Header (Fixed at top of drawer) -->
-    <div class="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/70 flex items-center justify-between flex-shrink-0">
+    <!-- Drawer Header -->
+    <div class="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between flex-shrink-0">
       <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
-          <svg class="w-5 h-5 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-1 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+          <img src="/assets/tk-mascot.png" class="w-full h-full object-contain" alt="TK Summary">
         </div>
         <div>
-          <h2 class="text-sm sm:text-base font-black text-white">AI Article Importer & Formatter</h2>
-          <p class="text-[11px] text-slate-400">Gemini 2.0 Flash • Side Panel (Editor Visible)</p>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-sm sm:text-base font-black text-white tracking-wide">TK SUMMARY CLASSIC</h2>
+            <span class="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">v2.5 AI</span>
+          </div>
+          <p class="text-[11px] text-slate-400">15 Newsroom Presets • Rule-Based Formatter • WebP Image Studio</p>
         </div>
       </div>
-      <button onclick="closeAiModal()" type="button" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition" title="Close Side Panel">✕</button>
+      <button onclick="closeAiModal()" type="button" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition" title="Close Panel">✕</button>
+    </div>
+
+    <!-- Mode Selector Tabs (AI Styles vs Free Presets) -->
+    <div class="px-4 sm:px-6 pt-3 pb-2 bg-slate-950/50 border-b border-slate-800/80 flex items-center space-x-2 flex-shrink-0">
+      <button type="button" id="tabAiStyles" onclick="switchTkTab('ai')" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-blue-600 text-white shadow-md shadow-blue-600/30">
+        <span>⚡ AI Style Rewrite (15 Presets)</span>
+      </button>
+      <button type="button" id="tabFreePresets" onclick="switchTkTab('free')" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center justify-center space-x-2 bg-slate-800/80">
+        <span>🎨 Free Presets (No AI)</span>
+      </button>
     </div>
 
     <!-- Drawer Scrollable Content -->
     <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-slate-100">
 
       <!-- Gemini API Key Input Bar -->
-      <div class="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div class="p-3.5 rounded-2xl bg-blue-950/20 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div class="flex-1">
-          <label class="block font-bold text-indigo-300 mb-1">Google Gemini API Key (Free):</label>
+          <label class="block font-bold text-blue-300 mb-1">Google Gemini API Key (Free):</label>
           <div class="flex items-center space-x-2">
-            <input type="password" id="geminiApiKey" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" placeholder="AIzaSy... (Saved in browser)">
-            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Save</button>
+            <input type="password" id="geminiApiKey" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500" placeholder="AIzaSy... (Saved in browser)">
+            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold">Save</button>
           </div>
         </div>
         <div class="text-[11px] text-slate-400 sm:text-right">
           <span>Get Free Key:</span>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-400 hover:underline block font-semibold">aistudio.google.com &rarr;</a>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline block font-semibold">aistudio.google.com &rarr;</a>
         </div>
       </div>
 
-      <!-- Step 1: Input URL and Fetch Article -->
-      <div class="space-y-2">
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">1. Paste Article Post Link:</label>
-        <div class="flex items-center space-x-2">
-          <input type="url" id="fetchUrlInput" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" placeholder="https://edition.cnn.com/... or https://www.bbc.com/news/...">
-          <button type="button" id="btnFetchUrl" onclick="fetchArticleFromLink()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-600/20 flex items-center space-x-2 transition">
-            <span>⚡ Fetch Article & Image</span>
-          </button>
-        </div>
-      </div>
+      <!-- TAB 1: AI STYLES & LINK SCRAPER -->
+      <div id="tkAiTabContent" class="space-y-6">
 
-      <!-- Fetched Article Preview Box (Hidden until fetched) -->
-      <div id="fetchPreviewBox" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 text-xs">
-        <div class="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-2">
-          <span>✓ Article & Image Successfully Fetched!</span>
-          <span id="fetchStatsBadge" class="text-slate-400 font-mono">0 paragraphs</span>
+        <!-- Step 1: Input URL and Fetch Article -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">1. Paste Article Post Link:</label>
+          <div class="flex items-center space-x-2">
+            <input type="url" id="fetchUrlInput" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" placeholder="https://edition.cnn.com/... or https://topstoryusa.info/...">
+            <button type="button" id="btnFetchUrl" onclick="fetchArticleFromLink()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/20 flex items-center space-x-2 transition">
+              <span>⚡ Fetch Article & Image</span>
+            </button>
+          </div>
         </div>
-        <div class="flex gap-4 items-start">
-          <img id="fetchedThumbImg" class="w-24 h-24 object-cover rounded-xl border border-slate-800 flex-shrink-0 bg-slate-900">
-          <div class="flex-1 min-w-0 space-y-1">
-            <h4 id="fetchedTitlePreview" class="font-bold text-white text-sm line-clamp-2"></h4>
-            <p id="fetchedSummaryPreview" class="text-slate-400 line-clamp-2 leading-relaxed"></p>
-            <div class="flex items-center space-x-3 text-[11px] text-slate-500 pt-1">
-              <span class="text-emerald-400 font-mono">✓ Unlinked & Ready for WebP</span>
+
+        <!-- Fetched Article Preview Box (Hidden until fetched) -->
+        <div id="fetchPreviewBox" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 text-xs">
+          <div class="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-2">
+            <span>✓ Article & Image Successfully Fetched!</span>
+            <span id="fetchStatsBadge" class="text-slate-400 font-mono">Ready</span>
+          </div>
+          <div class="flex gap-4 items-start">
+            <img id="fetchedThumbImg" class="w-24 h-24 object-cover rounded-xl border border-slate-800 flex-shrink-0 bg-slate-900">
+            <div class="flex-1 min-w-0 space-y-1">
+              <h4 id="fetchedTitlePreview" class="font-bold text-white text-sm line-clamp-2"></h4>
+              <p id="fetchedSummaryPreview" class="text-slate-400 line-clamp-2 leading-relaxed"></p>
+              <div class="flex items-center space-x-3 text-[11px] text-slate-500 pt-1">
+                <span class="text-emerald-400 font-mono">✓ Unlinked & Ready for WebP</span>
+              </div>
             </div>
           </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+            <span class="text-emerald-300 font-semibold text-xs">✓ Automatically injected into Editor!</span>
+            <button type="button" onclick="closeAiModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-emerald-600/30 transition">
+              <span>📥 View In Editor Now</span>
+            </button>
+          </div>
         </div>
-        <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
-          <span class="text-emerald-300 font-semibold text-xs">✓ Automatically injected into Editor!</span>
-          <button type="button" onclick="closeAiModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-emerald-600/30 transition">
-            <span>📥 View In Editor Now</span>
-          </button>
-        </div>
-      </div>
 
-      <!-- Step 2: Choose from 10 News Styles (With Real Brand Icons) -->
-      <div class="space-y-3">
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">2. Choose Editorial News Style (10 Presets with Real Icons):</label>
-        
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3" id="styleSelectorGrid">
+        <!-- Step 2: Choose from 15 TK Summary Styles (With Real Brand Logos) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">2. Choose Editorial News Style (15 Official Presets):</label>
+            <span class="text-[11px] text-blue-400 font-mono" id="selectedStyleBadge">CNN Digital</span>
+          </div>
           
-          <!-- 1. CNN -->
-          <div onclick="selectStyle('cnn')" class="style-card selected border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-red-500 transition text-center space-y-2" data-style="cnn">
-            <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center font-black text-white text-xs tracking-tighter mx-auto shadow-md">CNN</div>
-            <div class="font-bold text-xs text-white">CNN</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Facts First, Urgent Lead</div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[360px] overflow-y-auto pr-1" id="styleSelectorGrid">
+            
+            <!-- 1. CNN -->
+            <div onclick="selectStyle('cnn')" class="style-card selected border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="cnn">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/cnn.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="CNN">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">CNN Digital</div>
+                  <div class="text-[10px] text-slate-400 truncate">Editorial News</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-blue-400/90 bg-blue-950/30 px-2 py-0.5 rounded border border-blue-500/20 text-center">5W1H Inverted Lede</div>
+            </div>
+
+            <!-- 2. Daily Mail -->
+            <div onclick="selectStyle('dailymail')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="dailymail">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/dailymail.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Daily Mail">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Daily Mail</div>
+                  <div class="text-[10px] text-slate-400 truncate">Tabloid & Drama</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-indigo-400/90 bg-indigo-950/30 px-2 py-0.5 rounded border border-indigo-500/20 text-center">WHAT WE KNOW Box</div>
+            </div>
+
+            <!-- 3. Fox News -->
+            <div onclick="selectStyle('foxnews')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="foxnews">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/foxnews.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Fox News">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Fox News</div>
+                  <div class="text-[10px] text-slate-400 truncate">Hard News</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-rose-400/90 bg-rose-950/30 px-2 py-0.5 rounded border border-rose-500/20 text-center">Conflict Frame Lede</div>
+            </div>
+
+            <!-- 4. AP Wire -->
+            <div onclick="selectStyle('ap')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="ap">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/ap.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="AP">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">AP Wire</div>
+                  <div class="text-[10px] text-slate-400 truncate">Wire Service</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-amber-400/90 bg-amber-950/30 px-2 py-0.5 rounded border border-amber-500/20 text-center">CITY (AP) — Dateline</div>
+            </div>
+
+            <!-- 5. People Magazine -->
+            <div onclick="selectStyle('people')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="people">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/people.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="People">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">People Magazine</div>
+                  <div class="text-[10px] text-slate-400 truncate">Celebrity & Culture</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-pink-400/90 bg-pink-950/30 px-2 py-0.5 rounded border border-pink-500/20 text-center">Person-first lede</div>
+            </div>
+
+            <!-- 6. TMZ -->
+            <div onclick="selectStyle('tmz')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="tmz">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/tmz.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="TMZ">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">TMZ</div>
+                  <div class="text-[10px] text-slate-400 truncate">Gossip Fast</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-orange-400/90 bg-orange-950/30 px-2 py-0.5 rounded border border-orange-500/20 text-center">Here's the deal...</div>
+            </div>
+
+            <!-- 7. BuzzFeed -->
+            <div onclick="selectStyle('buzzfeed')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="buzzfeed">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/buzzfeed.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="BuzzFeed">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">BuzzFeed</div>
+                  <div class="text-[10px] text-slate-400 truncate">Internet Culture</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-red-400/90 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/20 text-center">Numbered H2s</div>
+            </div>
+
+            <!-- 8. Breaking Express -->
+            <div onclick="selectStyle('breaking')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="breaking">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/breaking.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Breaking">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Breaking Express</div>
+                  <div class="text-[10px] text-slate-400 truncate">Urgent Alert</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-red-500/90 bg-red-950/40 px-2 py-0.5 rounded border border-red-500/30 text-center">BREAKING Banner</div>
+            </div>
+
+            <!-- 9. Tabloid -->
+            <div onclick="selectStyle('tabloid')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="tabloid">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/tabloid.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Tabloid">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Tabloid</div>
+                  <div class="text-[10px] text-slate-400 truncate">Outrage Click</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-red-400/90 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/20 text-center">BOMBSHELL Opener</div>
+            </div>
+
+            <!-- 10. News Analysis -->
+            <div onclick="selectStyle('analysis')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="analysis">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/analysis.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Analysis">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">News Analysis</div>
+                  <div class="text-[10px] text-slate-400 truncate">Interpretive</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-300/90 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700 text-center">Thesis Lede & Outlook</div>
+            </div>
+
+            <!-- 11. Axios Express -->
+            <div onclick="selectStyle('axios')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="axios">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/axios.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Axios">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Axios Express</div>
+                  <div class="text-[10px] text-slate-400 truncate">Smart Brevity</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-blue-400/90 bg-blue-950/30 px-2 py-0.5 rounded border border-blue-500/20 text-center">1 Big Thing • Numbers</div>
+            </div>
+
+            <!-- 12. USA Viral Hook -->
+            <div onclick="selectStyle('usaviral')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="usaviral">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/usaviral.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Viral">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">USA Viral Hook</div>
+                  <div class="text-[10px] text-slate-400 truncate">Social Traffic</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-orange-400/90 bg-orange-950/30 px-2 py-0.5 rounded border border-orange-500/20 text-center">Curiosity Gap • Share</div>
+            </div>
+
+            <!-- 13. NYT Explainer -->
+            <div onclick="selectStyle('nytexplainer')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="nytexplainer">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/nyt.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="NYT">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">NYT Explainer</div>
+                  <div class="text-[10px] text-slate-400 truncate">Contextual</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-300/90 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700 text-center">H2 Q&A • Zero Jargon</div>
+            </div>
+
+            <!-- 14. Substack / Brew -->
+            <div onclick="selectStyle('newsletter')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="newsletter">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/substack.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Substack">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Substack / Brew</div>
+                  <div class="text-[10px] text-slate-400 truncate">Newsletter</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-purple-400/90 bg-purple-950/30 px-2 py-0.5 rounded border border-purple-500/20 text-center">☕ Greeting • P.S. box</div>
+            </div>
+
+            <!-- 15. Investigative -->
+            <div onclick="selectStyle('investigative')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="investigative">
+              <div class="flex items-center space-x-2.5">
+                <img src="/assets/styles/investigative.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Investigative">
+                <div class="text-left min-w-0">
+                  <div class="font-bold text-xs text-white truncate">Investigative</div>
+                  <div class="text-[10px] text-slate-400 truncate">Evidence-driven</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-teal-400/90 bg-teal-950/30 px-2 py-0.5 rounded border border-teal-500/20 text-center">The Paper Trail • Accused</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Step 3: Options (Injection target, word count, WebP unlinking) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-800 text-xs">
+          
+          <!-- Target Injection View -->
+          <div>
+            <label class="block font-bold text-slate-300 mb-1.5">Inject Result Into:</label>
+            <select id="aiInjectTarget" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="both">Both Views (HTML & Post)</option>
+              <option value="post">Post View (Visual)</option>
+              <option value="html">HTML View (Code)</option>
+            </select>
           </div>
 
-          <!-- 2. BBC News -->
-          <div onclick="selectStyle('bbc')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-red-600 transition text-center space-y-2" data-style="bbc">
-            <div class="w-10 h-10 rounded-xl bg-red-800 flex items-center justify-center font-serif font-black text-white text-[11px] tracking-widest mx-auto shadow-md">BBC</div>
-            <div class="font-bold text-xs text-white">BBC News</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Objective, 'At a Glance'</div>
+          <!-- Target Words (for Rewrite) -->
+          <div>
+            <label class="block font-bold text-slate-300 mb-1.5">Rewrite Word Target:</label>
+            <select id="aiTargetWords" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="250">250 Words (Quick Bullet)</option>
+              <option value="450" selected>450 Words (Standard)</option>
+              <option value="750">750 Words (In-Depth)</option>
+              <option value="1200">1200 Words (Longform Investigation)</option>
+            </select>
           </div>
 
-          <!-- 3. The New York Times -->
-          <div onclick="selectStyle('nyt')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-slate-400 transition text-center space-y-2" data-style="nyt">
-            <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-serif font-black text-white text-base mx-auto shadow-md">T</div>
-            <div class="font-bold text-xs text-white">NY Times</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Literary, Drop-Cap</div>
-          </div>
-
-          <!-- 4. Reuters -->
-          <div onclick="selectStyle('reuters')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-amber-500 transition text-center space-y-2" data-style="reuters">
-            <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center font-black text-slate-950 text-xs tracking-wider mx-auto shadow-md">REU</div>
-            <div class="font-bold text-xs text-white">Reuters</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Wire Dateline, Factual</div>
-          </div>
-
-          <!-- 5. Bloomberg -->
-          <div onclick="selectStyle('bloomberg')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition text-center space-y-2" data-style="bloomberg">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-xs tracking-wider mx-auto shadow-md">BBG</div>
-            <div class="font-bold text-xs text-white">Bloomberg</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Markets & Data Focus</div>
-          </div>
-
-          <!-- 6. The Verge -->
-          <div onclick="selectStyle('verge')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-violet-500 transition text-center space-y-2" data-style="verge">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-rose-500 flex items-center justify-center font-black text-white text-sm mx-auto shadow-md">V</div>
-            <div class="font-bold text-xs text-white">The Verge</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Tech Spec & Modern</div>
-          </div>
-
-          <!-- 7. The Guardian -->
-          <div onclick="selectStyle('guardian')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-amber-400 transition text-center space-y-2" data-style="guardian">
-            <div class="w-10 h-10 rounded-xl bg-blue-900 border border-amber-400 flex items-center justify-center font-serif font-black text-amber-300 text-sm mx-auto shadow-md">g</div>
-            <div class="font-bold text-xs text-white">The Guardian</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Human-Impact Lens</div>
-          </div>
-
-          <!-- 8. Al Jazeera -->
-          <div onclick="selectStyle('aljazeera')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-orange-500 transition text-center space-y-2" data-style="aljazeera">
-            <div class="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center font-black text-white text-xs mx-auto shadow-md">AJ</div>
-            <div class="font-bold text-xs text-white">Al Jazeera</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Timeline & Context</div>
-          </div>
-
-          <!-- 9. Associated Press (AP) -->
-          <div onclick="selectStyle('ap')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-red-500 transition text-center space-y-2" data-style="ap">
-            <div class="w-10 h-10 rounded-xl bg-slate-800 border-2 border-red-500 flex items-center justify-center font-black text-white text-xs mx-auto shadow-md">AP</div>
-            <div class="font-bold text-xs text-white">AP News</div>
-            <div class="text-[10px] text-slate-400 leading-tight">Inverted Pyramid Wire</div>
-          </div>
-
-          <!-- 10. TechCrunch -->
-          <div onclick="selectStyle('techcrunch')" class="style-card border border-slate-800 bg-slate-950/60 p-3 rounded-2xl cursor-pointer hover:border-emerald-500 transition text-center space-y-2" data-style="techcrunch">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center font-mono font-black text-slate-950 text-xs mx-auto shadow-md">TC</div>
-            <div class="font-bold text-xs text-white">TechCrunch</div>
-            <div class="text-[10px] text-slate-400 leading-tight">VC & Startup Angle</div>
+          <!-- Image Unlink & WebP check -->
+          <div class="flex items-center pt-5">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" id="aiCleanImageCheckbox" checked class="rounded border-slate-700 text-blue-600 focus:ring-0">
+              <span class="text-slate-300 text-[11px] font-semibold">Unlink site & WebP Image</span>
+            </label>
           </div>
 
         </div>
+
+        <!-- Step 4: The 2 Action Buttons (Only Format vs Rewrite) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+          
+          <!-- Button 1: Only Format (Keep Original Words) -->
+          <button type="button" id="btnOnlyFormat" onclick="executeAiProcess('format')" class="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 flex flex-col items-center justify-center transition shadow-lg">
+            <div class="flex items-center space-x-2 text-blue-400 font-black">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+              <span>✨ Only Format (រក្សាពាក្យដើម)</span>
+            </div>
+            <span class="text-[11px] text-slate-400 mt-1 font-normal">Keep original words & quotes; format into signature style</span>
+          </button>
+
+          <!-- Button 2: Rewrite with AI (Full rewrite) -->
+          <button type="button" id="btnRewriteAi" onclick="executeAiProcess('rewrite')" class="py-3 px-5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-blue-600/30 flex flex-col items-center justify-center transition">
+            <div class="flex items-center space-x-2 font-black text-amber-300">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              <span>⚡ AI Rewrite (សរសេរឡើងវិញ)</span>
+            </div>
+            <span class="text-[11px] text-blue-100 mt-1 font-normal">Authentic brand tone, vocabulary & structure</span>
+          </button>
+
+        </div>
+
       </div>
 
-      <!-- Step 3: Options (Injection target, word count, WebP unlinking) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-800 text-xs">
-        
-        <!-- Target Injection View -->
-        <div>
-          <label class="block font-bold text-slate-300 mb-1.5">Inject Result Into:</label>
-          <select id="aiInjectTarget" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-            <option value="both">Both Views (HTML & Post)</option>
-            <option value="post">Post View (Visual)</option>
-            <option value="html">HTML View (Code)</option>
-          </select>
+      <!-- TAB 2: FREE PRESETS (RULE-BASED, NO AI NEEDED) -->
+      <div id="tkFreeTabContent" class="hidden space-y-4">
+        <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 flex items-center space-x-2">
+          <span>💡</span>
+          <span><strong>Instant Formatting:</strong> Reorganizes paragraphs, inserts headings, pull-quotes, and drop caps without consuming any AI tokens.</span>
         </div>
 
-        <!-- Target Words (for Rewrite) -->
-        <div>
-          <label class="block font-bold text-slate-300 mb-1.5">Rewrite Length Target:</label>
-          <select id="aiTargetWords" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-            <option value="350">350 Words (Quick Story)</option>
-            <option value="500" selected>500 Words (Standard)</option>
-            <option value="800">800 Words (In-Depth Analysis)</option>
-          </select>
+        <div class="grid grid-cols-2 gap-3">
+          
+          <button type="button" onclick="applyFreePreset('wire')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Classic Wire</div>
+            <div class="text-[10px] text-slate-400">Minimal, tight paragraphs, single H2 max.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('feature')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Magazine Feature</div>
+            <div class="text-[10px] text-slate-400">Drop-cap opener, H2 break, pull-quote callout.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('listicle')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Listicle</div>
+            <div class="text-[10px] text-slate-400">Numbered H2 sections with key takeaways.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('tabloid')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Tabloid Bold</div>
+            <div class="text-[10px] text-slate-400">Large bold lede, ALL-CAPS H2s, punchy paragraphs.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('broadsheet')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Broadsheet Classic</div>
+            <div class="text-[10px] text-slate-400">Serif typography, dateline, formal attribution.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('explainer')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Digital Explainer</div>
+            <div class="text-[10px] text-slate-400">"Why it matters" box, H2s every ~150 words.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('breaking')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Breaking Bulletin</div>
+            <div class="text-[10px] text-slate-400">BREAKING kicker banner + bullet summary.</div>
+          </button>
+
+          <button type="button" onclick="applyFreePreset('newsletter')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Newsletter Style</div>
+            <div class="text-[10px] text-slate-400">Casual greeting, fast facts bullets, P.S. sign-off.</div>
+          </button>
+
         </div>
-
-        <!-- Image Unlink & WebP check -->
-        <div class="flex items-center pt-5">
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="checkbox" id="aiCleanImageCheckbox" checked class="rounded border-slate-700 text-indigo-600 focus:ring-0">
-            <span class="text-slate-300 text-[11px] font-semibold">Unlink site & Convert Image to WebP</span>
-          </label>
-        </div>
-
-      </div>
-
-      <!-- Step 4: The 2 Action Buttons (Only Format vs Rewrite) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
-        
-        <!-- Button 1: Only Format (Keep Original Words) -->
-        <button type="button" id="btnOnlyFormat" onclick="executeAiProcess('format')" class="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 flex flex-col items-center justify-center transition shadow-lg">
-          <div class="flex items-center space-x-2 text-indigo-400 font-black">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
-            <span>✨ Only Format (រក្សាពាក្យដើម)</span>
-          </div>
-          <span class="text-[11px] text-slate-400 mt-1 font-normal">Keep all original words & quotes; format into signature style</span>
-        </button>
-
-        <!-- Button 2: Rewrite with AI (Full rewrite) -->
-        <button type="button" id="btnRewriteAi" onclick="executeAiProcess('rewrite')" class="py-3 px-5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 hover:from-indigo-500 hover:to-rose-500 text-white font-bold text-xs shadow-xl shadow-indigo-600/30 flex flex-col items-center justify-center transition">
-          <div class="flex items-center space-x-2 font-black text-amber-300">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <span>⚡ Rewrite with AI (សរសេរឡើងវិញ)</span>
-          </div>
-          <span class="text-[11px] text-indigo-100 mt-1 font-normal">Full journalistic rewrite matching vocabulary & length</span>
-        </button>
-
       </div>
 
       <!-- Result Applied Alert / Preview -->
-      <div id="aiProcessingState" class="hidden p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/40 text-center text-xs text-indigo-200">
+      <div id="aiProcessingState" class="hidden p-4 rounded-2xl bg-blue-950/40 border border-blue-500/40 text-center text-xs text-blue-200">
         <span class="animate-spin inline-block mr-2">🌀</span>
-        <span id="aiProcessingText">Processing with Gemini Model...</span>
+        <span id="aiProcessingText">Processing with TK Summary...</span>
       </div>
 
     </div>
   </div>
+
 
   <script>
     const postId = ${post ? post.id : 'null'};
@@ -841,13 +1053,32 @@ const renderEditor = (c: any) => {
       alert('✓ Image successfully unlinked from external site and sanitized!');
     }
 
-    // 3. AI POPUP MODAL & 10 STYLES SELECTOR
+    // 3. AI POPUP MODAL & 15 TK SUMMARY STYLES SELECTOR
     function openAiModal() {
       document.getElementById('aiModal').classList.remove('hidden');
     }
 
     function closeAiModal() {
       document.getElementById('aiModal').classList.add('hidden');
+    }
+
+    function switchTkTab(tab) {
+      const btnAi = document.getElementById('tabAiStyles');
+      const btnFree = document.getElementById('tabFreePresets');
+      const contentAi = document.getElementById('tkAiTabContent');
+      const contentFree = document.getElementById('tkFreeTabContent');
+
+      if (tab === 'ai') {
+        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-blue-600 text-white shadow-md shadow-blue-600/30';
+        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center justify-center space-x-2 bg-slate-800/80';
+        contentAi.classList.remove('hidden');
+        contentFree.classList.add('hidden');
+      } else {
+        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-emerald-600 text-white shadow-md shadow-emerald-600/30';
+        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center justify-center space-x-2 bg-slate-800/80';
+        contentFree.classList.remove('hidden');
+        contentAi.classList.add('hidden');
+      }
     }
 
     function selectStyle(style) {
@@ -859,7 +1090,62 @@ const renderEditor = (c: any) => {
           el.classList.remove('selected');
         }
       });
+      const styleNames = {
+        cnn: 'CNN Digital',
+        dailymail: 'Daily Mail',
+        foxnews: 'Fox News',
+        ap: 'AP Wire',
+        people: 'People Magazine',
+        tmz: 'TMZ',
+        buzzfeed: 'BuzzFeed',
+        breaking: 'Breaking Express',
+        tabloid: 'Tabloid',
+        analysis: 'News Analysis',
+        axios: 'Axios Express',
+        usaviral: 'USA Viral Hook',
+        nytexplainer: 'NYT Explainer',
+        newsletter: 'Substack / Brew',
+        investigative: 'Investigative'
+      };
+      const badge = document.getElementById('selectedStyleBadge');
+      if (badge) badge.textContent = styleNames[style] || style.toUpperCase();
     }
+
+    function applyFreePreset(preset) {
+      let content = document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
+      if (!content || content.trim().length < 10) {
+        alert('Please enter or fetch an article first!');
+        return;
+      }
+
+      let formatted = content;
+      if (preset === 'wire') {
+        formatted = '<p class="font-sans font-medium text-slate-200"><strong>WASHINGTON (AP) —</strong> ' + content.replace(/<[^>]*>?/gm, '').slice(0, 250) + '...</p>\n' + content;
+      } else if (preset === 'feature') {
+        formatted = '<div class="my-5 p-4 rounded-xl bg-slate-900 border-l-4 border-indigo-500 italic text-slate-200">"A defining moment that challenges established wisdom and paves new territory."</div>\n' + content;
+      } else if (preset === 'explainer') {
+        formatted = '<div class="my-4 p-4 rounded-xl bg-blue-950/40 border border-blue-500/40"><strong class="text-blue-400 block mb-1">Why it matters:</strong><p class="text-xs text-slate-300">Key developments that directly reshape the current environment.</p></div>\n' + content;
+      } else if (preset === 'breaking') {
+        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/50 border border-red-600"><strong class="text-red-400 uppercase tracking-widest block mb-1">🚨 BREAKING BULLETIN:</strong><p class="text-xs text-slate-200">Developing story unfolding in real time with continuous verification.</p></div>\n' + content;
+      } else if (preset === 'newsletter') {
+        formatted = '<p class="text-sm font-semibold text-purple-300 mb-4">Good morning ☕ — Here is everything you need to know today:</p>\n' + content + '\n<p class="text-xs text-slate-400 mt-4"><strong>P.S.</strong> Share this briefing with your team if you found it helpful!</p>';
+      } else if (preset === 'tabloid') {
+        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/60 border border-red-500 text-center"><h3 class="text-sm font-black text-red-400 uppercase mb-1">🔥 BOMBSHELL REVELATION 🔥</h3><p class="text-xs text-slate-200">Shocking new details emerge regarding today\'s unexpected announcement!</p></div>\n' + content;
+      } else if (preset === 'listicle') {
+        formatted = '<div class="my-4 p-4 rounded-xl bg-rose-950/30 border-l-4 border-rose-500"><strong class="text-rose-400 block mb-1">Key Takeaways at a Glance:</strong><ul class="list-disc list-inside text-xs text-slate-300 space-y-1"><li>Point 1: Primary institutional announcement.</li><li>Point 2: Core immediate impacts.</li><li>Point 3: Next phase timelines.</li></ul></div>\n' + content;
+      } else if (preset === 'broadsheet') {
+        formatted = '<p class="font-serif italic text-slate-300 text-sm border-b border-slate-800 pb-3 mb-4">By Special Correspondent • Published in Washington, D.C.</p>\n' + content;
+      }
+
+      document.getElementById('htmlCodeEditor').value = formatted;
+      document.getElementById('postVisualEditor').innerHTML = formatted;
+      document.getElementById('splitHtmlEditor').value = formatted;
+      document.getElementById('splitPostEditor').innerHTML = formatted;
+      updateWordCount();
+      closeAiModal();
+      alert('✓ Applied ' + preset.toUpperCase() + ' preset instantly!');
+    }
+
 
     async function fetchArticleFromLink() {
       const url = document.getElementById('fetchUrlInput').value.trim();

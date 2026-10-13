@@ -1,9 +1,13 @@
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { frontendRouter } from "./routes/frontend";
 import { adminRouter } from "./routes/admin";
 import { apiRouter } from "./routes/api";
 
 const app = new Hono();
+
+// Serve static assets from public directory
+app.use("/assets/*", serveStatic({ root: "./public" }));
 
 // Mount Routers
 app.route("/api", apiRouter);
