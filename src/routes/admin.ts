@@ -13,8 +13,10 @@ adminRouter.get("/", (c) => {
   `).all() as any[];
 
   const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all() as any[];
-  const totalViews = posts.reduce((acc, p) => acc + (p.views || 0), 0);
-  const breakingCount = posts.filter(p => p.is_breaking === 1).length;
+  const activePosts = posts.filter(p => p.status !== 'trash');
+  const trashPosts = posts.filter(p => p.status === 'trash');
+  const totalViews = activePosts.reduce((acc, p) => acc + (p.views || 0), 0);
+  const breakingCount = activePosts.filter(p => p.is_breaking === 1).length;
 
   return c.html(`<!DOCTYPE html>
 <html lang="en">
@@ -94,8 +96,8 @@ adminRouter.get("/", (c) => {
 
       <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
         <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Total Stories</div>
-        <div class="text-3xl font-extrabold text-[#1C1B18]">${posts.length}</div>
-        <div class="text-[11px] text-emerald-600 mt-2 font-medium">Active in SQLite VPS</div>
+        <div class="text-3xl font-extrabold text-[#1C1B18]">${activePosts.length}</div>
+        <div class="text-[11px] text-emerald-600 mt-2 font-medium">Active (${trashPosts.length} in Trash)</div>
       </div>
 
       <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
@@ -147,14 +149,32 @@ adminRouter.get("/", (c) => {
       </div>
     </div>
 
-    <!-- Posts Table in Claude Light Mode -->
+    <!-- Posts Table with Tabs in Claude Light Mode -->
     <div class="bg-white border border-[#EAE8E1] rounded-2xl overflow-hidden shadow-sm">
-      <div class="p-5 border-b border-[#EAE8E1] flex items-center justify-between">
+      <div class="p-5 border-b border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="font-bold text-lg text-[#1C1B18]">Articles & News Feed</h2>
-          <p class="text-xs text-[#6E6B63]">Manage, edit, or toggle Breaking News banner in real-time</p>
+          <div class="flex items-center space-x-3">
+            <h2 class="font-bold text-lg text-[#1C1B18]">Articles & News Feed</h2>
+            <div class="flex items-center space-x-1 bg-[#F3F1EC] p-1 rounded-xl border border-[#E5E2D9] text-xs">
+              <button type="button" id="tabActivePostsBtn" onclick="switchPostsTab('active')" class="px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition">
+                <span>Published (${activePosts.length})</span>
+              </button>
+              <button type="button" id="tabTrashPostsBtn" onclick="switchPostsTab('trash')" class="px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1">
+                <span>🗑️ Trash (${trashPosts.length})</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-xs text-[#6E6B63] mt-1" id="tabSubtitle">Manage active stories, move to trash, or publish breaking alerts</p>
         </div>
         <div class="flex items-center space-x-2.5">
+          <div id="trashTabActions" class="hidden flex items-center space-x-2">
+            ${trashPosts.length > 0 ? `
+              <button type="button" onclick="emptyTrash()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition flex items-center space-x-1.5 shadow-xs">
+                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>Empty Trash (${trashPosts.length})</span>
+              </button>
+            ` : ''}
+          </div>
           <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5">
             <span>💾 Backup</span>
           </button>
@@ -168,7 +188,8 @@ adminRouter.get("/", (c) => {
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- VIEW 1: ACTIVE PUBLISHED POSTS -->
+      <div id="activePostsView" class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-[#F3F1EC] border-b border-[#EAE8E1] text-[#6E6B63] uppercase font-semibold">
             <tr>
@@ -181,18 +202,18 @@ adminRouter.get("/", (c) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
-            ${posts.length === 0 ? `
+            ${activePosts.length === 0 ? `
               <tr>
                 <td colspan="6" class="text-center py-12 text-[#8A867E]">
-                  <div class="text-sm font-semibold text-[#6E6B63] mb-1">No articles in database</div>
-                  <div class="text-xs text-[#8A867E] mb-4">Old mock data has been cleanly deleted. Start fresh by creating a new article!</div>
+                  <div class="text-sm font-semibold text-[#6E6B63] mb-1">No published articles</div>
+                  <div class="text-xs text-[#8A867E] mb-4">Start by writing and publishing your first article!</div>
                   <a href="/admin/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>+ Publish First Story</span>
                   </a>
                 </td>
               </tr>
-            ` : posts.map(p => `
+            ` : activePosts.map(p => `
               <tr class="hover:bg-[#FAF9F5] transition">
                 <td class="py-4 px-5">
                   <div class="flex items-center space-x-3">
@@ -234,9 +255,71 @@ adminRouter.get("/", (c) => {
                       <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                       <span>Edit</span>
                     </a>
-                    <button type="button" onclick="deletePost(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs cursor-pointer" title="Delete story">
-                      <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                      <span>Delete</span>
+                    <button type="button" onclick="moveToTrash(${p.id}, '${(p.title || '').replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs cursor-pointer" title="Move story to trash (អាចស្តារមកវិញបាន)">
+                      <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      <span>Move to Trash</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- VIEW 2: TRASH BIN POSTS -->
+      <div id="trashPostsView" class="hidden overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#FDF2E9] border-b border-[#EAE8E1] text-[#B45309] uppercase font-semibold">
+            <tr>
+              <th class="py-3 px-5">Trashed Article</th>
+              <th class="py-3 px-4">Category</th>
+              <th class="py-3 px-4">Views Recorded</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-6 text-center">Safety Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
+            ${trashPosts.length === 0 ? `
+              <tr>
+                <td colspan="5" class="text-center py-12 text-[#8A867E]">
+                  <div class="text-base font-bold text-[#1C1B18] mb-1">🎉 Trash bin is clean and empty!</div>
+                  <div class="text-xs text-[#8A867E]">No articles in the trash. When you move an article to trash, it safely rests here.</div>
+                </td>
+              </tr>
+            ` : trashPosts.map(p => `
+              <tr class="hover:bg-rose-50/30 transition">
+                <td class="py-4 px-5">
+                  <div class="flex items-center space-x-3">
+                    ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1] opacity-60">` : ''}
+                    <div>
+                      <div class="font-bold text-[#1C1B18] text-sm line-clamp-1 line-through opacity-75">
+                        ${p.title}
+                      </div>
+                      <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">
+                    ${p.category_name || 'General'}
+                  </span>
+                </td>
+                <td class="py-4 px-4 font-mono text-[#6E6B63]">${p.views.toLocaleString()} views</td>
+                <td class="py-4 px-4">
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    In Trash (Protected)
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-center whitespace-nowrap">
+                  <div class="inline-flex items-center space-x-2 bg-[#F3F1EC] p-1.5 rounded-xl border border-[#E5E2D9]">
+                    <button type="button" onclick="restorePost(${p.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer" title="Restore article back to website">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      <span>♻️ Restore</span>
+                    </button>
+                    <button type="button" onclick="deletePermanently(${p.id})" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-xs cursor-pointer" title="Delete permanently from database">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      <span>❌ Delete Permanently</span>
                     </button>
                   </div>
                 </td>
@@ -450,12 +533,90 @@ adminRouter.get("/", (c) => {
       btn.innerHTML = 'Instant Cache Purge';
     }
 
-    async function deletePost(id) {
-      if (!confirm('Are you sure you want to delete this story?')) return;
-      const res = await fetch('/api/posts/' + id, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        window.location.reload();
+    function switchPostsTab(tab) {
+      const activeBtn = document.getElementById('tabActivePostsBtn');
+      const trashBtn = document.getElementById('tabTrashPostsBtn');
+      const activeBox = document.getElementById('activePostsView');
+      const trashBox = document.getElementById('trashPostsView');
+      const trashActions = document.getElementById('trashTabActions');
+      const subtitle = document.getElementById('tabSubtitle');
+
+      if (tab === 'active') {
+        activeBtn.className = 'px-3 py-1 rounded-lg font-bold bg-[#C25E3E] text-white shadow-xs transition';
+        trashBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1';
+        activeBox.classList.remove('hidden');
+        trashBox.classList.add('hidden');
+        if (trashActions) trashActions.classList.add('hidden');
+        if (subtitle) subtitle.textContent = 'Manage active stories, move to trash, or publish breaking alerts';
+      } else {
+        trashBtn.className = 'px-3 py-1 rounded-lg font-bold bg-rose-700 text-white shadow-xs transition flex items-center space-x-1';
+        activeBtn.className = 'px-3 py-1 rounded-lg font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition';
+        trashBox.classList.remove('hidden');
+        activeBox.classList.add('hidden');
+        if (trashActions) trashActions.classList.remove('hidden');
+        if (subtitle) subtitle.textContent = 'Articles in trash bin. You can restore them anytime or delete them permanently.';
+      }
+    }
+
+    async function moveToTrash(id, title) {
+      if (!confirm('Move "' + (title || 'this story') + '" to Trash?\n\n✓ អត្ថបទនឹងមិនទាន់បាត់បង់ទេ អ្នកអាច Restore មកវិញបានគ្រប់ពេល។')) return;
+      try {
+        const res = await fetch('/api/posts/' + id + '/trash', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Error moving to trash: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function restorePost(id) {
+      try {
+        const res = await fetch('/api/posts/' + id + '/restore', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ អត្ថបទត្រូវបានស្តារឡើងវិញ (Restored) ដោយជោគជ័យ!');
+          window.location.reload();
+        } else {
+          alert('Error restoring post: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function deletePermanently(id) {
+      if (!confirm('⚠️ តើអ្នកពិតជាចង់លុបអត្ថបទនេះជាអចិន្ត្រៃយ៍មែនទេ?\n\n🚨 ការព្រមាន៖ អត្ថបទនេះនឹងត្រូវលុបចេញពី Database រហូត មិនអាចយកមកវិញបានឡើយ!')) return;
+      try {
+        const res = await fetch('/api/posts/' + id + '?permanent=true', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ អត្ថបទត្រូវបានលុបជាអចិន្ត្រៃយ៍រួចរាល់!');
+          window.location.reload();
+        } else {
+          alert('Error deleting post: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+
+    async function emptyTrash() {
+      if (!confirm('⚠️ តើអ្នកប្រាកដថាចង់សម្អាតធុងសម្រាមទាំងមូល (Empty Trash)?\n\n🚨 រាល់អត្ថបទទាំងអស់ក្នុងធុងសម្រាម នឹងត្រូវលុបជាអចិន្ត្រៃយ៍!')) return;
+      try {
+        const res = await fetch('/api/posts/trash/empty', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ ធុងសម្រាមត្រូវបានសម្អាតស្អាតជាស្ថាពរ!');
+          window.location.reload();
+        } else {
+          alert('Error emptying trash: ' + (data.error || 'Failed'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
       }
     }
 

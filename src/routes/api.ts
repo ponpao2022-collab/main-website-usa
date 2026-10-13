@@ -175,11 +175,37 @@ apiRouter.post("/posts", async (c) => {
   }
 });
 
-// DELETE post
+// MOVE POST TO TRASH (Soft Delete)
+apiRouter.post("/posts/:id/trash", (c) => {
+  const id = c.req.param("id");
+  db.prepare("UPDATE posts SET status = 'trash', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  return c.json({ success: true, message: "Post moved to trash successfully" });
+});
+
+// RESTORE POST FROM TRASH
+apiRouter.post("/posts/:id/restore", (c) => {
+  const id = c.req.param("id");
+  db.prepare("UPDATE posts SET status = 'published', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  return c.json({ success: true, message: "Post restored successfully" });
+});
+
+// EMPTY ENTIRE TRASH
+apiRouter.delete("/posts/trash/empty", (c) => {
+  db.prepare("DELETE FROM posts WHERE status = 'trash'").run();
+  return c.json({ success: true, message: "All items in trash permanently deleted" });
+});
+
+// DELETE POST (Default: Move to trash. Permanent only when permanent=true)
 apiRouter.delete("/posts/:id", (c) => {
   const id = c.req.param("id");
-  db.prepare("DELETE FROM posts WHERE id = ?").run(id);
-  return c.json({ success: true, message: "Post deleted" });
+  const permanent = c.req.query("permanent") === "true";
+  if (permanent) {
+    db.prepare("DELETE FROM posts WHERE id = ?").run(id);
+    return c.json({ success: true, message: "Post permanently deleted" });
+  } else {
+    db.prepare("UPDATE posts SET status = 'trash', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+    return c.json({ success: true, message: "Post moved to trash" });
+  }
 });
 
 // AI COPILOT ENDPOINT: Generate headlines
