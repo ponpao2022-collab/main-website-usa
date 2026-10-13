@@ -6,12 +6,15 @@ import { apiRouter } from "./routes/api";
 
 const app = new Hono();
 
-// Serve static assets from public directory with high-performance cache headers
+// Serve static assets and favicons from public directory
 app.use("/assets/*", async (c, next) => {
   await next();
   c.header("Cache-Control", "public, max-age=31536000, immutable");
 });
 app.use("/assets/*", serveStatic({ root: "./public" }));
+app.use("/favicon.ico", serveStatic({ path: "./public/favicon.ico" }));
+app.use("/favicon.png", serveStatic({ path: "./public/favicon.png" }));
+app.use("/apple-touch-icon.png", serveStatic({ path: "./public/apple-touch-icon.png" }));
 
 // Mount Routers
 app.route("/api", apiRouter);

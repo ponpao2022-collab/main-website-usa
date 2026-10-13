@@ -22,6 +22,10 @@ adminRouter.get("/", (c) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NextGen Newsroom CMS - Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
@@ -35,9 +39,7 @@ adminRouter.get("/", (c) => {
   <!-- Top Header -->
   <header class="h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-50">
     <div class="flex items-center space-x-3">
-      <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-        N
-      </div>
+      <img src="/assets/logo-sm.webp" class="h-9 w-9 rounded-full object-contain shadow-md shadow-indigo-500/20" alt="USA NEWS STORY">
       <div>
         <div class="flex items-center space-x-2">
           <span class="font-bold text-base tracking-wide">USA NEWS STORY CMS</span>
@@ -326,6 +328,10 @@ const renderEditor = (c: any) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${post ? 'Edit Story' : 'New Story'} | NextGen Newsroom CMS</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">

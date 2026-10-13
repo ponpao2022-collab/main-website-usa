@@ -72,6 +72,11 @@ function layout(title: string, content: string, currentPath = "/") {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} | USA NEWS STORY</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="preload" href="/assets/logo-sm.webp" as="image" type="image/webp">
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -124,14 +129,9 @@ function layout(title: string, content: string, currentPath = "/") {
       
       <!-- Brand Logo & Name (USA NEWS STORY) -->
       <a href="/" class="flex items-center space-x-3 group">
-        <!-- Shield & Eagle Star Emblem Logo -->
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D97757] via-[#C25E3E] to-[#9E4024] p-0.5 shadow-md shadow-[#C25E3E]/20 flex items-center justify-center group-hover:scale-105 transition transform">
-          <div class="w-full h-full rounded-[10px] bg-white flex items-center justify-center">
-            <svg class="w-5 h-5 text-[#C25E3E]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 2L4 5v6.5C4 16.5 7.5 21 12 22c4.5-1 8-5.5 8-10.5V5l-8-3z" fill="rgba(194, 94, 62, 0.12)"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7l1.5 3 3.5.5-2.5 2.5.6 3.5-3.1-1.6-3.1 1.6.6-3.5L7 10.5l3.5-.5L12 7z" fill="#C25E3E"/>
-            </svg>
-          </div>
+        <!-- Official Statue of Liberty Emblem Logo -->
+        <div class="h-10 w-10 sm:h-11 sm:w-11 rounded-full shadow-md shadow-blue-900/10 flex items-center justify-center group-hover:scale-105 transition transform flex-shrink-0">
+          <img src="/assets/logo-sm.webp" class="w-full h-full object-contain rounded-full" alt="USA NEWS STORY Logo" width="44" height="44">
         </div>
         <div>
           <span class="text-xl md:text-2xl font-black tracking-tight text-[#1C1B18] block leading-none">USA NEWS STORY</span>
@@ -195,9 +195,9 @@ function layout(title: string, content: string, currentPath = "/") {
       
       <!-- Brand & Mission -->
       <div class="space-y-3">
-        <div class="flex items-center space-x-2">
-          <div class="h-7 w-7 rounded-lg bg-[#C25E3E] flex items-center justify-center font-bold text-white text-xs">U</div>
-          <span class="font-bold text-[#1C1B18] tracking-wide">USA NEWS STORY</span>
+        <div class="flex items-center space-x-2.5">
+          <img src="/assets/logo-sm.webp" class="h-7 w-7 rounded-full object-contain" alt="USA NEWS STORY" width="28" height="28">
+          <span class="font-bold text-[#1C1B18] tracking-wide font-headline">USA NEWS STORY</span>
         </div>
         <p class="text-xs text-[#6E6B63] leading-relaxed">
           Independent American news agency delivering verified journalism, investigative reporting, economic analysis, and national dispatches.
