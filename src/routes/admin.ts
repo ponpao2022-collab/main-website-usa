@@ -1475,6 +1475,105 @@ const renderEditor = (c: any) => {
       document.body.style.overflow = '';
     }
     window.closeAiModal = closeAiModal;
+
+    function setViewMode(mode) {
+      window.currentViewMode = mode;
+      const btnPost = document.getElementById('btnViewPost');
+      const btnHtml = document.getElementById('btnViewHtml');
+      const btnBoth = document.getElementById('btnViewBoth');
+
+      const wrapperPost = document.getElementById('postViewWrapper');
+      const wrapperHtml = document.getElementById('htmlViewWrapper');
+      const wrapperBoth = document.getElementById('bothViewWrapper');
+
+      const postVis = document.getElementById('postVisualEditor');
+      const htmlEditor = document.getElementById('htmlCodeEditor');
+      const splitHtml = document.getElementById('splitHtmlEditor');
+      const splitPost = document.getElementById('splitPostEditor');
+
+      const activeBtnClass = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white text-[#C25E3E] shadow-sm border border-[#E5E2D9] cursor-pointer';
+      const inactiveBtnClass = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1.5 bg-transparent border border-transparent cursor-pointer';
+
+      if (btnPost) btnPost.className = inactiveBtnClass;
+      if (btnHtml) btnHtml.className = inactiveBtnClass;
+      if (btnBoth) btnBoth.className = inactiveBtnClass;
+
+      if (wrapperPost) {
+        wrapperPost.style.display = 'none';
+        wrapperPost.classList.add('hidden');
+      }
+      if (wrapperHtml) {
+        wrapperHtml.style.display = 'none';
+        wrapperHtml.classList.add('hidden');
+      }
+      if (wrapperBoth) {
+        wrapperBoth.style.display = 'none';
+        wrapperBoth.classList.add('hidden');
+      }
+
+      if (mode === 'post') {
+        if (btnPost) btnPost.className = activeBtnClass;
+        if (wrapperPost) {
+          wrapperPost.style.display = 'block';
+          wrapperPost.classList.remove('hidden');
+        }
+        if (htmlEditor && postVis && htmlEditor.value) {
+          postVis.innerHTML = htmlEditor.value;
+        }
+      } else if (mode === 'html') {
+        if (btnHtml) btnHtml.className = activeBtnClass;
+        if (wrapperHtml) {
+          wrapperHtml.style.display = 'block';
+          wrapperHtml.classList.remove('hidden');
+        }
+        if (postVis && htmlEditor) {
+          htmlEditor.value = postVis.innerHTML;
+        }
+      } else if (mode === 'both') {
+        if (btnBoth) btnBoth.className = activeBtnClass;
+        if (wrapperBoth) {
+          wrapperBoth.style.display = 'block';
+          wrapperBoth.classList.remove('hidden');
+        }
+        const content = (postVis ? postVis.innerHTML : '') || (htmlEditor ? htmlEditor.value : '');
+        if (splitHtml) splitHtml.value = content;
+        if (splitPost) splitPost.innerHTML = content;
+      }
+      if (typeof window.updateWordCount === 'function') {
+        window.updateWordCount();
+      }
+    }
+    window.setViewMode = setViewMode;
+
+    function execFormat(cmd, value = null) {
+      const editor = document.getElementById('postVisualEditor');
+      if (!editor) return;
+      editor.focus();
+      document.execCommand(cmd, false, value);
+      const htmlEditor = document.getElementById('htmlCodeEditor');
+      if (htmlEditor) htmlEditor.value = editor.innerHTML;
+      if (typeof window.updateWordCount === 'function') window.updateWordCount();
+    }
+    window.execFormat = execFormat;
+
+    function execFormatBlock(tag) {
+      const editor = document.getElementById('postVisualEditor');
+      if (!editor) return;
+      editor.focus();
+      document.execCommand('formatBlock', false, tag);
+      const htmlEditor = document.getElementById('htmlCodeEditor');
+      if (htmlEditor) htmlEditor.value = editor.innerHTML;
+      if (typeof window.updateWordCount === 'function') window.updateWordCount();
+    }
+    window.execFormatBlock = execFormatBlock;
+
+    function insertEditorLink() {
+      const url = prompt('Enter URL (e.g. https://...):');
+      if (url && url.trim()) {
+        execFormat('createLink', url.trim());
+      }
+    }
+    window.insertEditorLink = insertEditorLink;
   </script>
 </head>
 <body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen selection:bg-[#C25E3E] selection:text-white relative">
@@ -1568,26 +1667,26 @@ const renderEditor = (c: any) => {
       <div id="editorWorkspace" class="space-y-4">
         
         <!-- 1. POST VIEW (WYSIWYG Rich Visual Canvas) -->
-        <div id="postViewWrapper" class="block">
+        <div id="postViewWrapper" style="display: block;">
           <div class="border border-[#EAE8E1] bg-white rounded-2xl overflow-hidden shadow-sm focus-within:border-[#C25E3E] transition">
             <!-- Rich Text Quick Action Toolbar -->
             <div class="bg-[#F8F7F3] border-b border-[#EAE8E1] px-4 py-2 flex flex-wrap items-center gap-1.5 text-xs text-[#4A4742]">
-              <button type="button" onmousedown="event.preventDefault(); execFormat('bold')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-bold text-[#1C1B18] transition" title="Bold (Ctrl+B)">B</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormat('italic')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] italic font-serif text-[#1C1B18] transition" title="Italic (Ctrl+I)">I</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormat('underline')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] underline text-[#1C1B18] transition" title="Underline">U</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('bold')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-bold text-[#1C1B18] transition text-[11px] cursor-pointer" title="Bold (Ctrl+B)">B</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('italic')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] italic font-serif text-[#1C1B18] transition text-[11px] cursor-pointer" title="Italic (Ctrl+I)">I</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('underline')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] underline text-[#1C1B18] transition text-[11px] cursor-pointer" title="Underline">U</button>
               <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
-              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('h2')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-black text-[#1C1B18] transition text-[11px]" title="Heading 2">H2</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('h3')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-bold text-[#1C1B18] transition text-[11px]" title="Heading 3">H3</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('p')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-medium text-[#1C1B18] transition text-[11px]" title="Paragraph">¶</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormatBlock('h2')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-black text-[#1C1B18] transition text-[11px] cursor-pointer" title="Heading 2">H2</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormatBlock('h3')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-bold text-[#1C1B18] transition text-[11px] cursor-pointer" title="Heading 3">H3</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormatBlock('p')" class="p-1.5 px-2.5 rounded-lg hover:bg-[#EAE8E1] font-medium text-[#1C1B18] transition text-[11px] cursor-pointer" title="Paragraph">¶</button>
               <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
-              <button type="button" onmousedown="event.preventDefault(); execFormat('insertUnorderedList')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#1C1B18] transition" title="Bullet List">• Bullet</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormat('insertOrderedList')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#1C1B18] transition" title="Numbered List">1. Number</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormatBlock('blockquote')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] font-serif text-[#1C1B18] transition" title="Quote Callout">“ Quote</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('insertUnorderedList')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#1C1B18] transition text-[11px] cursor-pointer" title="Bullet List">• Bullet</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('insertOrderedList')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#1C1B18] transition text-[11px] cursor-pointer" title="Numbered List">1. Number</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormatBlock('blockquote')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] font-serif text-[#1C1B18] transition text-[11px] cursor-pointer" title="Quote Callout">“ Quote</button>
               <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
-              <button type="button" onmousedown="event.preventDefault(); insertEditorLink()" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#C25E3E] font-medium transition" title="Insert Link">🔗 Link</button>
-              <button type="button" onmousedown="event.preventDefault(); execFormat('removeFormat')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#8A867E] transition text-[11px]" title="Clear Formatting">🧹 Clear</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="insertEditorLink()" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#C25E3E] font-medium transition text-[11px] cursor-pointer" title="Insert Link">🔗 Link</button>
+              <button type="button" onmousedown="event.preventDefault()" onclick="execFormat('removeFormat')" class="p-1.5 px-2 rounded-lg hover:bg-[#EAE8E1] text-[#8A867E] transition text-[11px] cursor-pointer" title="Clear Formatting">🧹 Clear</button>
               <span class="w-[1px] h-4 bg-[#D3D0C8] mx-1"></span>
-              <button type="button" onmousedown="event.preventDefault(); openAiModal();" style="touch-action: manipulation;" class="p-1 px-2.5 rounded-lg bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 font-bold transition text-[11px] flex items-center space-x-1 cursor-pointer" title="Open TK Summary AI Drawer">
+              <button type="button" onmousedown="event.preventDefault()" onclick="openAiModal()" style="touch-action: manipulation;" class="p-1 px-2.5 rounded-lg bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 font-bold transition text-[11px] flex items-center space-x-1 cursor-pointer" title="Open TK Summary AI Drawer">
                 <img src="/assets/tk-mascot.webp" class="w-3.5 h-3.5 object-contain" alt="TK">
                 <span>TK Summary AI</span>
               </button>
@@ -1603,14 +1702,14 @@ const renderEditor = (c: any) => {
         </div>
 
         <!-- 2. HTML VIEW (Raw Code Editor) -->
-        <div id="htmlViewWrapper" class="hidden">
+        <div id="htmlViewWrapper" style="display: none;">
           <div class="border border-[#EAE8E1] bg-white rounded-2xl p-4 shadow-sm">
             <textarea id="htmlCodeEditor" rows="18" class="w-full bg-[#1C1B18] font-mono text-sm text-emerald-300 rounded-xl p-4 leading-relaxed focus:outline-none resize-y">${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}</textarea>
           </div>
         </div>
 
         <!-- 3. BOTH VIEW (Split-Screen HTML + Post) -->
-        <div id="bothViewWrapper" class="hidden">
+        <div id="bothViewWrapper" style="display: none;">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Left HTML Code -->
             <div class="border border-[#EAE8E1] bg-white rounded-2xl p-4 flex flex-col shadow-sm">
@@ -2246,11 +2345,13 @@ const renderEditor = (c: any) => {
     let fetchedArticleData = null;
 
     // Load saved Gemini API Key & short links
-    document.addEventListener('DOMContentLoaded', () => {
+    function initEditor() {
       const savedKey = localStorage.getItem('gemini_api_key');
-      if (savedKey) {
-        document.getElementById('geminiApiKey').value = savedKey;
+      const keyInput = document.getElementById('geminiApiKey');
+      if (savedKey && keyInput) {
+        keyInput.value = savedKey;
       }
+      initSyncListeners();
       updateWordCount();
       syncInitialContent();
       if (postId) {
@@ -2259,7 +2360,13 @@ const renderEditor = (c: any) => {
       if (new URLSearchParams(window.location.search).get('open_ai') === '1') {
         setTimeout(openAiModal, 150);
       }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initEditor);
+    } else {
+      initEditor();
+    }
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeAiModal();
@@ -2410,6 +2517,7 @@ const renderEditor = (c: any) => {
     // 1. VIEW SWITCHER (POST, HTML, BOTH)
     function setViewMode(mode) {
       currentViewMode = mode;
+      window.currentViewMode = mode;
       
       const btnPost = document.getElementById('btnViewPost');
       const btnHtml = document.getElementById('btnViewHtml');
@@ -2419,71 +2527,117 @@ const renderEditor = (c: any) => {
       const wrapperHtml = document.getElementById('htmlViewWrapper');
       const wrapperBoth = document.getElementById('bothViewWrapper');
 
-      // Reset button styles
-      [btnPost, btnHtml, btnBoth].forEach(b => {
-        b.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1.5';
-      });
+      const postVis = document.getElementById('postVisualEditor');
+      const htmlEditor = document.getElementById('htmlCodeEditor');
+      const splitHtml = document.getElementById('splitHtmlEditor');
+      const splitPost = document.getElementById('splitPostEditor');
 
-      // Hide all wrappers
-      wrapperPost.classList.add('hidden');
-      wrapperHtml.classList.add('hidden');
-      wrapperBoth.classList.add('hidden');
+      const activeBtnClass = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white text-[#C25E3E] shadow-sm border border-[#E5E2D9] cursor-pointer';
+      const inactiveBtnClass = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1.5 bg-transparent border border-transparent cursor-pointer';
+
+      // Reset button styles
+      if (btnPost) btnPost.className = inactiveBtnClass;
+      if (btnHtml) btnHtml.className = inactiveBtnClass;
+      if (btnBoth) btnBoth.className = inactiveBtnClass;
+
+      // Hide all wrappers using explicit style.display
+      if (wrapperPost) {
+        wrapperPost.style.display = 'none';
+        wrapperPost.classList.add('hidden');
+      }
+      if (wrapperHtml) {
+        wrapperHtml.style.display = 'none';
+        wrapperHtml.classList.add('hidden');
+      }
+      if (wrapperBoth) {
+        wrapperBoth.style.display = 'none';
+        wrapperBoth.classList.add('hidden');
+      }
 
       if (mode === 'post') {
-        btnPost.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-[#C25E3E] text-white shadow-xs';
-        wrapperPost.classList.remove('hidden');
-        document.getElementById('postVisualEditor').innerHTML = document.getElementById('htmlCodeEditor').value;
+        if (btnPost) btnPost.className = activeBtnClass;
+        if (wrapperPost) {
+          wrapperPost.style.display = 'block';
+          wrapperPost.classList.remove('hidden');
+        }
+        if (htmlEditor && postVis && htmlEditor.value) {
+          postVis.innerHTML = htmlEditor.value;
+        }
       } else if (mode === 'html') {
-        btnHtml.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-[#C25E3E] text-white shadow-xs';
-        wrapperHtml.classList.remove('hidden');
-        document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
+        if (btnHtml) btnHtml.className = activeBtnClass;
+        if (wrapperHtml) {
+          wrapperHtml.style.display = 'block';
+          wrapperHtml.classList.remove('hidden');
+        }
+        if (postVis && htmlEditor) {
+          htmlEditor.value = postVis.innerHTML;
+        }
       } else if (mode === 'both') {
-        btnBoth.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-[#C25E3E] text-white shadow-xs';
-        wrapperBoth.classList.remove('hidden');
-        const content = document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
-        document.getElementById('splitHtmlEditor').value = content;
-        document.getElementById('splitPostEditor').innerHTML = content;
+        if (btnBoth) btnBoth.className = activeBtnClass;
+        if (wrapperBoth) {
+          wrapperBoth.style.display = 'block';
+          wrapperBoth.classList.remove('hidden');
+        }
+        const content = (postVis ? postVis.innerHTML : '') || (htmlEditor ? htmlEditor.value : '');
+        if (splitHtml) splitHtml.value = content;
+        if (splitPost) splitPost.innerHTML = content;
       }
       updateWordCount();
     }
+    window.setViewMode = setViewMode;
 
-    // Synchronize editors
-    document.getElementById('postVisualEditor').addEventListener('input', () => {
-      document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
-      updateWordCount();
-    });
+    function initSyncListeners() {
+      const postVis = document.getElementById('postVisualEditor');
+      const htmlEditor = document.getElementById('htmlCodeEditor');
+      const splitHtml = document.getElementById('splitHtmlEditor');
+      const splitPost = document.getElementById('splitPostEditor');
 
-    document.getElementById('htmlCodeEditor').addEventListener('input', () => {
-      document.getElementById('postVisualEditor').innerHTML = document.getElementById('htmlCodeEditor').value;
-      updateWordCount();
-    });
+      if (postVis && htmlEditor) {
+        postVis.addEventListener('input', () => {
+          htmlEditor.value = postVis.innerHTML;
+          updateWordCount();
+        });
+        htmlEditor.addEventListener('input', () => {
+          postVis.innerHTML = htmlEditor.value;
+          updateWordCount();
+        });
+      }
 
-    document.getElementById('splitHtmlEditor').addEventListener('input', () => {
-      const val = document.getElementById('splitHtmlEditor').value;
-      document.getElementById('splitPostEditor').innerHTML = val;
-      document.getElementById('htmlCodeEditor').value = val;
-      document.getElementById('postVisualEditor').innerHTML = val;
-      updateWordCount();
-    });
-
-    document.getElementById('splitPostEditor').addEventListener('input', () => {
-      const val = document.getElementById('splitPostEditor').innerHTML;
-      document.getElementById('splitHtmlEditor').value = val;
-      document.getElementById('htmlCodeEditor').value = val;
-      document.getElementById('postVisualEditor').innerHTML = val;
-      updateWordCount();
-    });
+      if (splitHtml && splitPost && postVis && htmlEditor) {
+        splitHtml.addEventListener('input', () => {
+          const val = splitHtml.value;
+          splitPost.innerHTML = val;
+          htmlEditor.value = val;
+          postVis.innerHTML = val;
+          updateWordCount();
+        });
+        splitPost.addEventListener('input', () => {
+          const val = splitPost.innerHTML;
+          splitHtml.value = val;
+          htmlEditor.value = val;
+          postVis.innerHTML = val;
+          updateWordCount();
+        });
+      }
+    }
 
     function syncInitialContent() {
-      const val = document.getElementById('htmlCodeEditor').value;
-      document.getElementById('postVisualEditor').innerHTML = val;
+      const htmlEditor = document.getElementById('htmlCodeEditor');
+      const postVis = document.getElementById('postVisualEditor');
+      if (htmlEditor && postVis && htmlEditor.value) {
+        postVis.innerHTML = htmlEditor.value;
+      }
     }
 
     function updateWordCount() {
-      const text = document.getElementById('postVisualEditor').innerText || '';
+      const editor = document.getElementById('postVisualEditor') || document.getElementById('htmlCodeEditor');
+      if (!editor) return;
+      const text = editor.innerText || editor.value || '';
       const words = text.trim() ? text.trim().split(/\\s+/).length : 0;
-      document.getElementById('wordCountBadge').textContent = words + ' words';
+      const badge = document.getElementById('wordCountBadge');
+      if (badge) badge.textContent = words + ' words';
     }
+    window.updateWordCount = updateWordCount;
 
     // 2. FEATURED IMAGE DRAG & DROP + WEBP CONVERSION & UNLINK
     function handleDragOver(e) {
@@ -2981,6 +3135,31 @@ const renderEditor = (c: any) => {
         if (draftBtn) draftBtn.innerHTML = originalDraftHtml;
       }
     }
+
+    // Explicitly bind all editor functions to window for 100% reliable HTML onclick execution
+    window.switchTkTab = switchTkTab;
+    window.selectStyle = selectStyle;
+    window.applyFreePreset = applyFreePreset;
+    window.fetchArticleFromLink = fetchArticleFromLink;
+    window.executeAiProcess = executeAiProcess;
+    window.aiFormatCurrent = aiFormatCurrent;
+    window.aiKhmerTranslate = aiKhmerTranslate;
+    window.saveAndDeploy = saveAndDeploy;
+    window.saveGeminiKey = saveGeminiKey;
+    window.promptAddNewCategory = promptAddNewCategory;
+    window.copyShortLink = copyShortLink;
+    window.copyAllShortLinks = copyAllShortLinks;
+    window.generateShortLinks = generateShortLinks;
+    window.loadShortLinks = loadShortLinks;
+    window.unlinkAndCleanImage = unlinkAndCleanImage;
+    window.removeImage = removeImage;
+    window.toggleTagsSection = toggleTagsSection;
+    window.handleDragOver = handleDragOver;
+    window.handleDragLeave = handleDragLeave;
+    window.handleDrop = handleDrop;
+    window.handleFileSelect = handleFileSelect;
+    window.processImageFileToWebp = processImageFileToWebp;
+    window.setImagePreview = setImagePreview;
   </script>
 </body>
 </html>`);
