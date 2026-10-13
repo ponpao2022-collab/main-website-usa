@@ -151,18 +151,20 @@ function layout(title: string, content: string, currentPath = "/") {
       background-color: #C25E3E;
     }
 
-    /* Mobile Dropdown Panel Smooth Transform Slide */
+    /* Mobile Dropdown Panel Smooth Popup Overlay (Zero Layout Push) */
     #mobileNavPanel {
       max-height: 0;
       opacity: 0;
       overflow: hidden;
-      transform: translateY(-12px);
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.35s ease;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, transform 0.25s ease;
     }
     #mobileNavPanel.is-open {
       max-height: 550px;
       opacity: 1;
       transform: translateY(0);
+      pointer-events: auto;
     }
   </style>
 </head>
@@ -212,8 +214,8 @@ function layout(title: string, content: string, currentPath = "/") {
       </div>
     </div>
 
-    <!-- Mobile Navigation Panel (Clean Vertical List with Search like Celeb BNews) -->
-    <div id="mobileNavPanel" class="lg:hidden border-t border-[#33302A] bg-[#1F1E1B] text-white shadow-2xl">
+    <!-- Mobile Navigation Panel (Popup / Floating Overlay - Does NOT push page down) -->
+    <div id="mobileNavPanel" class="lg:hidden absolute top-full left-0 right-0 z-50 border-t border-[#33302A] bg-[#1F1E1B] text-white shadow-[-4px_20px_40px_rgba(0,0,0,0.5)]">
       <!-- Search Box (like Celeb BNews) -->
       <form action="/news" method="GET" class="p-4 pb-3 flex items-center gap-2 border-b border-[#2C2A26]">
         <input type="search" name="q" placeholder="Search news stories..." class="flex-1 bg-[#2D2B26] border border-[#3E3C36] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-[#8E8B83] focus:outline-none focus:border-[#C25E3E]">
@@ -335,6 +337,17 @@ function layout(title: string, content: string, currentPath = "/") {
       panel.classList.toggle('is-open');
       btn.classList.toggle('is-active');
     }
+
+    // Auto-close popup when clicked outside
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('mobileNavPanel');
+      const btn = document.getElementById('mobileMenuToggleBtn');
+      if (!panel || !btn) return;
+      if (panel.classList.contains('is-open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('is-open');
+        btn.classList.remove('is-active');
+      }
+    });
   </script>
 
 </body>
