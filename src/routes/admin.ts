@@ -1974,17 +1974,17 @@ const renderEditor = (c: any) => {
         </div>
       </div>
 
-      <!-- VIRAL SHORT LINKS GENERATOR (៦ ខ្ទង់ - Pretty Links Alternative) -->
+      <!-- TK SHORT LINKS GENERATOR (៦ ខ្ទង់ - Pretty Links Alternative) -->
       <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] space-y-2.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-1.5">
             <span class="text-sm">🔗</span>
-            <span class="text-xs font-bold text-[#1C1B18]">Viral Short Links (៦ ខ្ទង់)</span>
+            <span class="text-xs font-bold text-[#1C1B18]">TK Link (៦ ខ្ទង់)</span>
           </div>
           <span class="text-[10px] font-mono text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Whos Tracking</span>
         </div>
         <p class="text-[11px] text-[#6E6B63] leading-snug">
-          បង្កើត Short Link ៦ ខ្ទង់ (ឧ. <code>https://topusanewsstory.com/asdfef</code>) សម្រាប់ចែករំលែកលើ Facebook & Comments។ ចុចទៅនឹង Redirect ទៅ Post ដើមស្អាតគ្មានកន្ទុយរញេរញៃ!
+          បង្កើត TK Link ៦ ខ្ទង់ (ឧ. <code>https://topusanewsstory.com/asdfef</code>) សម្រាប់ចែករំលែកលើ Facebook & Comments។ ចុចទៅនឹង Redirect ទៅ Post ដើមស្អាតគ្មានកន្ទុយរញេរញៃ!
         </p>
 
         ${post ? `
@@ -2009,12 +2009,12 @@ const renderEditor = (c: any) => {
 
             <!-- Links Container List -->
             <div id="shortLinksList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-              <div class="text-[11px] text-[#8A867E] italic py-2 text-center">កំពុងទាញយក short links...</div>
+              <div class="text-[11px] text-[#8A867E] italic py-2 text-center">កំពុងទាញយក TK links...</div>
             </div>
           </div>
         ` : `
           <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 leading-snug">
-            💡 សូមចុច <strong>Publish</strong> ឬ <strong>Save as Draft</strong> អត្ថបទនេះសិន ទើបអាច Generate Short Links បាន!
+            💡 សូមចុច <strong>Publish</strong> ឬ <strong>Save as Draft</strong> អត្ថបទនេះសិន ទើបអាច Generate TK Links បាន!
           </div>
         `}
       </div>
@@ -2521,14 +2521,20 @@ const renderEditor = (c: any) => {
       try {
         const res = await fetch('/api/posts/' + pid + '/short-links');
         const data = await res.json();
-        if (data.success && data.links) {
-          generatedShortLinksCache = data.links;
+        const rawList = data.links || data.data || [];
+        if (data.success && rawList.length > 0) {
+          generatedShortLinksCache = rawList.map(l => ({
+            ...l,
+            url: l.url || (window.location.origin + '/' + l.code)
+          }));
           renderShortLinksList();
         } else {
-          listEl.innerHTML = '<div class="text-[11px] text-[#8A867E] italic py-2 text-center">មិនទាន់មាន short link ទេ។</div>';
+          generatedShortLinksCache = [];
+          listEl.innerHTML = '<div class="text-[11px] text-[#8A867E] italic py-2 text-center">មិនទាន់មាន TK Link ទេ។ សូមចុច Generate ដើម្បីបង្កើត!</div>';
+          if (actionBox) actionBox.classList.add('hidden');
         }
       } catch (e) {
-        listEl.innerHTML = '<div class="text-[11px] text-rose-500 py-2 text-center">Failed to load short links</div>';
+        listEl.innerHTML = '<div class="text-[11px] text-rose-500 py-2 text-center">Failed to load TK links</div>';
       }
     }
 
@@ -2539,7 +2545,7 @@ const renderEditor = (c: any) => {
       if (!listEl) return;
 
       if (!generatedShortLinksCache || generatedShortLinksCache.length === 0) {
-        listEl.innerHTML = '<div class="text-[11px] text-[#8A867E] italic py-2 text-center">មិនទាន់មាន short link ទេ។ ចុច Generate ដើម្បីបង្កើត!</div>';
+        listEl.innerHTML = '<div class="text-[11px] text-[#8A867E] italic py-2 text-center">មិនទាន់មាន TK link ទេ។ ចុច Generate ដើម្បីបង្កើត!</div>';
         if (actionBox) actionBox.classList.add('hidden');
         return;
       }
@@ -2549,12 +2555,13 @@ const renderEditor = (c: any) => {
       if (statsEl) statsEl.innerText = generatedShortLinksCache.length + ' links (' + totalClicks + ' clicks)';
 
       listEl.innerHTML = generatedShortLinksCache.map(link => {
+        const linkUrl = link.url || (window.location.origin + '/' + link.code);
         return '<div class="p-2 bg-white rounded-xl border border-[#EAE8E1] flex items-center justify-between text-xs hover:border-indigo-300 transition">' +
           '<div class="truncate mr-2">' +
-            '<a href="' + link.url + '" target="_blank" class="font-mono font-bold text-indigo-600 hover:underline text-[11px] block truncate">' + link.url + '</a>' +
+            '<a href="' + linkUrl + '" target="_blank" class="font-mono font-bold text-indigo-600 hover:underline text-[11px] block truncate">' + linkUrl + '</a>' +
             '<span class="text-[9px] text-[#8A867E] font-mono">' + (link.clicks || 0) + ' clicks</span>' +
           '</div>' +
-          '<button type="button" onclick="copyShortLink(\'' + link.url + '\', this)" class="px-2 py-1 rounded bg-[#F3F1EC] hover:bg-indigo-50 text-[#1C1B18] hover:text-indigo-600 text-[10px] font-bold border border-[#E5E2D9] transition flex-shrink-0 cursor-pointer">' +
+          '<button type="button" onclick="copyShortLink(\'' + linkUrl + '\', this)" class="px-2 py-1 rounded bg-[#F3F1EC] hover:bg-indigo-50 text-[#1C1B18] hover:text-indigo-600 text-[10px] font-bold border border-[#E5E2D9] transition flex-shrink-0 cursor-pointer">' +
             'Copy' +
           '</button>' +
         '</div>';
@@ -2579,12 +2586,17 @@ const renderEditor = (c: any) => {
           body: JSON.stringify({ count })
         });
         const data = await res.json();
-        if (data.success && data.links) {
-          generatedShortLinksCache = [...data.links, ...generatedShortLinksCache];
+        const rawList = data.links || data.data || [];
+        if (data.success && rawList.length > 0) {
+          const formatted = rawList.map(l => ({
+            ...l,
+            url: l.url || (window.location.origin + '/' + l.code)
+          }));
+          generatedShortLinksCache = formatted;
           renderShortLinksList();
-          alert('✓ បានបង្កើត Short Links ៦ ខ្ទង់ចំនួន ' + data.generated + ' ដោយជោគជ័យ!');
+          alert('✓ បានបង្កើត TK Links ៦ ខ្ទង់ចំនួន ' + (data.count || count) + ' ដោយជោគជ័យ!');
         } else {
-          alert('Error: ' + (data.error || 'Failed to generate short links'));
+          alert('Error: ' + (data.error || 'Failed to generate TK links'));
         }
       } catch (err) {
         alert('Error: ' + err.message);
@@ -2597,6 +2609,7 @@ const renderEditor = (c: any) => {
     }
 
     function copyShortLink(url, btn) {
+      if (!url) return;
       navigator.clipboard.writeText(url).then(() => {
         if (btn) {
           const orig = btn.innerText;
@@ -2607,14 +2620,18 @@ const renderEditor = (c: any) => {
             btn.classList.remove('bg-emerald-100', 'text-emerald-700');
           }, 1500);
         }
+      }).catch(() => {
+        prompt('Copy this link:', url);
       });
     }
 
     function copyAllShortLinks() {
       if (!generatedShortLinksCache || generatedShortLinksCache.length === 0) return;
-      const allUrls = generatedShortLinksCache.map(l => l.url).join('\n');
+      const allUrls = generatedShortLinksCache.map(l => l.url || (window.location.origin + '/' + l.code)).join('\n');
       navigator.clipboard.writeText(allUrls).then(() => {
-        alert('✓ បាន Copy គ្រប់ ' + generatedShortLinksCache.length + ' Links ចូលក្នុង Clipboard រួចរាល់! អាចយកទៅ Paste ក្នុង Facebook/Comments បានភ្លាមៗ។');
+        alert('✓ បាន Copy គ្រប់ ' + generatedShortLinksCache.length + ' TK Links ចូលក្នុង Clipboard រួចរាល់! អាចយកទៅ Paste ក្នុង Facebook/Comments បានភ្លាមៗ។');
+      }).catch(() => {
+        prompt('Copy all links:', allUrls);
       });
     }
 
@@ -2954,15 +2971,22 @@ const renderEditor = (c: any) => {
 
 
     async function fetchArticleFromLink() {
-      const url = document.getElementById('fetchUrlInput').value.trim();
+      const inputEl = document.getElementById('fetchUrlInput');
+      let url = inputEl ? inputEl.value.trim() : '';
       if (!url) {
-        alert('Please enter a valid news link URL');
+        alert('សូមបញ្ចូល Link អត្ថបទព័ត៌មាន (URL e.g. https://edition.cnn.com/... or https://topstoryusa.info/...)');
         return;
+      }
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+        if (inputEl) inputEl.value = url;
       }
 
       const btn = document.getElementById('btnFetchUrl');
-      btn.innerHTML = '<span>🌀 Fetching...</span>';
-      btn.disabled = true;
+      if (btn) {
+        btn.innerHTML = '<span>🌀 កំពុងទាញយក...</span>';
+        btn.disabled = true;
+      }
 
       try {
         const res = await fetch('/api/ai/fetch-article', {
@@ -2974,37 +2998,54 @@ const renderEditor = (c: any) => {
 
         if (data.success) {
           fetchedArticleData = data;
-          document.getElementById('fetchedTitlePreview').textContent = data.title;
-          document.getElementById('fetchedSummaryPreview').textContent = data.summary;
+          const titlePrev = document.getElementById('fetchedTitlePreview');
+          if (titlePrev) titlePrev.textContent = data.title;
+          const sumPrev = document.getElementById('fetchedSummaryPreview');
+          if (sumPrev) sumPrev.textContent = data.summary;
           if (data.image) {
-            document.getElementById('fetchedThumbImg').src = data.image;
-            document.getElementById('fetchedThumbImg').classList.remove('hidden');
-            setImagePreview(data.image);
+            const thumb = document.getElementById('fetchedThumbImg');
+            if (thumb) {
+              thumb.src = data.image;
+              thumb.classList.remove('hidden');
+            }
+            if (typeof setImagePreview === 'function') setImagePreview(data.image);
           } else {
-            document.getElementById('fetchedThumbImg').classList.add('hidden');
+            const thumb = document.getElementById('fetchedThumbImg');
+            if (thumb) thumb.classList.add('hidden');
           }
-          document.getElementById('fetchStatsBadge').textContent = 'Content & Image Ready';
-          document.getElementById('fetchPreviewBox').classList.remove('hidden');
+          const badge = document.getElementById('fetchStatsBadge');
+          if (badge) badge.textContent = 'Content & Image Ready';
+          const prevBox = document.getElementById('fetchPreviewBox');
+          if (prevBox) prevBox.classList.remove('hidden');
 
           // AUTO-INJECT DIRECTLY INTO EDITOR
-          document.getElementById('titleInput').value = data.title;
-          if (data.summary) {
-            document.getElementById('summaryInput').value = data.summary;
+          const titleIn = document.getElementById('titleInput');
+          if (titleIn && data.title) titleIn.value = data.title;
+          const sumIn = document.getElementById('summaryInput');
+          if (sumIn && data.summary) sumIn.value = data.summary;
+
+          if (typeof setAllEditorContent === 'function') {
+            setAllEditorContent(data.content);
+          } else {
+            const content = data.content;
+            if (document.getElementById('htmlCodeEditor')) document.getElementById('htmlCodeEditor').value = content;
+            if (document.getElementById('postVisualEditor')) document.getElementById('postVisualEditor').innerHTML = content;
+            if (document.getElementById('splitHtmlEditor')) document.getElementById('splitHtmlEditor').value = content;
+            if (document.getElementById('splitPostEditor')) document.getElementById('splitPostEditor').innerHTML = content;
           }
-          const content = data.content;
-          document.getElementById('htmlCodeEditor').value = content;
-          document.getElementById('postVisualEditor').innerHTML = content;
-          document.getElementById('splitHtmlEditor').value = content;
-          document.getElementById('splitPostEditor').innerHTML = content;
-          updateWordCount();
+          if (typeof updateWordCount === 'function') updateWordCount();
+
+          alert('✓ ជោគជ័យ! បានទាញយកចំណងជើង អត្ថបទ និងរូបភាពពី Link បញ្ចូលទៅក្នុង Editor រួចរាល់!');
         } else {
           alert('Fetch error: ' + (data.error || 'Failed to scrape article'));
         }
       } catch (e) {
         alert('Network error fetching article: ' + e.message);
       } finally {
-        btn.innerHTML = '<span>⚡ Fetch Article & Image</span>';
-        btn.disabled = false;
+        if (btn) {
+          btn.innerHTML = '<span>⚡ Fetch Article & Image</span>';
+          btn.disabled = false;
+        }
       }
     }
 

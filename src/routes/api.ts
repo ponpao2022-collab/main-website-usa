@@ -306,14 +306,39 @@ apiRouter.post("/cloudflare/purge", (c) => {
 apiRouter.post("/ai/fetch-article", async (c) => {
   try {
     const { url } = await c.req.json();
-    if (!url) return c.json({ success: false, error: "Please provide a valid URL" }, 400);
+    let targetUrl = (url || "").trim();
+    if (!targetUrl) return c.json({ success: false, error: "Please provide a valid URL" }, 400);
 
-    const res = await fetch(url, {
+    // Auto-prepend https:// if protocol is omitted
+    if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+      targetUrl = "https://" + targetUrl;
+    }
+
+    let res = await fetch(targetUrl, {
+      redirect: "follow",
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache"
       }
     });
+
+    // If blocked (403/401), fallback with Googlebot headers which news sites allow for indexing
+    if (res.status === 403 || res.status === 401) {
+      try {
+        const botRes = await fetch(targetUrl, {
+          redirect: "follow",
+          headers: {
+            "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          }
+        });
+        if (botRes.ok) {
+          res = botRes;
+        }
+      } catch (e) {}
+    }
 
     if (!res.ok) {
       return c.json({ success: false, error: `Failed to fetch URL (HTTP ${res.status})` }, 400);
@@ -910,8 +935,15 @@ function generateRandomShortCode(length = 6): string {
 // GET SHORT LINKS FOR POST
 apiRouter.get("/posts/:id/short-links", (c) => {
   const postId = Number(c.req.param("id"));
-  const links = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId);
-  return c.json({ success: true, data: links });
+  const links = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId) as any[];
+  const host = c.req.header("host") || "topusanewsstory.com";
+  const protocol = c.req.header("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+  const baseUrl = `${protocol}://${host}`;
+  const formatted = links.map(l => ({
+    ...l,
+    url: `${baseUrl}/${l.code}`
+  }));
+  return c.json({ success: true, links: formatted, data: formatted });
 });
 
 // BATCH GENERATE SHORT LINKS FOR POST
@@ -943,8 +975,15 @@ apiRouter.post("/posts/:id/short-links/generate", async (c) => {
       }
     }
 
-    const allLinks = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId);
-    return c.json({ success: true, count: generated.length, generated, data: allLinks });
+    const allLinks = db.query("SELECT * FROM short_links WHERE post_id = ? ORDER BY id DESC").all(postId) as any[];
+    const host = c.req.header("host") || "topusanewsstory.com";
+    const protocol = c.req.header("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+    const baseUrl = `${protocol}://${host}`;
+    const formatted = allLinks.map(l => ({
+      ...l,
+      url: `${baseUrl}/${l.code}`
+    }));
+    return c.json({ success: true, count: generated.length, generated, links: formatted, data: formatted });
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 500);
   }
