@@ -37,8 +37,8 @@ adminRouter.get("/", (c) => {
       </div>
       <div>
         <div class="flex items-center space-x-2">
-          <span class="font-bold text-base tracking-wide">CHRONICLE OS</span>
-          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">Next-Gen CMS</span>
+          <span class="font-bold text-base tracking-wide">USA NEWS STORY CMS</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">Newsroom Panel</span>
         </div>
       </div>
     </div>
