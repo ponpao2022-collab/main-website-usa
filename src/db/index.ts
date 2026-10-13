@@ -1,6 +1,43 @@
 import { Database } from "bun:sqlite";
+import path from "path";
+import fs from "fs";
 
-const db = new Database("news.sqlite", { create: true });
+// Determine persistent DB location
+let dbPath = "news.sqlite";
+
+if (process.env.DB_PATH) {
+  dbPath = process.env.DB_PATH;
+} else if (fs.existsSync("/var/www") || process.env.NODE_ENV === "production") {
+  const persistentDir = "/var/www/data";
+  try {
+    if (!fs.existsSync(persistentDir)) {
+      fs.mkdirSync(persistentDir, { recursive: true });
+    }
+    const targetDb = path.join(persistentDir, "news.sqlite");
+    // If persistent DB doesn't exist yet, migrate existing news.sqlite
+    if (!fs.existsSync(targetDb)) {
+      const candidates = [
+        path.join(process.cwd(), "news.sqlite"),
+        "/var/www/news/news.sqlite",
+        "news.sqlite"
+      ];
+      for (const src of candidates) {
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, targetDb);
+          console.log(`[DB] Successfully migrated database from ${src} to persistent storage: ${targetDb}`);
+          break;
+        }
+      }
+    }
+    dbPath = targetDb;
+  } catch (e) {
+    console.error("[DB] Could not initialize /var/www/data, using local fallback:", e);
+    dbPath = "news.sqlite";
+  }
+}
+
+console.log(`[DB] Database active at: ${dbPath}`);
+const db = new Database(dbPath, { create: true });
 
 // Enable WAL mode for high concurrency & speed
 db.exec("PRAGMA journal_mode = WAL;");
@@ -48,13 +85,6 @@ try {
   // column already exists
 }
 
-// Reset artificially inflated initial views back to genuine count
-try {
-  db.exec("UPDATE posts SET views = MAX(0, views - 1420) WHERE views >= 1420;");
-} catch (e) {
-  // ignore
-}
-
 // Seed Categories if empty (only NEWS by default)
 const catCount = db.query("SELECT COUNT(*) as count FROM categories").get() as { count: number };
 if (catCount.count === 0) {
@@ -62,5 +92,4 @@ if (catCount.count === 0) {
   insertCat.run("NEWS", "news", "#c25e3e");
 }
 
-// Clean initial setup - no mock demo posts seeded
-export { db };
+export { db, dbPath };

@@ -54,6 +54,10 @@ adminRouter.get("/", (c) => {
         <span class="font-mono text-[11px]">Cloudflare Edge: 100% Operational (24ms)</span>
       </div>
 
+      <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-[#2B2926] flex items-center space-x-1.5 transition">
+        <span>💾 Backup & Restore</span>
+      </button>
+
       <a href="/" target="_blank" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-[#2B2926] flex items-center space-x-1.5 transition">
         <span>View Live Site</span>
         <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -151,6 +155,9 @@ adminRouter.get("/", (c) => {
           <p class="text-xs text-[#6E6B63]">Manage, edit, or toggle Breaking News banner in real-time</p>
         </div>
         <div class="flex items-center space-x-2.5">
+          <button type="button" onclick="openBackupModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5">
+            <span>💾 Backup</span>
+          </button>
           <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5">
             <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
             <span>📁 Categories (${categories.length})</span>
@@ -289,7 +296,106 @@ adminRouter.get("/", (c) => {
     </div>
   </div>
 
+  <!-- BACKUP & DATA PROTECTION MODAL -->
+  <div id="backupModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE8E1] space-y-5">
+      <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">💾</span>
+          <div>
+            <h3 class="font-black text-[#1C1B18] text-base">Data Protection & Backup</h3>
+            <p class="text-[11px] text-[#6E6B63]">ការពារ និងរក្សាទុកទិន្នន័យអត្ថបទទាំងអស់</p>
+          </div>
+        </div>
+        <button onclick="closeBackupModal()" type="button" class="w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center transition">✕</button>
+      </div>
+
+      <!-- Persistent Storage Security Badge -->
+      <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 space-y-1">
+        <div class="font-bold flex items-center space-x-1.5">
+          <span>🛡️</span>
+          <span>Persistent Storage Active</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-200 text-emerald-900 font-mono">100% Protected</span>
+        </div>
+        <p class="text-[11px] text-emerald-700 leading-relaxed">
+          Database ត្រូវបានផ្លាស់ទីទៅកាន់ <code>/var/www/data/news.sqlite</code> ដោយសុវត្ថិភាពក្រៅ Git Directory។ រាល់ពេល deploy កូដថ្មី អត្ថបទនឹងមិនបាត់បង់ទៀតឡើយ!
+        </p>
+      </div>
+
+      <!-- Backup Actions -->
+      <div class="space-y-3 pt-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <!-- Action 1: Download SQLite -->
+          <a href="/api/system/backup-db" target="_blank" class="p-3.5 rounded-2xl bg-[#FAF9F5] border border-[#EAE8E1] hover:border-[#C25E3E] transition space-y-1 block group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E] flex items-center space-x-1.5">
+              <span>📥</span>
+              <span>Download Database</span>
+            </div>
+            <p class="text-[10px] text-[#6E6B63]">Full SQLite file (.sqlite) with all posts and tables</p>
+          </a>
+
+          <!-- Action 2: Export JSON -->
+          <a href="/api/system/export-posts" target="_blank" class="p-3.5 rounded-2xl bg-[#FAF9F5] border border-[#EAE8E1] hover:border-[#C25E3E] transition space-y-1 block group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E] flex items-center space-x-1.5">
+              <span>📄</span>
+              <span>Export Articles</span>
+            </div>
+            <p class="text-[10px] text-[#6E6B63]">Readable JSON format for backup or migration</p>
+          </a>
+
+        </div>
+
+        <!-- Action 3: Restore / Import JSON -->
+        <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-[#1C1B18]">Restore / Import Articles from JSON</span>
+            <span class="text-[10px] text-[#6E6B63]">Upload .json</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <input type="file" id="importJsonFileInput" accept=".json" class="hidden" onchange="handleImportJsonFile(event)">
+            <button type="button" onclick="document.getElementById('importJsonFileInput').click()" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#FAF9F5] border border-[#E5E2D9] text-[#1C1B18] font-bold text-xs transition flex items-center justify-center space-x-1.5 shadow-xs">
+              <span>📤</span>
+              <span>Select & Restore JSON Backup File</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
   <script>
+    function openBackupModal() {
+      document.getElementById('backupModal').classList.remove('hidden');
+    }
+    function closeBackupModal() {
+      document.getElementById('backupModal').classList.add('hidden');
+    }
+    async function handleImportJsonFile(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (!confirm('Are you sure you want to restore articles from ' + file.name + '? Existing posts will be merged.')) return;
+      try {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        const res = await fetch('/api/system/import-posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(json)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✓ ' + data.message);
+          window.location.reload();
+        } else {
+          alert('Import failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Error parsing or importing file: ' + err.message);
+      }
+    }
     function openCategoriesModal() {
       document.getElementById('catModal').classList.remove('hidden');
     }

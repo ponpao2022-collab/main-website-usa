@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import { db } from "../db/index";
+import { db, dbPath } from "../db/index";
+import fs from "fs";
 import { recordVisitorPing, getLiveStats } from "../utils/tracker";
 import stylePrompts from "../data/style-prompts.json";
 import stylesList from "../data/styles.json";
@@ -633,7 +634,7 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
   }
 });
 
-// Auto Deploy Webhook for VPS
+// Auto Deploy Webhook for VPS with Automatic Database Backup
 apiRouter.all("/system/deploy", async (c) => {
   const secret = c.req.query("secret") || (c.req.header("x-deploy-secret")) || "";
   const VALID_SECRET = process.env.DEPLOY_SECRET || "main_website_usa_deploy_secret_2026";
@@ -642,13 +643,126 @@ apiRouter.all("/system/deploy", async (c) => {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }
 
-  // Trigger background git pull & restart news-app
+  // Safe background deploy:
+  // 1. Back up database before any git pull
+  // 2. Git fetch and reset code (isolated to /var/www/news)
+  // 3. Restart news-app
+  const deployScript = `
+    set -e
+    mkdir -p /var/www/data/backups
+    if [ -f "/var/www/data/news.sqlite" ]; then
+      cp /var/www/data/news.sqlite "/var/www/data/backups/news_backup_$(date +%Y%m%d_%H%M%S).sqlite"
+    elif [ -f "/var/www/news/news.sqlite" ]; then
+      cp /var/www/news/news.sqlite /var/www/data/news.sqlite
+      cp /var/www/news/news.sqlite "/var/www/data/backups/news_backup_$(date +%Y%m%d_%H%M%S).sqlite"
+    fi
+    # Keep only last 20 backups
+    ls -1tr /var/www/data/backups/*.sqlite 2>/dev/null | head -n -20 | xargs -r rm -f --
+
+    cd /var/www/news
+    git fetch --all
+    git reset --hard origin/main
+    bun install
+    sleep 1
+    systemctl restart news-app
+  `;
+
   try {
-    Bun.spawn(["bash", "-c", "cd /var/www/news && git fetch --all && git reset --hard origin/main && bun install && (sleep 1 && systemctl restart news-app) &"], {
+    Bun.spawn(["bash", "-c", deployScript + " &"], {
       detached: true,
       stdio: ["ignore", "ignore", "ignore"],
     });
-    return c.json({ success: true, message: "Deploy triggered on VPS. Pulling latest code and restarting..." });
+    return c.json({ success: true, message: "Safe deploy triggered with automatic database backup." });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// Download Full SQLite Database Backup (.sqlite)
+apiRouter.get("/system/backup-db", (c) => {
+  const filePath = dbPath;
+  if (!fs.existsSync(filePath)) {
+    return c.text("Database file not found", 404);
+  }
+  const fileBytes = fs.readFileSync(filePath);
+  const dateStr = new Date().toISOString().slice(0, 10);
+  return new Response(fileBytes, {
+    headers: {
+      "Content-Type": "application/x-sqlite3",
+      "Content-Disposition": `attachment; filename="topusanews_backup_${dateStr}.sqlite"`,
+    },
+  });
+});
+
+// Export all posts & categories as JSON
+apiRouter.get("/system/export-posts", (c) => {
+  try {
+    const posts = db.query("SELECT * FROM posts ORDER BY id DESC").all();
+    const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all();
+    const payload = {
+      export_date: new Date().toISOString(),
+      version: "1.0",
+      total_articles: posts.length,
+      categories,
+      posts,
+    };
+    const dateStr = new Date().toISOString().slice(0, 10);
+    return new Response(JSON.stringify(payload, null, 2), {
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="topusanews_articles_${dateStr}.json"`,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// Import / Restore posts from JSON payload
+apiRouter.post("/system/import-posts", async (c) => {
+  try {
+    const body = await c.req.json();
+    const postsToImport = body.posts || (Array.isArray(body) ? body : []);
+    if (!Array.isArray(postsToImport) || postsToImport.length === 0) {
+      return c.json({ success: false, error: "No posts found in JSON payload" }, 400);
+    }
+
+    const insertPost = db.prepare(`
+      INSERT OR REPLACE INTO posts (
+        title, slug, summary, content, category_id,
+        author_name, author_avatar, featured_image, read_time,
+        is_breaking, is_featured, is_trending, status, views, tags,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    let importedCount = 0;
+    for (const p of postsToImport) {
+      if (!p.title) continue;
+      const slug = p.slug || (p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4));
+      insertPost.run(
+        p.title,
+        slug,
+        p.summary || "",
+        p.content || "",
+        p.category_id || 1,
+        p.author_name || "Editorial Desk",
+        p.author_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+        p.featured_image || "",
+        p.read_time || "4 min read",
+        p.is_breaking ? 1 : 0,
+        p.is_featured ? 1 : 0,
+        p.is_trending ? 1 : 0,
+        p.status || "published",
+        p.views || 0,
+        p.tags || null,
+        p.created_at || new Date().toISOString(),
+        p.updated_at || new Date().toISOString()
+      );
+      importedCount++;
+    }
+
+    return c.json({ success: true, message: `Successfully restored ${importedCount} articles!` });
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 500);
   }
