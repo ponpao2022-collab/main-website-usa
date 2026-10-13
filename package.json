@@ -6,7 +6,8 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
-    "typecheck": "bun check"
+    "typecheck": "bun check",
+    "deploy": "./scripts/auto-deploy.sh"
   },
   "devDependencies": {
     "@types/bun": "latest"

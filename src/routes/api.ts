@@ -516,3 +516,25 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
   }
 });
 
+// Auto Deploy Webhook for VPS
+apiRouter.all("/system/deploy", async (c) => {
+  const secret = c.req.query("secret") || (c.req.header("x-deploy-secret")) || "";
+  const VALID_SECRET = process.env.DEPLOY_SECRET || "main_website_usa_deploy_secret_2026";
+  
+  if (secret !== VALID_SECRET) {
+    return c.json({ success: false, error: "Unauthorized" }, 401);
+  }
+
+  // Trigger background git pull & restart news-app
+  try {
+    Bun.spawn(["bash", "-c", "cd /var/www/news && git fetch --all && git reset --hard origin/main && bun install && (sleep 1 && systemctl restart news-app) &"], {
+      detached: true,
+      stdio: ["ignore", "ignore", "ignore"],
+    });
+    return c.json({ success: true, message: "Deploy triggered on VPS. Pulling latest code and restarting..." });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+
