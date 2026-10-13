@@ -52,3 +52,8 @@
 .studio-head, .studio-footer, #studioStatus { flex-shrink:0; }
 .studio-body { flex:1; min-height:0; overflow-y:auto; }
 .studio-footer { background:white; box-shadow:0 -4px 16px #24293606; }
+#aiModal > div { min-width:0; }
+#aiModal input,#aiModal select { min-width:0; max-width:100%; }
+#aiModal .grid-cols-3 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+#aiModal .grid-cols-3 > div:last-child { grid-column:1 / -1; }
+#aiModal > .overflow-y-auto { overflow-x:hidden; }

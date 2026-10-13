@@ -10,7 +10,7 @@ test('dashboard renders one navigation and working script syntax without changin
   expect(response.status).toBe(200);
   const html = await response.text();
   for (const source of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) new Script(source[1]!);
-  new Script(await Bun.file('public/assets/cms-dashboard.js').text());
+  for (const filename of ['cms-dashboard.js', 'cms-popups.js', 'cms-analytics.js']) new Script(await Bun.file('public/assets/' + filename).text());
   for (const id of ['mainTabArticlesBtn', 'mainTabTrackingBtn', 'cmsArticleSearch', 'cmsStatusFilter', 'cmsCategoryFilter', 'catModal', 'backupModal']) {
     expect(html.match(new RegExp('id="' + id + '"', 'g'))?.length).toBe(1);
   }

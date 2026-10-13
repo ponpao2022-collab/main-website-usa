@@ -53,15 +53,20 @@
     $('studioRatio').value = 'original'; $('studioAlt').value = editingImage?.alt || '';
     $('studioCaption').value = editingImage?.closest('figure')?.querySelector('figcaption')?.textContent || '';
     status('Edited images are saved on this site, without links to the source post.');
-    closeAiModal(); gallery(); $('imageStudio').showModal();
+    closeAiModal(); gallery(); $('imageStudio').showModal(); document.body.style.overflow = 'hidden';
     const url = editingImage?.src || $('imageInput').value || fetchedArticleData?.image;
     $('studioUrl').value = url || '';
     if (url) window.loadStudioUrl();
   };
   window.closeImageStudio = function() {
     if (busy) return;
-    loadingVersion++; $('imageStudio').close(); returnFocus?.focus();
+    loadingVersion++; $('imageStudio').close(); document.body.style.overflow = ''; returnFocus?.focus();
   };
+  $('imageStudio').addEventListener('click', event => {
+    if (event.target !== $('imageStudio')) return;
+    const rect = $('imageStudio').getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) window.closeImageStudio();
+  });
   $('imageStudio').addEventListener('cancel', event => { event.preventDefault(); window.closeImageStudio(); });
   async function loadBlob(blob, version) {
     const url = URL.createObjectURL(blob);

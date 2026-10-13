@@ -1,3 +1,4 @@
+import { recordAudienceSample } from './analytics';
 // In-Memory Real-Time Visitor Tracking Engine (Whos.amung.us Style)
 // Ultra-fast, zero database lock, operates entirely in server RAM (<0.001ms latency)
 
@@ -139,6 +140,7 @@ export function recordVisitorPing(
 
 export function getLiveStats() {
   cleanExpired();
+  recordAudienceSample(activeSessions.size);
   const total = activeSessions.size;
 
   const countryMap = new Map<string, { code: string; name: string; flag: string; count: number }>();
@@ -254,3 +256,6 @@ export function getLiveStats() {
     timestamp: now
   };
 }
+
+// Keep a minute-by-minute series even when the CMS is closed.
+setInterval(() => { cleanExpired(); recordAudienceSample(activeSessions.size); }, 60000).unref();

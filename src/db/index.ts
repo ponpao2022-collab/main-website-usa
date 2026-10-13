@@ -95,6 +95,14 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
 `);
 
+// Timestamped history for date-range metrics and concurrent-reader graphs.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pageview_events (id INTEGER PRIMARY KEY AUTOINCREMENT, post_id INTEGER, viewed_at INTEGER NOT NULL);
+  CREATE INDEX IF NOT EXISTS idx_pageview_time ON pageview_events(viewed_at);
+  CREATE TABLE IF NOT EXISTS audience_samples (minute INTEGER PRIMARY KEY, readers INTEGER NOT NULL);
+`);
+db.query("INSERT OR IGNORE INTO settings(key,value) VALUES('analytics_started_at',?)").run(String(Date.now()));
+
 // Safe migrations for existing DB
 try {
   db.exec("ALTER TABLE posts ADD COLUMN tags TEXT;");

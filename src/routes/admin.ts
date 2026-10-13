@@ -137,6 +137,8 @@ adminRouter.get("/", (c) => {
   const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all() as any[];
   const activePosts = posts.filter(p => p.status !== 'trash');
   const trashPosts = posts.filter(p => p.status === 'trash');
+  const avatarPost = db.query("SELECT author_avatar FROM posts WHERE author_name='Admin' AND author_avatar IS NOT NULL AND author_avatar!='' ORDER BY id DESC LIMIT 1").get() as any;
+  const adminAvatar = avatarPost?.author_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80';
   const publishedCount = activePosts.filter(p => p.status === 'published').length;
   const draftCount = activePosts.filter(p => p.status === 'draft').length;
   const totalViews = activePosts.reduce((acc, p) => acc + (p.views || 0), 0);
@@ -154,7 +156,7 @@ adminRouter.get("/", (c) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
-  <link rel="stylesheet" href="/assets/cms-dashboard.css?v=20261014c">
+  <link rel="stylesheet" href="/assets/cms-dashboard.css?v=20261014e">
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
@@ -169,15 +171,15 @@ adminRouter.get("/", (c) => {
       <button id="mainTabArticlesBtn" type="button" onclick="switchMainTab('articles')" class="cms-nav-item" aria-current="page">${icon('articles')}<span>Articles</span><small>${activePosts.length}</small></button>
       <button id="mainTabTrackingBtn" type="button" onclick="switchMainTab('tracking')" class="cms-nav-item">${icon('audience')}<span>Live audience</span><small id="mainTrackingPill">0</small></button>
       <button type="button" onclick="openCategoriesModal()" class="cms-nav-item">${icon('folder')}<span>Categories</span><small>${categories.length}</small></button>
-      <a href="/admin/new?open_ai=1" class="cms-nav-item">${icon('sparkles')}<span>TK Editorial tools</span></a>
+
     </nav>
     <div class="cms-nav-label">Manage</div>
     <nav>
       <button type="button" onclick="openBackupModal()" class="cms-nav-item">${icon('backup')}<span>Backup & restore</span></button>
-      <a href="/" target="_blank" class="cms-nav-item">${icon('external')}<span>View website</span></a>
+
       <button type="button" onclick="purgeCache(this)" class="cms-nav-item">${icon('refresh')}<span>Refresh cache</span></button>
     </nav>
-    <div class="cms-sidebar-bottom"><div class="cms-account"><span class="cms-avatar">A</span><div>Admin<small>CMS workspace</small></div></div><a href="/admin/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
+    <div class="cms-sidebar-bottom"><div class="cms-account"><img class="cms-admin-avatar" src="${escapeDashboard(adminAvatar)}" alt="Admin" onerror="this.onerror=null;this.src='/assets/logo-sm.webp'"><div>Admin<small>CMS workspace</small></div></div><a href="/admin/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
   </aside>
   <button id="cmsNavOverlay" class="cms-nav-overlay" aria-label="Close navigation" onclick="toggleDashboardNav(false)"></button>
   <header class="cms-header">
@@ -189,11 +191,18 @@ adminRouter.get("/", (c) => {
 
     <!-- ==================== VIEW 1: ARTICLES FEED ==================== -->
     <div id="mainArticlesView" class="space-y-6">
+      <section class="cms-report-controls" aria-label="Article reporting period">
+        <div><strong>Reporting period</strong><span>Phnom Penh time · UTC+7</span></div>
+        <select id="cmsReportPreset" aria-label="Report period"><option value="all">All time</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="custom">Custom range</option></select>
+        <label>From<input type="datetime-local" id="cmsReportStart"></label><label>To<input type="datetime-local" id="cmsReportEnd"></label>
+        <button type="button" id="cmsReportApply" class="cms-popup-secondary">Apply</button>
+      </section>
+      <p id="cmsReportStatus" role="status" class="cms-history-note">All-time pageviews. Article counts follow creation dates.</p>
       <section class="cms-stats" aria-label="Newsroom overview">
         <button type="button" onclick="switchMainTab('tracking')" class="cms-stat cms-stat-live"><div class="cms-stat-top"><span>Live readers</span>${icon('audience')}</div><strong id="liveOnlineCount">0</strong><small><span class="cms-dot"></span> View live audience</small></button>
-        <div class="cms-stat"><div class="cms-stat-top"><span>Published articles</span>${icon('articles')}</div><strong>${publishedCount}</strong><small>${draftCount} drafts · ${activePosts.length} total articles</small></div>
-        <div class="cms-stat"><div class="cms-stat-top"><span>Total pageviews</span>${icon('eye')}</div><strong>${totalViews.toLocaleString()}</strong><small>Across your active articles</small></div>
-        <div class="cms-stat"><div class="cms-stat-top"><span>Breaking stories</span>${icon('pulse')}</div><strong>${breakingCount}</strong><small>Featured in the news ticker</small></div>
+        <div class="cms-stat"><div class="cms-stat-top"><span>Published articles</span>${icon('articles')}</div><strong id="cmsPublishedMetric">${publishedCount}</strong><small id="cmsArticleCountMetric">${draftCount} drafts · ${activePosts.length} total articles</small></div>
+        <div class="cms-stat"><div class="cms-stat-top"><span>Total pageviews</span>${icon('eye')}</div><strong id="cmsViewsMetric">${totalViews.toLocaleString()}</strong><small>Across your active articles</small></div>
+        <div class="cms-stat"><div class="cms-stat-top"><span>Breaking stories</span>${icon('pulse')}</div><strong id="cmsBreakingMetric">${breakingCount}</strong><small>Featured in the news ticker</small></div>
       </section>
 
       <!-- Posts Table with Published and Trash Tabs + Checkboxes -->
@@ -295,7 +304,7 @@ adminRouter.get("/", (c) => {
                   </td>
                 </tr>
               ` : activePosts.map(p => `
-                <tr class="cms-post-row hover:bg-[#FAF9F5] transition" data-status="${escapeDashboard(p.status)}" data-category="${escapeDashboard(p.category_name || 'General')}">
+                <tr class="cms-post-row hover:bg-[#FAF9F5] transition" data-created="${escapeDashboard(p.created_at)}" data-status="${escapeDashboard(p.status)}" data-category="${escapeDashboard(p.category_name || 'General')}">
                   <td class="py-4 px-4 text-center">
                     <input type="checkbox" class="post-check-published w-4 h-4 rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-[#C25E3E] cursor-pointer" value="${p.id}" onchange="updateBulkBar('published')">
                   </td>
@@ -368,7 +377,7 @@ adminRouter.get("/", (c) => {
                   </td>
                 </tr>
               ` : trashPosts.map(p => `
-                <tr class="cms-post-row hover:bg-rose-50/30 transition" data-status="trash" data-category="${escapeDashboard(p.category_name || 'General')}">
+                <tr class="cms-post-row hover:bg-rose-50/30 transition" data-created="${escapeDashboard(p.created_at)}" data-status="trash" data-category="${escapeDashboard(p.category_name || 'General')}">
                   <td class="py-4 px-4 text-center">
                     <input type="checkbox" class="post-check-trash w-4 h-4 rounded border-[#E5E2D9] text-rose-600 focus:ring-rose-500 cursor-pointer" value="${p.id}" onchange="updateBulkBar('trash')">
                   </td>
@@ -416,6 +425,13 @@ adminRouter.get("/", (c) => {
 
     <!-- ==================== VIEW 2: DEDICATED LIVE AUDIENCE LIVE TRACKER ==================== -->
     <div id="mainTrackingView" class="hidden space-y-5">
+      <section class="cms-audience-chart">
+        <div class="cms-chart-header"><div><h2>Readers over time</h2><p>Peak concurrent readers in each time bucket · Phnom Penh time</p></div><select id="cmsChartPreset" aria-label="Audience graph period"><option value="1h">Last hour</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option><option value="custom">Custom range</option></select></div>
+        <div class="cms-chart-range"><label>From<input type="datetime-local" id="cmsChartStart"></label><label>To<input type="datetime-local" id="cmsChartEnd"></label><button type="button" id="cmsChartApply" class="cms-popup-secondary">Show graph</button><span id="cmsChartSummary"></span></div>
+        <div id="cmsAudienceGraph" role="img" aria-label="Concurrent readers over time"></div>
+        <p id="cmsChartStatus" role="status" class="cms-history-note">Loading recorded history…</p>
+      </section>
+
 
       <!-- Live audience Authentic Brand Navigation Bar -->
       <div class="bg-white border border-[#EAE8E1] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
@@ -632,25 +648,26 @@ adminRouter.get("/", (c) => {
   </main>
 
   <!-- Manage Categories Modal in Claude Light Mode -->
-  <div id="catModal" role="dialog" aria-modal="true" aria-label="Manage categories" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white border border-[#EAE8E1] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-[#1C1B18]">
-      <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
+  <div id="catModal" role="dialog" aria-modal="true" aria-label="Manage categories" class="cms-popup fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="cms-popup-card cms-category-card bg-white text-[#1C1B18]">
+      <div class="cms-popup-header">
         <div class="flex items-center space-x-2">
-          <span class="text-base font-bold text-[#1C1B18]">📁 Manage News Categories</span>
+          <span class="text-base font-bold text-[#1C1B18]">Categories</span>
           <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">${categories.length} active</span>
         </div>
-        <button onclick="closeCategoriesModal()" class="text-[#6E6B63] hover:text-[#1C1B18] text-lg font-bold px-2 cursor-pointer">&times;</button>
+        <button type="button" aria-label="Close categories" onclick="closeCategoriesModal()" class="cms-popup-close text-[#6E6B63] hover:text-[#1C1B18] text-lg font-bold px-2 cursor-pointer">&times;</button>
       </div>
 
       <!-- Add New Category Form -->
       <form onsubmit="handleCreateCategory(event)" class="bg-[#FAF9F5] p-4 rounded-2xl border border-[#EAE8E1] space-y-3">
-        <span class="text-xs font-bold text-[#1C1B18] uppercase tracking-wider block">+ Add New Category</span>
+        <span class="text-xs font-bold text-[#1C1B18] block">Add a category</span>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
           <div class="sm:col-span-8">
+            <label for="newCatName" class="cms-category-label">Category name</label>
             <input type="text" id="newCatName" required placeholder="Category Name (e.g. World, Politics, Sports)" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] placeholder-slate-400 focus:outline-none focus:border-[#C25E3E]">
           </div>
           <div class="sm:col-span-4 flex items-center space-x-2">
-            <input type="color" id="newCatColor" value="#c25e3e" class="w-9 h-9 rounded-xl border border-[#E5E2D9] bg-white cursor-pointer p-0.5 flex-shrink-0" title="Badge Color">
+            <label for="newCatColor" class="sr-only">Category badge color</label><input type="color" id="newCatColor" value="#c25e3e" class="w-9 h-9 rounded-xl border border-[#E5E2D9] bg-white cursor-pointer p-0.5 flex-shrink-0" title="Badge Color">
             <button type="submit" id="addCatBtn" class="flex-1 py-2 px-3 bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer">Add</button>
           </div>
         </div>
@@ -658,13 +675,13 @@ adminRouter.get("/", (c) => {
 
       <!-- Existing Categories List -->
       <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-        <span class="text-[11px] font-bold text-[#6E6B63] uppercase tracking-wider block">Current Categories:</span>
+        <span class="text-[11px] font-bold text-[#6E6B63] uppercase tracking-wider block">Your categories</span>
         <div class="space-y-1.5" id="categoriesListContainer">
           ${categories.map(cat => `
             <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
               <div class="flex items-center space-x-2.5">
                 <span class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background-color: ${cat.color}"></span>
-                <span class="font-bold text-xs text-[#1C1B18]">${cat.name}</span>
+                <span class="font-bold text-xs text-[#1C1B18]">${escapeDashboard(cat.name)}</span>
                 <span class="text-[11px] font-mono text-[#8A867E]">/${cat.slug}</span>
               </div>
               ${categories.length > 1 ? `
@@ -679,73 +696,22 @@ adminRouter.get("/", (c) => {
     </div>
   </div>
 
-  <!-- BACKUP & DATA PROTECTION MODAL -->
-  <div id="backupModal" role="dialog" aria-modal="true" aria-label="Backup and restore" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE8E1] space-y-5">
-      <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl">💾</span>
-          <div>
-            <h3 class="font-black text-[#1C1B18] text-base">Data Protection & Backup</h3>
-            <p class="text-[11px] text-[#6E6B63]">ការពារ និងរក្សាទុកទិន្នន័យអត្ថបទទាំងអស់</p>
-          </div>
+  <div id="backupModal" role="dialog" aria-modal="true" aria-labelledby="backupTitle" class="cms-popup hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="cms-popup-card">
+      <div class="cms-popup-header"><div><span class="cms-popup-eyebrow">WORKSPACE DATA</span><h2 id="backupTitle">Backup & restore</h2></div><button type="button" onclick="closeBackupModal()" aria-label="Close backup and restore" class="cms-popup-close">${icon('close')}</button></div>
+      <div class="cms-popup-body">
+        <p class="cms-popup-intro">Download a backup first. Restore only when you need to recover or transfer your articles.</p>
+        <div class="cms-backup-downloads">
+          <a href="/api/system/export-posts" download class="cms-backup-option">${icon('backup')}<div><strong>Download article backup</strong><span>JSON · articles, categories, TK Links and uploaded WebP images</span><small>Use this file with Restore below.</small></div></a>
+          <a href="/api/system/backup-db" download class="cms-backup-option">${icon('articles')}<div><strong>Download database snapshot</strong><span>SQLite · all database tables and latest saved data</span><small>For server recovery. Uploaded image files are separate.</small></div></a>
         </div>
-        <button onclick="closeBackupModal()" type="button" class="w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center transition cursor-pointer">✕</button>
+        <section class="cms-restore-section"><h3>Restore an article backup</h3><p>Matching article slugs are updated. Other articles stay in place. Preview your file before restoring.</p>
+          <label for="importJsonFileInput" class="cms-file-label">Choose JSON backup</label><input type="file" id="importJsonFileInput" accept=".json,application/json" onchange="handleImportJsonFile(event)">
+          <div id="restorePreview" class="cms-restore-preview" hidden></div>
+          <p id="restoreStatus" role="status" aria-live="polite" class="cms-restore-status">No file selected.</p>
+        </section>
       </div>
-
-      <!-- Persistent Storage Security Badge -->
-      <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 space-y-1">
-        <div class="font-bold flex items-center space-x-1.5">
-          <span>🛡️</span>
-          <span>Persistent Storage Active</span>
-          <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-200 text-emerald-900 font-mono">100% Protected</span>
-        </div>
-        <p class="text-[11px] text-emerald-700 leading-relaxed">
-          Database ត្រូវបានផ្លាស់ទីទៅកាន់ <code>/var/www/data/news.sqlite</code> ដោយសុវត្ថិភាពក្រៅ Git Directory។ រាល់ពេល deploy កូដថ្មី អត្ថបទនឹងមិនបាត់បង់ទៀតឡើយ!
-        </p>
-      </div>
-
-      <!-- Backup Actions -->
-      <div class="space-y-3 pt-1">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          
-          <!-- Action 1: Download SQLite -->
-          <a href="/api/system/backup-db" target="_blank" class="p-3.5 rounded-2xl bg-[#FAF9F5] border border-[#EAE8E1] hover:border-[#C25E3E] transition space-y-1 block group">
-            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E] flex items-center space-x-1.5">
-              <span>📥</span>
-              <span>Download Database</span>
-            </div>
-            <p class="text-[10px] text-[#6E6B63]">Full SQLite file (.sqlite) with all posts and tables</p>
-          </a>
-
-          <!-- Action 2: Export JSON -->
-          <a href="/api/system/export-posts" target="_blank" class="p-3.5 rounded-2xl bg-[#FAF9F5] border border-[#EAE8E1] hover:border-[#C25E3E] transition space-y-1 block group">
-            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E] flex items-center space-x-1.5">
-              <span>📄</span>
-              <span>Export Articles</span>
-            </div>
-            <p class="text-[10px] text-[#6E6B63]">Readable JSON format for backup or migration</p>
-          </a>
-
-        </div>
-
-        <!-- Action 3: Restore / Import JSON -->
-        <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#1C1B18]">Restore / Import Articles from JSON</span>
-            <span class="text-[10px] text-[#6E6B63]">Upload .json</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input type="file" id="importJsonFileInput" accept=".json" class="hidden" onchange="handleImportJsonFile(event)">
-            <button type="button" onclick="document.getElementById('importJsonFileInput').click()" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#FAF9F5] border border-[#E5E2D9] text-[#1C1B18] font-bold text-xs transition flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer">
-              <span>📤</span>
-              <span>Select & Restore JSON Backup File</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
+      <div class="cms-popup-footer"><button type="button" onclick="closeBackupModal()" class="cms-popup-secondary">Cancel</button><button type="button" id="restoreBackupBtn" onclick="restoreSelectedBackup()" disabled class="cms-popup-primary">Restore selected backup</button></div>
     </div>
   </div>
 
@@ -995,29 +961,6 @@ adminRouter.get("/", (c) => {
     }
     function closeBackupModal() {
       document.getElementById('backupModal').classList.add('hidden');
-    }
-    async function handleImportJsonFile(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (!confirm('Are you sure you want to restore articles from ' + file.name + '? Existing posts will be merged.')) return;
-      try {
-        const text = await file.text();
-        const json = JSON.parse(text);
-        const res = await fetch('/api/system/import-posts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(json)
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('✓ ' + data.message);
-          window.location.reload();
-        } else {
-          alert('Import failed: ' + (data.error || 'Unknown error'));
-        }
-      } catch (err) {
-        alert('Error parsing or importing file: ' + err.message);
-      }
     }
     function openCategoriesModal() {
       document.getElementById('catModal').classList.remove('hidden');
@@ -1319,7 +1262,9 @@ adminRouter.get("/", (c) => {
     setInterval(pollLiveVisitors, 3000);
     pollLiveVisitors();
   </script>
-  <script src="/assets/cms-dashboard.js?v=20261014c"></script>
+  <script src="/assets/cms-dashboard.js?v=20261014e"></script>
+  <script src="/assets/cms-popups.js?v=20261014a"></script>
+  <script src="/assets/cms-analytics.js?v=20261014a"></script>
 </body>
 </html>`);
 });
@@ -1346,7 +1291,7 @@ const renderEditor = (c: any) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
-  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014f">
+  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014g">
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
@@ -3131,7 +3076,7 @@ const renderEditor = (c: any) => {
     <div class="studio-footer"><button type="button" onclick="closeImageStudio()">Cancel</button><button type="button" onclick="injectStudioImage('thumbnail')">Set thumbnail</button><button type="button" onclick="injectStudioImage('inline')">Insert at cursor</button><button type="button" onclick="injectStudioImage('both')">Use for both</button></div>
   </dialog>
   <div id="editorToast" role="status" aria-live="polite"></div>
-  <script src="/assets/editor-studio.js?v=20261014f"></script>
+  <script src="/assets/editor-studio.js?v=20261014g"></script>
 
 </body>
 </html>`);

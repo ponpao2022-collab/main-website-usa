@@ -33,7 +33,8 @@
     for (const row of container.querySelectorAll('.cms-post-row')) {
       const match = (!query || row.textContent.toLocaleLowerCase().includes(query)) &&
         (postsTab === 'trash' || status.value === 'all' || row.dataset.status === status.value) &&
-        (category.value === 'all' || row.dataset.category === category.value);
+        (category.value === 'all' || row.dataset.category === category.value) &&
+        (!window.cmsDateRange || (() => { const raw = row.dataset.created; const time = Date.parse(raw.includes('T') ? raw : raw.replace(' ', 'T') + 'Z'); return time >= window.cmsDateRange.start && time < window.cmsDateRange.end; })());
       row.hidden = !match; if (match) visible++;
       else { const checkbox = row.querySelector('input[type=checkbox]'); if (checkbox) checkbox.checked = false; }
     }
@@ -44,6 +45,7 @@
     empty.hidden = !rows.length || visible > 0;
     updateBulkBar(postsTab === 'active' ? 'published' : 'trash');
   }
+  window.filterDashboardPosts = filterPosts;
   for (const element of [search, status, category]) element.addEventListener(element === search ? 'input' : 'change', filterPosts);
   const postsSwitch = window.switchPostsTab;
   window.switchPostsTab = tab => { postsSwitch(tab); postsTab = tab; status.disabled = tab === 'trash'; filterPosts(); };

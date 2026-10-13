@@ -1,3 +1,4 @@
+import { recordPageview } from '../utils/analytics';
 import { splitArticleAfterParagraphs } from "../utils/article-display";
 import { Hono } from "hono";
 import { db } from "../db/index";
@@ -1018,6 +1019,7 @@ frontendRouter.get("/article/:slug", (c) => {
   const isBot = /bot|crawl|spider|slurp|curl|wget|mediapartners|lighthouse|headless/i.test(userAgent);
   if (!isBot) {
     db.query("UPDATE posts SET views = views + 1 WHERE id = ?").run(post.id);
+    recordPageview(post.id);
   }
 
   // Related Stories: Prioritize same category, fallback to latest published

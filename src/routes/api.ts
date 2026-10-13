@@ -1,3 +1,6 @@
+import { analyticsForRange, recordPageview } from '../utils/analytics';
+import { exportArticleBackup, restoreArticleBackup } from "../utils/backups";
+import { bodyLimit } from "hono/body-limit";
 import { Hono } from "hono";
 import { db, dbPath } from "../db/index";
 import fs from "fs";
@@ -46,6 +49,15 @@ apiRouter.post('/media/upload', async (c) => {
     await Bun.write(path.join(directory, name), bytes);
     return c.json({ success: true, url: '/media/' + name });
   } catch (error: any) { return c.json({ success: false, error: error.message }, 500); }
+});
+
+apiRouter.get('/analytics', (c) => {
+  if (!editorAuthorized(c)) return c.json({ success: false, error: 'Please sign in.' }, 401);
+  try {
+    const start = c.req.query('start'), end = c.req.query('end');
+    if (Boolean(start) !== Boolean(end)) return c.json({ success: false, error: 'Choose both start and end.' }, 400);
+    return c.json({ success: true, ...analyticsForRange(start ? Number(start) : null, end ? Number(end) : null) });
+  } catch (error: any) { return c.json({ success: false, error: error.message }, 400); }
 });
 
 // GET all TK Summary styles
@@ -105,6 +117,7 @@ apiRouter.get("/posts/:slug", (c) => {
 
   // Increment view count asynchronously
   db.query("UPDATE posts SET views = views + 1 WHERE id = ?").run(post.id);
+  recordPageview(post.id);
 
   return c.json({ success: true, data: post });
 });
@@ -802,94 +815,29 @@ apiRouter.all("/system/deploy", async (c) => {
   }
 });
 
-// Download Full SQLite Database Backup (.sqlite)
-apiRouter.get("/system/backup-db", (c) => {
-  const filePath = dbPath;
-  if (!fs.existsSync(filePath)) {
-    return c.text("Database file not found", 404);
-  }
-  const fileBytes = fs.readFileSync(filePath);
-  const dateStr = new Date().toISOString().slice(0, 10);
-  return new Response(fileBytes, {
-    headers: {
-      "Content-Type": "application/x-sqlite3",
-      "Content-Disposition": `attachment; filename="topusanews_backup_${dateStr}.sqlite"`,
-    },
-  });
+// Consistent backups include uncheckpointed WAL data and require CMS authentication.
+apiRouter.get('/system/backup-db', (c) => {
+  if (!editorAuthorized(c)) return c.json({ success: false, error: 'Please sign in to download a backup.' }, 401);
+  return new Response(db.serialize(), { headers: {
+    'Content-Type': 'application/x-sqlite3',
+    'Content-Disposition': 'attachment; filename="topusanews_backup_' + new Date().toISOString().slice(0, 10) + '.sqlite"',
+  } });
 });
-
-// Export all posts & categories as JSON
-apiRouter.get("/system/export-posts", (c) => {
-  try {
-    const posts = db.query("SELECT * FROM posts ORDER BY id DESC").all();
-    const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all();
-    const payload = {
-      export_date: new Date().toISOString(),
-      version: "1.0",
-      total_articles: posts.length,
-      categories,
-      posts,
-    };
-    const dateStr = new Date().toISOString().slice(0, 10);
-    return new Response(JSON.stringify(payload, null, 2), {
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="topusanews_articles_${dateStr}.json"`,
-      },
-    });
-  } catch (err: any) {
-    return c.json({ success: false, error: err.message }, 500);
-  }
+apiRouter.get('/system/export-posts', (c) => {
+  if (!editorAuthorized(c)) return c.json({ success: false, error: 'Please sign in to download a backup.' }, 401);
+  const payload = exportArticleBackup(db, path.join(path.dirname(dbPath), 'media'));
+  return new Response(JSON.stringify(payload, null, 2), { headers: {
+    'Content-Type': 'application/json',
+    'Content-Disposition': 'attachment; filename="topusanews_articles_' + new Date().toISOString().slice(0, 10) + '.json"',
+  } });
 });
-
-// Import / Restore posts from JSON payload
-apiRouter.post("/system/import-posts", async (c) => {
+apiRouter.use('/system/import-posts', bodyLimit({ maxSize: 50 * 1024 * 1024, onError: c => c.json({ success: false, error: 'Backup exceeds 50 MB.' }, 413) }));
+apiRouter.post('/system/import-posts', async (c) => {
+  if (!editorAuthorized(c)) return c.json({ success: false, error: 'Please sign in to restore a backup.' }, 401);
   try {
-    const body = await c.req.json();
-    const postsToImport = body.posts || (Array.isArray(body) ? body : []);
-    if (!Array.isArray(postsToImport) || postsToImport.length === 0) {
-      return c.json({ success: false, error: "No posts found in JSON payload" }, 400);
-    }
-
-    const insertPost = db.prepare(`
-      INSERT OR REPLACE INTO posts (
-        title, slug, summary, content, category_id,
-        author_name, author_avatar, featured_image, read_time,
-        is_breaking, is_featured, is_trending, status, views, tags,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    let importedCount = 0;
-    for (const p of postsToImport) {
-      if (!p.title) continue;
-      const slug = p.slug || (p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString().slice(-4));
-      insertPost.run(
-        p.title,
-        slug,
-        p.summary || "",
-        p.content || "",
-        p.category_id || 1,
-        p.author_name || "Editorial Desk",
-        p.author_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-        p.featured_image || "",
-        p.read_time || "4 min read",
-        p.is_breaking ? 1 : 0,
-        p.is_featured ? 1 : 0,
-        p.is_trending ? 1 : 0,
-        p.status || "published",
-        p.views || 0,
-        p.tags || null,
-        p.created_at || new Date().toISOString(),
-        p.updated_at || new Date().toISOString()
-      );
-      importedCount++;
-    }
-
-    return c.json({ success: true, message: `Successfully restored ${importedCount} articles!` });
-  } catch (err: any) {
-    return c.json({ success: false, error: err.message }, 500);
-  }
+    const result = restoreArticleBackup(db, await c.req.json(), path.join(path.dirname(dbPath), 'media'));
+    return c.json({ success: true, ...result, message: result.added + ' articles added, ' + result.updated + ' updated. Links and uploaded images restored.' });
+  } catch (error: any) { return c.json({ success: false, error: error.message || 'Invalid backup. No article changes were saved.' }, 400); }
 });
 
 // AUTHENTICATION LOGIN ENDPOINT

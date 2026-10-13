@@ -1,6 +1,7 @@
 const paths: Record<string, string> = {
   facebook: '<path stroke="none" fill="#1877f2" d="M14 22v-9h3l.5-4H14V7c0-1.2.4-2 2-2h2V1.5c-.6-.1-1.7-.2-3-.2-3.1 0-5 1.9-5 5.3V9H7v4h3v9Z"/>',
   google: '<path stroke="#4285f4" stroke-width="4" d="M21 12h-9m9 0c0 3-1 5-3 7"/><path stroke="#34a853" stroke-width="4" d="M18 19a9 9 0 0 1-14-3"/><path stroke="#fbbc05" stroke-width="4" d="M4 16a9 9 0 0 1 0-8"/><path stroke="#ea4335" stroke-width="4" d="M4 8a9 9 0 0 1 14-3"/>',
+  close: '<path d="m6 6 12 12M18 6 6 18"/>',
   mobile: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 19h2"/>',
   desktop: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
   tablet: '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M11 19h2"/>',
