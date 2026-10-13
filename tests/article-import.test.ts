@@ -32,3 +32,11 @@ test('read more does not break a nested social quote', () => {
   expect(parts.lead).toEndWith('</blockquote>');
   expect(parts.rest).toBe('<p>Third</p>');
 });
+
+test('imports publishers that use h5/h6 for the entire article body', async () => {
+  const result = await extractArticleHtml('<article><header><h1>Title</h1></header><div class="entry-content"><h5>Actual article text with <a href="/reference">a source link</a>.</h5><h5></h5><h6>Second paragraph.</h6><script>advertisement()</script></div></article>', 'https://news.example/story');
+  expect(result.text).toContain('Actual article text');
+  expect(result.content).toContain('<p>Second paragraph.</p>');
+  expect(result.content).toContain('href="https://news.example/reference"');
+  expect(result.content).not.toContain('advertisement()');
+});

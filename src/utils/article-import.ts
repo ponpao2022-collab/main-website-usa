@@ -1,4 +1,4 @@
-const safeTags = new Set(['p', 'a', 'strong', 'b', 'em', 'i', 'u', 's', 'br', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'blockquote', 'figure', 'figcaption', 'img']);
+const safeTags = new Set(['p', 'a', 'strong', 'b', 'em', 'i', 'u', 's', 'br', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'figure', 'figcaption', 'img']);
 const discarded = 'script,style,nav,header,footer,form,button,input,svg,object,embed';
 export function absoluteWebUrl(value: string, base: string) {
   try {
@@ -22,7 +22,9 @@ export async function extractArticleHtml(html: string, base: string) {
       el.replace('<blockquote><a href="' + escaped + '" rel="noopener noreferrer">View embedded post</a></blockquote>', { html: true });
     } })
     .on('*', { element(el) {
-      const tag = el.tagName.toLowerCase();
+      let tag = el.tagName.toLowerCase();
+      // Some news publishers put entire paragraphs in h5/h6 elements.
+      if (tag === 'h5' || tag === 'h6') { el.tagName = 'p'; tag = 'p'; }
       if (!safeTags.has(tag)) { el.removeAndKeepContent(); return; }
       const isTweet = tag === 'blockquote' && /twitter-tweet/.test(el.getAttribute('class') || '');
       const href = el.getAttribute('href') || '';
@@ -44,7 +46,7 @@ export async function extractArticleHtml(html: string, base: string) {
     } }).transform(new Response(source)).text();
   // Ignore surrounding navigation text, but keep short paragraphs and social post quotes.
   const blocks = sanitized.match(/<(p|h[234]|ul|ol|blockquote|figure)\b[^>]*>[\s\S]*?<\/\1>|<img\b[^>]*>|<a\b[^>]*>[\s\S]*?<\/a>/gi) || [];
-  const content = blocks.map(block => {
+  const content = blocks.filter(block => !/^<p>\s*<\/p>$/i.test(block)).map(block => {
     if (/^<a\b/i.test(block) && /href="https?:\/\/(?:www\.)?(?:x|twitter)\.com\/[^"]*\/status\/\d+/i.test(block)) {
       return '<blockquote class="twitter-tweet" data-dnt="true">' + block + '</blockquote>';
     }
