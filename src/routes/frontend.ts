@@ -343,6 +343,27 @@ function layout(title: string, content: string, currentPath = "/") {
         btn.classList.remove('is-active');
       }
     });
+
+    // Real-Time Visitor Heartbeat Beacon (Whos.amung.us style, silent & non-blocking)
+    (function() {
+      try {
+        let sid = sessionStorage.getItem('_us_sid');
+        if (!sid) {
+          sid = 's_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+          sessionStorage.setItem('_us_sid', sid);
+        }
+        function pingVisitor() {
+          const payload = JSON.stringify({ s: sid, p: window.location.pathname, t: document.title });
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/track/ping', payload);
+          } else {
+            fetch('/api/track/ping', { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(function(){});
+          }
+        }
+        pingVisitor();
+        setInterval(pingVisitor, 30000);
+      } catch(e) {}
+    })();
   </script>
 
 </body>

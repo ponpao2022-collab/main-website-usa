@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/index";
+import { recordVisitorPing, getLiveStats } from "../utils/tracker";
 import stylePrompts from "../data/style-prompts.json";
 import stylesList from "../data/styles.json";
 
@@ -261,10 +262,10 @@ apiRouter.post("/ai/fetch-article", async (c) => {
     let title = "";
     const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["'](.*?)["']/i) ||
                         html.match(/<meta\s+content=["'](.*?)["']\s+property=["']og:title["']/i);
-    if (ogTitleMatch) title = ogTitleMatch[1];
+    if (ogTitleMatch && ogTitleMatch[1]) title = ogTitleMatch[1];
     else {
       const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
-      if (titleMatch) title = titleMatch[1];
+      if (titleMatch && titleMatch[1]) title = titleMatch[1];
     }
     title = decodeHtml(title).replace(/\s*([|–—\-])\s*(STORY USA|CNN|BBC|Reuters|The Verge|Bloomberg|The Guardian|The New York Times|AP News|TechCrunch).*$/i, "").trim();
 
@@ -272,27 +273,27 @@ apiRouter.post("/ai/fetch-article", async (c) => {
     let summary = "";
     const ogDescMatch = html.match(/<meta\s+property=["']og:description["']\s+content=["'](.*?)["']/i) ||
                         html.match(/<meta\s+name=["']description["']\s+content=["'](.*?)["']/i);
-    if (ogDescMatch) summary = decodeHtml(ogDescMatch[1].trim());
+    if (ogDescMatch && ogDescMatch[1]) summary = decodeHtml(ogDescMatch[1].trim());
 
     // Extract Image (Multi-fallback for WordPress, CNN, BBC, etc.)
     let image = "";
     // 1. og:image
     const ogImgMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["'](.*?)["']/i) ||
                        html.match(/<meta\s+content=["'](.*?)["']\s+property=["']og:image["']/i);
-    if (ogImgMatch) image = ogImgMatch[1].trim();
+    if (ogImgMatch && ogImgMatch[1]) image = ogImgMatch[1].trim();
 
     // 2. twitter:image
     if (!image) {
       const twMatch = html.match(/<meta\s+name=["']twitter:image["']\s+content=["'](.*?)["']/i) ||
                       html.match(/<meta\s+content=["'](.*?)["']\s+name=["']twitter:image["']/i);
-      if (twMatch) image = twMatch[1].trim();
+      if (twMatch && twMatch[1]) image = twMatch[1].trim();
     }
 
     // 3. WordPress wp-post-image
     if (!image) {
       const wpImg = html.match(/<img[^>]+class=["'][^"']*wp-post-image[^"']*["'][^>]+src=["']([^"']+)["']/i) ||
                     html.match(/<img[^>]+src=["']([^"']+)["'][^>]+class=["'][^"']*wp-post-image/i);
-      if (wpImg) image = wpImg[1].trim();
+      if (wpImg && wpImg[1]) image = wpImg[1].trim();
     }
 
     // 4. WordPress uploads image
@@ -333,6 +334,7 @@ apiRouter.post("/ai/fetch-article", async (c) => {
     const pRegex = /<p[^>]*>(.*?)<\/p>/gis;
     let match;
     while ((match = pRegex.exec(cleanedHtml)) !== null) {
+      if (!match[1]) continue;
       let text = decodeHtml(match[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
       const lower = text.toLowerCase();
       if (text.length > 35 && 
@@ -428,7 +430,7 @@ Return ONLY a valid JSON object in this exact schema without markdown backticks:
         });
 
         if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
+          const geminiData = (await geminiRes.json()) as any;
           const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (rawText) {
             const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -651,5 +653,29 @@ apiRouter.all("/system/deploy", async (c) => {
     return c.json({ success: false, error: err.message }, 500);
   }
 });
+
+// Real-Time Visitor Tracking (Whos.amung.us style, <0.001ms RAM engine)
+apiRouter.post("/track/ping", async (c) => {
+  try {
+    let body: any = {};
+    const contentType = c.req.header("content-type") || "";
+    if (contentType.includes("application/json")) {
+      body = await c.req.json().catch(() => ({}));
+    } else {
+      const text = await c.req.text().catch(() => "");
+      try { body = JSON.parse(text); } catch { body = {}; }
+    }
+    const ip = c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for") || "";
+    recordVisitorPing(body.s, body.p, body.t, ip);
+    return c.json({ ok: true });
+  } catch {
+    return c.json({ ok: false }, 400);
+  }
+});
+
+apiRouter.get("/track/live", (c) => {
+  return c.json(getLiveStats());
+});
+
 
 

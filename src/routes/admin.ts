@@ -71,8 +71,25 @@ adminRouter.get("/", (c) => {
   <!-- Main Container -->
   <div class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8">
     
-    <!-- Stats Row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Stats Row (5 Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <!-- Whos.amung.us Realtime Live Readers Card -->
+      <div class="bg-gradient-to-b from-slate-900 to-emerald-950/30 border border-emerald-500/40 p-5 rounded-2xl relative overflow-hidden shadow-lg shadow-emerald-950/20">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Live Readers Now</div>
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+        </div>
+        <div id="liveOnlineCount" class="text-3xl font-extrabold text-emerald-400 font-mono">0</div>
+        <div class="text-[11px] text-emerald-400/80 mt-2 font-mono flex items-center space-x-1">
+          <span>📡</span>
+          <span>Whos.amung.us Realtime</span>
+        </div>
+      </div>
+
       <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
         <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Stories</div>
         <div class="text-3xl font-extrabold text-white">${posts.length}</div>
@@ -94,12 +111,37 @@ adminRouter.get("/", (c) => {
       <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
         <div>
           <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Cloudflare Edge Purge</div>
-          <div class="text-xs text-slate-400">Purge cache across all 310+ global PoPs</div>
+          <div class="text-xs text-slate-400">Purge cache across 310+ PoPs</div>
         </div>
         <button onclick="purgeCache(this)" class="w-full mt-3 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-300 flex items-center justify-center space-x-1.5 transition">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span>Instant Cache Purge</span>
         </button>
+      </div>
+    </div>
+
+    <!-- Whos.amung.us Real-Time Active Readers Breakdown -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <span class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+          <h3 class="font-bold text-sm text-white flex items-center space-x-1.5">
+            <span>Whos.amung.us Live Readers Tracker</span>
+            <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">Auto-refresh 3s</span>
+          </h3>
+        </div>
+        <div class="text-xs text-slate-400 font-mono">
+          <span id="activePagesSummary">0 pages currently active</span>
+        </div>
+      </div>
+
+      <div id="activePagesList" class="space-y-2">
+        <div class="text-xs text-slate-500 italic py-2 text-center">
+          Waiting for live readers to connect... (Open the website in another tab or mobile phone to see real-time tracking)
+        </div>
       </div>
     </div>
 
@@ -324,6 +366,47 @@ adminRouter.get("/", (c) => {
         window.location.reload();
       }
     }
+
+    // Whos.amung.us Real-Time Live Readers Polling Engine
+    async function pollLiveVisitors() {
+      try {
+        const res = await fetch('/api/track/live');
+        const data = await res.json();
+        const countEl = document.getElementById('liveOnlineCount');
+        if (countEl) countEl.innerText = String(data.totalOnline || 0);
+        
+        const summaryEl = document.getElementById('activePagesSummary');
+        if (summaryEl) {
+          const len = (data.activePages || []).length;
+          summaryEl.innerText = len + ' active ' + (len === 1 ? 'page' : 'pages');
+        }
+
+        const listEl = document.getElementById('activePagesList');
+        if (listEl) {
+          if (!data.activePages || data.activePages.length === 0) {
+            listEl.innerHTML = '<div class="text-xs text-slate-500 italic py-2 text-center">No active readers at this exact moment. Open the site in a tab or on phone to see live tracking!</div>';
+          } else {
+            listEl.innerHTML = data.activePages.map(function(p) {
+              return '<div class="flex items-center justify-between py-2 px-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition text-xs">' +
+                '<div class="flex items-center space-x-2.5 truncate mr-3">' +
+                  '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>' +
+                  '<a href="' + p.path + '" target="_blank" class="text-slate-200 hover:text-indigo-300 truncate font-medium">' +
+                    (p.title || p.path) +
+                  '</a>' +
+                  '<span class="text-slate-500 font-mono text-[10px] hidden sm:inline">(' + p.path + ')</span>' +
+                '</div>' +
+                '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold border border-emerald-500/30 flex-shrink-0 flex items-center space-x-1">' +
+                  '<span>🟢</span>' +
+                  '<span>' + p.count + ' ' + (p.count === 1 ? 'reader' : 'readers') + ' online</span>' +
+                '</span>' +
+              '</div>';
+            }).join('');
+          }
+        }
+      } catch(e) {}
+    }
+    setInterval(pollLiveVisitors, 3000);
+    pollLiveVisitors();
   </script>
 </body>
 </html>`);
