@@ -17,51 +17,49 @@ adminRouter.get("/", (c) => {
   const breakingCount = posts.filter(p => p.is_breaking === 1).length;
 
   return c.html(`<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NextGen Newsroom CMS - Dashboard</title>
+  <title>USA NEWS STORY CMS - Newsroom Dashboard</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
-  <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
-  <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen flex flex-col selection:bg-[#C25E3E] selection:text-white">
 
   <!-- Top Header -->
-  <header class="h-16 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-50">
+  <header class="h-16 border-b border-[#EAE8E1] bg-white/95 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-50 shadow-xs">
     <div class="flex items-center space-x-3">
-      <img src="/assets/logo-sm.webp" class="h-9 w-9 rounded-full object-contain shadow-md shadow-indigo-500/20" alt="USA NEWS STORY">
+      <img src="/assets/logo-sm.webp" class="h-9 w-9 rounded-full object-contain shadow-sm border border-[#EAE8E1]" alt="USA NEWS STORY">
       <div>
         <div class="flex items-center space-x-2">
-          <span class="font-bold text-base tracking-wide">USA NEWS STORY CMS</span>
-          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">Newsroom Panel</span>
+          <span class="font-bold text-base tracking-wide text-[#1C1B18]">USA NEWS STORY CMS</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F3F1EC] text-[#C25E3E] border border-[#E5E2D9]">Newsroom Panel</span>
         </div>
       </div>
     </div>
 
     <!-- Right Controls -->
-    <div class="flex items-center space-x-4">
-      <div class="hidden sm:flex items-center space-x-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1 rounded-full text-xs text-emerald-300">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-slow"></span>
+    <div class="flex items-center space-x-3">
+      <div class="hidden sm:flex items-center space-x-2 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs text-emerald-800 font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span class="font-mono text-[11px]">Cloudflare Edge: 100% Operational (24ms)</span>
       </div>
 
-      <a href="/" target="_blank" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center space-x-1.5 transition">
+      <a href="/" target="_blank" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-[#2B2926] flex items-center space-x-1.5 transition">
         <span>View Live Site</span>
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
       </a>
 
-      <a href="/admin/new" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-indigo-500 to-rose-500 hover:from-indigo-400 hover:to-rose-400 text-white shadow-md shadow-indigo-500/25 flex items-center space-x-1.5 transition">
+      <a href="/admin/new" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-md shadow-[#C25E3E]/20 flex items-center space-x-1.5 transition">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         <span>Write New Story</span>
       </a>
@@ -71,93 +69,93 @@ adminRouter.get("/", (c) => {
   <!-- Main Container -->
   <div class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8">
     
-    <!-- Stats Row (5 Cards) -->
+    <!-- Stats Row (5 Cards in Claude AI Light Mode) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       
       <!-- Whos.amung.us Realtime Live Readers Card -->
-      <div class="bg-gradient-to-b from-slate-900 to-emerald-950/30 border border-emerald-500/40 p-5 rounded-2xl relative overflow-hidden shadow-lg shadow-emerald-950/20">
+      <div class="bg-white border-2 border-emerald-400/60 p-5 rounded-2xl relative overflow-hidden shadow-sm">
         <div class="flex items-center justify-between mb-1">
-          <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Live Readers Now</div>
+          <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">Live Readers Now</div>
           <span class="relative flex h-2.5 w-2.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
         </div>
-        <div id="liveOnlineCount" class="text-3xl font-extrabold text-emerald-400 font-mono">0</div>
-        <div class="text-[11px] text-emerald-400/80 mt-2 font-mono flex items-center space-x-1">
+        <div id="liveOnlineCount" class="text-3xl font-extrabold text-emerald-600 font-mono">0</div>
+        <div class="text-[11px] text-emerald-700 mt-2 font-mono flex items-center space-x-1 font-medium">
           <span>📡</span>
           <span>Whos.amung.us Realtime</span>
         </div>
       </div>
 
-      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
-        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Stories</div>
-        <div class="text-3xl font-extrabold text-white">${posts.length}</div>
-        <div class="text-[11px] text-emerald-400 mt-2">Active in SQLite VPS</div>
+      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Total Stories</div>
+        <div class="text-3xl font-extrabold text-[#1C1B18]">${posts.length}</div>
+        <div class="text-[11px] text-emerald-600 mt-2 font-medium">Active in SQLite VPS</div>
       </div>
 
-      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
-        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Breaking News Active</div>
-        <div class="text-3xl font-extrabold text-rose-400">${breakingCount}</div>
-        <div class="text-[11px] text-rose-400/80 mt-2">Showing on Top Marquee</div>
+      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Breaking News Active</div>
+        <div class="text-3xl font-extrabold text-rose-600">${breakingCount}</div>
+        <div class="text-[11px] text-rose-600/80 mt-2 font-medium">Showing on Top Marquee</div>
       </div>
 
-      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
-        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Global Pageviews</div>
-        <div class="text-3xl font-extrabold text-indigo-400">${totalViews.toLocaleString()}</div>
-        <div class="text-[11px] text-indigo-400/80 mt-2">Real Visitors Tracked Live</div>
+      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Global Pageviews</div>
+        <div class="text-3xl font-extrabold text-[#C25E3E]">${totalViews.toLocaleString()}</div>
+        <div class="text-[11px] text-[#6E6B63] mt-2 font-medium">Real Visitors Tracked Live</div>
       </div>
 
-      <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+      <div class="bg-white border border-[#EAE8E1] p-5 rounded-2xl shadow-sm flex flex-col justify-between">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Cloudflare Edge Purge</div>
-          <div class="text-xs text-slate-400">Purge cache across 310+ PoPs</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-[#6E6B63] mb-1">Cloudflare Edge Purge</div>
+          <div class="text-xs text-[#6E6B63]">Purge cache across 310+ PoPs</div>
         </div>
-        <button onclick="purgeCache(this)" class="w-full mt-3 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-300 flex items-center justify-center space-x-1.5 transition">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <button onclick="purgeCache(this)" class="w-full mt-3 py-2 px-3 rounded-xl bg-[#F3F1EC] hover:bg-[#EAE8E1] border border-[#E5E2D9] text-xs font-semibold text-[#2B2926] flex items-center justify-center space-x-1.5 transition">
+          <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span>Instant Cache Purge</span>
         </button>
       </div>
     </div>
 
     <!-- Whos.amung.us Real-Time Active Readers Breakdown -->
-    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+    <div class="bg-white border border-[#EAE8E1] rounded-2xl p-5 shadow-sm space-y-3">
+      <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
         <div class="flex items-center space-x-2.5">
           <span class="relative flex h-3 w-3">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
           </span>
-          <h3 class="font-bold text-sm text-white flex items-center space-x-1.5">
+          <h3 class="font-bold text-sm text-[#1C1B18] flex items-center space-x-2">
             <span>Whos.amung.us Live Readers Tracker</span>
-            <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">Auto-refresh 3s</span>
+            <span class="text-[10px] text-emerald-800 font-mono bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Auto-refresh 3s</span>
           </h3>
         </div>
-        <div class="text-xs text-slate-400 font-mono">
+        <div class="text-xs text-[#6E6B63] font-mono">
           <span id="activePagesSummary">0 pages currently active</span>
         </div>
       </div>
 
       <div id="activePagesList" class="space-y-2">
-        <div class="text-xs text-slate-500 italic py-2 text-center">
+        <div class="text-xs text-[#8A867E] italic py-2 text-center">
           Waiting for live readers to connect... (Open the website in another tab or mobile phone to see real-time tracking)
         </div>
       </div>
     </div>
 
-    <!-- Posts Table -->
-    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+    <!-- Posts Table in Claude Light Mode -->
+    <div class="bg-white border border-[#EAE8E1] rounded-2xl overflow-hidden shadow-sm">
+      <div class="p-5 border-b border-[#EAE8E1] flex items-center justify-between">
         <div>
-          <h2 class="font-bold text-lg text-white">Articles & News Feed</h2>
-          <p class="text-xs text-slate-400">Manage, edit, or toggle Breaking News banner in real-time</p>
+          <h2 class="font-bold text-lg text-[#1C1B18]">Articles & News Feed</h2>
+          <p class="text-xs text-[#6E6B63]">Manage, edit, or toggle Breaking News banner in real-time</p>
         </div>
         <div class="flex items-center space-x-2.5">
-          <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1.5">
-            <svg class="w-3.5 h-3.5 text-[#D97757]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+          <button type="button" onclick="openCategoriesModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] transition flex items-center space-x-1.5">
+            <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
             <span>📁 Categories (${categories.length})</span>
           </button>
-          <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition flex items-center space-x-1 font-bold">
+          <a href="/admin/new" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white transition flex items-center space-x-1 shadow-sm">
             <span>+ New Article</span>
           </a>
         </div>
@@ -165,7 +163,7 @@ adminRouter.get("/", (c) => {
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
-          <thead class="bg-slate-950/60 border-b border-slate-800 text-slate-400 uppercase font-semibold">
+          <thead class="bg-[#F3F1EC] border-b border-[#EAE8E1] text-[#6E6B63] uppercase font-semibold">
             <tr>
               <th class="py-3 px-5">Headline & Article</th>
               <th class="py-3 px-4">Category</th>
@@ -175,62 +173,62 @@ adminRouter.get("/", (c) => {
               <th class="py-3 px-6 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-800/80 text-slate-300">
+          <tbody class="divide-y divide-[#EAE8E1] text-[#2B2926]">
             ${posts.length === 0 ? `
               <tr>
-                <td colspan="6" class="text-center py-12 text-slate-500">
-                  <div class="text-sm font-semibold text-slate-400 mb-1">No articles in database</div>
-                  <div class="text-xs text-slate-500 mb-4">Old mock data has been cleanly deleted. Start fresh by creating a new article!</div>
-                  <a href="/admin/new" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center space-x-1.5 transition">
+                <td colspan="6" class="text-center py-12 text-[#8A867E]">
+                  <div class="text-sm font-semibold text-[#6E6B63] mb-1">No articles in database</div>
+                  <div class="text-xs text-[#8A867E] mb-4">Old mock data has been cleanly deleted. Start fresh by creating a new article!</div>
+                  <a href="/admin/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>+ Publish First Story</span>
                   </a>
                 </td>
               </tr>
             ` : posts.map(p => `
-              <tr class="hover:bg-slate-800/40 transition">
+              <tr class="hover:bg-[#FAF9F5] transition">
                 <td class="py-4 px-5">
                   <div class="flex items-center space-x-3">
-                    ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">` : ''}
+                    ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1]">` : ''}
                     <div>
-                      <a href="/admin/edit/${p.id}" class="font-bold text-slate-100 hover:text-indigo-400 text-sm line-clamp-1">
+                      <a href="/admin/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-1 transition">
                         ${p.title}
                       </a>
-                      <div class="text-[11px] text-slate-500 mt-0.5">/article/${p.slug}</div>
+                      <div class="text-[11px] text-[#8A867E] mt-0.5">/article/${p.slug}</div>
                     </div>
                   </div>
                 </td>
                 <td class="py-4 px-4">
-                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300">
+                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">
                     ${p.category_name || 'General'}
                   </span>
                 </td>
-                <td class="py-4 px-4 font-medium text-slate-300">${p.author_name}</td>
+                <td class="py-4 px-4 font-medium text-[#2B2926]">${p.author_name}</td>
                 <td class="py-4 px-4 text-center">
                   ${p.is_breaking === 1 ? `
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
                       BREAKING
                     </span>` : `
-                    <span class="text-slate-600 text-[11px]">-</span>`}
+                    <span class="text-[#8A867E] text-[11px]">-</span>`}
                 </td>
                 <td class="py-4 px-4 text-center font-mono">
-                  <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-500/20 text-xs font-semibold">
-                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9] text-xs font-semibold">
+                    <svg class="w-3.5 h-3.5 text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     <span>${p.views.toLocaleString()}</span>
                   </span>
                 </td>
                 <td class="py-4 px-6 text-center whitespace-nowrap">
-                  <div class="inline-flex items-center space-x-1.5 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800">
-                    <a href="/article/${p.slug}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1 transition shadow-sm" title="View live article">
-                      <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  <div class="inline-flex items-center space-x-1.5 bg-[#F3F1EC] p-1.5 rounded-xl border border-[#E5E2D9]">
+                    <a href="/article/${p.slug}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-[#EAE8E1] text-[#2B2926] text-xs font-semibold flex items-center space-x-1 transition shadow-xs border border-[#E5E2D9]" title="View live article">
+                      <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                       <span>View</span>
                     </a>
-                    <a href="/admin/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/25 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center space-x-1 transition shadow-sm" title="Edit story">
-                      <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <a href="/admin/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs" title="Edit story">
+                      <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                       <span>Edit</span>
                     </a>
-                    <button type="button" onclick="deletePost(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/35 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center space-x-1 transition shadow-sm cursor-pointer" title="Delete story">
-                      <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <button type="button" onclick="deletePost(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs cursor-pointer" title="Delete story">
+                      <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       <span>Delete</span>
                     </button>
                   </div>
@@ -243,58 +241,46 @@ adminRouter.get("/", (c) => {
     </div>
   </div>
 
-  <!-- Floating TK Summary Mascot Trigger Button (Bottom Right) -->
-  <a href="/admin/new" class="fixed right-6 bottom-6 z-50 flex items-center group cursor-pointer select-none">
-    <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-slate-900/95 border border-blue-500/40 text-xs font-bold text-blue-300 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
-      <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-      <span>Create with TK Summary AI</span>
-    </div>
-    <div class="relative w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 active:scale-95">
-      <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_10px_20px_rgba(8,124,218,0.45)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
-      <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_26px_rgba(8,124,218,0.7)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
-    </div>
-  </a>
-
-  <!-- Manage Categories Modal -->
-  <div id="catModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <!-- Manage Categories Modal in Claude Light Mode -->
+  <div id="catModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-[#EAE8E1] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-[#1C1B18]">
+      <div class="flex items-center justify-between border-b border-[#EAE8E1] pb-3">
         <div class="flex items-center space-x-2">
-          <span class="text-base font-bold text-white">📁 Manage News Categories</span>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">${categories.length} active</span>
+          <span class="text-base font-bold text-[#1C1B18]">📁 Manage News Categories</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9]">${categories.length} active</span>
         </div>
-        <button onclick="closeCategoriesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2">&times;</button>
+        <button onclick="closeCategoriesModal()" class="text-[#6E6B63] hover:text-[#1C1B18] text-lg font-bold px-2">&times;</button>
       </div>
 
       <!-- Add New Category Form -->
-      <form onsubmit="handleCreateCategory(event)" class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">+ Add New Category</span>
+      <form onsubmit="handleCreateCategory(event)" class="bg-[#FAF9F5] p-4 rounded-2xl border border-[#EAE8E1] space-y-3">
+        <span class="text-xs font-bold text-[#1C1B18] uppercase tracking-wider block">+ Add New Category</span>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
           <div class="sm:col-span-8">
-            <input type="text" id="newCatName" required placeholder="Category Name (e.g. World, Politics, Sports)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+            <input type="text" id="newCatName" required placeholder="Category Name (e.g. World, Politics, Sports)" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] placeholder-slate-400 focus:outline-none focus:border-[#C25E3E]">
           </div>
           <div class="sm:col-span-4 flex items-center space-x-2">
-            <input type="color" id="newCatColor" value="#c25e3e" class="w-9 h-9 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer p-0.5 flex-shrink-0" title="Badge Color">
-            <button type="submit" id="addCatBtn" class="flex-1 py-2 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition">Add</button>
+            <input type="color" id="newCatColor" value="#c25e3e" class="w-9 h-9 rounded-xl border border-[#E5E2D9] bg-white cursor-pointer p-0.5 flex-shrink-0" title="Badge Color">
+            <button type="submit" id="addCatBtn" class="flex-1 py-2 px-3 bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold rounded-xl text-xs transition shadow-sm">Add</button>
           </div>
         </div>
       </form>
 
       <!-- Existing Categories List -->
       <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Current Categories:</span>
+        <span class="text-[11px] font-bold text-[#6E6B63] uppercase tracking-wider block">Current Categories:</span>
         <div class="space-y-1.5" id="categoriesListContainer">
           ${categories.map(cat => `
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/80">
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F5] border border-[#EAE8E1]">
               <div class="flex items-center space-x-2.5">
                 <span class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background-color: ${cat.color}"></span>
-                <span class="font-bold text-xs text-white">${cat.name}</span>
-                <span class="text-[11px] font-mono text-slate-500">/${cat.slug}</span>
+                <span class="font-bold text-xs text-[#1C1B18]">${cat.name}</span>
+                <span class="text-[11px] font-mono text-[#8A867E]">/${cat.slug}</span>
               </div>
               ${categories.length > 1 ? `
-                <button type="button" onclick="deleteCategory(${cat.id})" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-0.5 rounded hover:bg-rose-500/10 transition">Delete</button>
+                <button type="button" onclick="deleteCategory(${cat.id})" class="text-rose-600 hover:text-rose-700 text-xs px-2 py-0.5 rounded hover:bg-rose-50 transition">Delete</button>
               ` : `
-                <span class="text-[10px] text-slate-500">Default (Protected)</span>
+                <span class="text-[10px] text-[#8A867E]">Default (Protected)</span>
               `}
             </div>
           `).join("")}
@@ -423,11 +409,11 @@ const renderEditor = (c: any) => {
   const categories = db.query("SELECT * FROM categories ORDER BY id ASC").all() as any[];
 
   return c.html(`<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${post ? 'Edit Story' : 'New Story'} | NextGen Newsroom CMS</title>
+  <title>${post ? 'Edit Story' : 'New Story'} | USA NEWS STORY CMS</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
@@ -439,40 +425,34 @@ const renderEditor = (c: any) => {
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s infinite; }
-    .style-card.selected { border-color: #6366f1; background-color: rgba(99, 102, 241, 0.15); ring: 2px; }
+    .style-card.selected { border-color: #C25E3E; background-color: rgba(194, 94, 62, 0.08); ring: 2px; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-indigo-500 selection:text-white relative">
+<body class="bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen selection:bg-[#C25E3E] selection:text-white relative">
 
   <!-- Top Navigation Bar -->
-  <header class="h-14 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-30">
+  <header class="h-14 border-b border-[#EAE8E1] bg-white/95 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
     <div class="flex items-center space-x-3">
-      <a href="/admin" class="text-slate-400 hover:text-white transition flex items-center space-x-1 text-xs">
+      <a href="/admin" class="text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1 text-xs font-semibold">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         <span>Dashboard</span>
       </a>
-      <span class="text-slate-700">|</span>
-      <span class="font-bold text-xs uppercase tracking-wider text-slate-300">${post ? 'Edit Story #' + post.id : 'Drafting New Story'}</span>
+      <span class="text-[#D3D0C8]">|</span>
+      <span class="font-bold text-xs uppercase tracking-wider text-[#1C1B18]">${post ? 'Edit Story #' + post.id : 'Drafting New Story'}</span>
     </div>
 
     <!-- Active Collaborators & Actions -->
-    <div class="flex items-center space-x-4">
-      <div class="flex items-center -space-x-2">
-        <div class="w-7 h-7 rounded-full bg-indigo-600 border-2 border-slate-900 flex items-center justify-center text-xs font-semibold" title="You (Lead Editor)">You</div>
-        <div class="w-7 h-7 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center text-xs font-semibold" title="Dara (Reporter)">DR</div>
-        <div class="w-7 h-7 rounded-full bg-amber-600 border-2 border-slate-900 flex items-center justify-center text-xs font-semibold" title="Sarah (Fact-checker)">SJ</div>
-      </div>
-
-      <button onclick="openAiModal()" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 flex items-center space-x-1.5 transition">
+    <div class="flex items-center space-x-3">
+      <button onclick="openAiModal()" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E]/10 hover:bg-[#C25E3E]/20 text-[#C25E3E] border border-[#C25E3E]/30 flex items-center space-x-1.5 transition">
         <img src="/assets/tk-mascot.webp" class="w-4 h-4 object-contain" alt="TK" loading="eager" width="16" height="16">
         <span>TK Summary AI</span>
       </button>
 
-      <button onclick="saveAndDeploy('draft')" id="draftBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+      <button onclick="saveAndDeploy('draft')" id="draftBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#2B2926] border border-[#E5E2D9] flex items-center space-x-1.5 transition">
         <span>💾 Save Draft</span>
       </button>
 
-      <button onclick="saveAndDeploy('published')" id="saveBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/25 flex items-center space-x-1.5 transition">
+      <button onclick="saveAndDeploy('published')" id="saveBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-md shadow-[#C25E3E]/20 flex items-center space-x-1.5 transition">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         <span>🚀 Publish</span>
       </button>
@@ -487,45 +467,45 @@ const renderEditor = (c: any) => {
       
       <!-- Headline & Excerpt -->
       <div>
-        <textarea id="titleInput" rows="2" class="w-full bg-transparent text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white placeholder-slate-600 focus:outline-none resize-none leading-tight" placeholder="Enter article headline...">${post ? post.title : ''}</textarea>
-        <input type="text" id="summaryInput" class="w-full bg-transparent text-base text-slate-400 placeholder-slate-600 focus:outline-none mt-2 font-normal" placeholder="Add an executive summary or subtitle..." value="${post ? post.summary : ''}">
+        <textarea id="titleInput" rows="2" class="w-full bg-transparent text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#1C1B18] placeholder-slate-400 focus:outline-none resize-none leading-tight font-serif" placeholder="Enter article headline...">${post ? post.title : ''}</textarea>
+        <input type="text" id="summaryInput" class="w-full bg-transparent text-base text-[#4A4742] placeholder-slate-400 focus:outline-none mt-2 font-normal" placeholder="Add an executive summary or subtitle..." value="${post ? post.summary : ''}">
       </div>
 
       <!-- Slug & Autosave status bar -->
-      <div class="flex flex-wrap items-center justify-between border-y border-slate-800/80 py-2.5 text-xs text-slate-400 gap-2">
+      <div class="flex flex-wrap items-center justify-between border-y border-[#EAE8E1] py-2.5 text-xs text-[#6E6B63] gap-2">
         <div class="flex items-center space-x-2">
           <span>Slug:</span>
-          <input type="text" id="slugInput" class="bg-slate-900 border border-slate-800 rounded px-2 py-0.5 text-slate-300 font-mono text-[11px] focus:outline-none focus:border-indigo-500" placeholder="auto-slug" value="${post ? post.slug : ''}">
+          <input type="text" id="slugInput" class="bg-white border border-[#E5E2D9] rounded px-2.5 py-0.5 text-[#1C1B18] font-mono text-[11px] focus:outline-none focus:border-[#C25E3E]" placeholder="auto-slug" value="${post ? post.slug : ''}">
         </div>
         <div class="flex items-center space-x-3">
-          <span id="wordCountBadge" class="font-mono text-indigo-400">0 words</span>
+          <span id="wordCountBadge" class="font-mono text-[#C25E3E] font-semibold">0 words</span>
           <span>•</span>
-          <div class="flex items-center space-x-1 text-slate-500">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <div class="flex items-center space-x-1 text-[#6E6B63]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Autosaved to VPS SQLite</span>
           </div>
         </div>
       </div>
 
       <!-- VIEW SELECTOR BAR (HTML View, Post View, Both View) -->
-      <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 p-1.5 rounded-2xl shadow-lg">
+      <div class="flex items-center justify-between bg-[#F3F1EC] border border-[#E5E2D9] p-1.5 rounded-2xl shadow-xs">
         <div class="flex items-center space-x-1">
-          <button type="button" onclick="setViewMode('post')" id="btnViewPost" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+          <button type="button" onclick="setViewMode('post')" id="btnViewPost" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-white text-[#C25E3E] shadow-sm border border-[#E5E2D9]">
             <span>📝 Post View</span>
           </button>
-          <button type="button" onclick="setViewMode('html')" id="btnViewHtml" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+          <button type="button" onclick="setViewMode('html')" id="btnViewHtml" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1.5">
             <span>&lt;/&gt; HTML View</span>
           </button>
-          <button type="button" onclick="setViewMode('both')" id="btnViewBoth" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+          <button type="button" onclick="setViewMode('both')" id="btnViewBoth" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1.5">
             <span>◫ Both View (Split)</span>
           </button>
         </div>
 
         <div class="flex items-center space-x-2 text-xs">
-          <button type="button" onclick="aiFormatCurrent('cnn')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">
+          <button type="button" onclick="aiFormatCurrent('cnn')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FAF9F5] text-[#2B2926] border border-[#E5E2D9] transition text-[11px] font-semibold">
             ⚡ Quick CNN Format
           </button>
-          <button type="button" onclick="aiKhmerTranslate()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition text-[11px]">
+          <button type="button" onclick="aiKhmerTranslate()" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition text-[11px] font-semibold">
             🇰🇭 បកប្រែខ្មែរ
           </button>
         </div>
@@ -536,8 +516,8 @@ const renderEditor = (c: any) => {
         
         <!-- 1. POST VIEW (WYSIWYG Rich Visual Canvas) -->
         <div id="postViewWrapper" class="block">
-          <div class="border border-slate-800 bg-slate-900/40 rounded-2xl p-6 min-h-[380px] focus-within:border-indigo-500/50 transition">
-            <div id="postVisualEditor" contenteditable="true" class="prose prose-invert max-w-none text-slate-200 text-base leading-relaxed focus:outline-none min-h-[340px]">
+          <div class="border border-[#EAE8E1] bg-white rounded-2xl p-6 min-h-[380px] shadow-sm focus-within:border-[#C25E3E] transition">
+            <div id="postVisualEditor" contenteditable="true" class="prose max-w-none text-[#2B2926] text-base leading-relaxed focus:outline-none min-h-[340px]">
               ${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}
             </div>
           </div>
@@ -545,8 +525,8 @@ const renderEditor = (c: any) => {
 
         <!-- 2. HTML VIEW (Raw Code Editor) -->
         <div id="htmlViewWrapper" class="hidden">
-          <div class="border border-slate-800 bg-slate-900/90 rounded-2xl p-4 focus-within:border-indigo-500/50 transition">
-            <textarea id="htmlCodeEditor" rows="18" class="w-full bg-transparent font-mono text-sm text-emerald-300 leading-relaxed focus:outline-none resize-y">${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}</textarea>
+          <div class="border border-[#EAE8E1] bg-white rounded-2xl p-4 shadow-sm">
+            <textarea id="htmlCodeEditor" rows="18" class="w-full bg-[#1C1B18] font-mono text-sm text-emerald-300 rounded-xl p-4 leading-relaxed focus:outline-none resize-y">${post ? post.content : '<p>Start drafting your news story, or click <strong>AI Importer</strong> to format from any link...</p>'}</textarea>
           </div>
         </div>
 
@@ -554,20 +534,20 @@ const renderEditor = (c: any) => {
         <div id="bothViewWrapper" class="hidden">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Left HTML Code -->
-            <div class="border border-slate-800 bg-slate-900/90 rounded-2xl p-4 flex flex-col">
-              <div class="text-[11px] font-mono text-slate-400 mb-2 font-bold flex items-center justify-between">
+            <div class="border border-[#EAE8E1] bg-white rounded-2xl p-4 flex flex-col shadow-sm">
+              <div class="text-[11px] font-mono text-[#6E6B63] mb-2 font-bold flex items-center justify-between">
                 <span>&lt;/&gt; HTML SOURCE CODE</span>
-                <span class="text-indigo-400">Live Sync</span>
+                <span class="text-[#C25E3E]">Live Sync</span>
               </div>
-              <textarea id="splitHtmlEditor" rows="16" class="w-full flex-1 bg-transparent font-mono text-xs text-emerald-300 leading-relaxed focus:outline-none resize-none"></textarea>
+              <textarea id="splitHtmlEditor" rows="16" class="w-full flex-1 bg-[#1C1B18] rounded-xl p-3 font-mono text-xs text-emerald-300 leading-relaxed focus:outline-none resize-none"></textarea>
             </div>
             <!-- Right Visual Post -->
-            <div class="border border-slate-800 bg-slate-900/40 rounded-2xl p-5 overflow-y-auto max-h-[500px]">
-              <div class="text-[11px] font-mono text-slate-400 mb-2 font-bold flex items-center justify-between">
+            <div class="border border-[#EAE8E1] bg-white rounded-2xl p-5 overflow-y-auto max-h-[500px] shadow-sm">
+              <div class="text-[11px] font-mono text-[#6E6B63] mb-2 font-bold flex items-center justify-between">
                 <span>📝 LIVE POST PREVIEW</span>
-                <span class="text-emerald-400">60 FPS</span>
+                <span class="text-emerald-600 font-bold">60 FPS</span>
               </div>
-              <div id="splitPostEditor" contenteditable="true" class="prose prose-invert max-w-none text-slate-200 text-sm leading-relaxed focus:outline-none"></div>
+              <div id="splitPostEditor" contenteditable="true" class="prose max-w-none text-[#2B2926] text-sm leading-relaxed focus:outline-none"></div>
             </div>
           </div>
         </div>
@@ -576,29 +556,29 @@ const renderEditor = (c: any) => {
 
     </main>
 
-    <!-- Right Settings Inspector Panel -->
-    <aside class="w-80 border-l border-slate-800 bg-slate-900/90 p-5 overflow-y-auto space-y-6">
+    <!-- Right Settings Inspector Panel in Claude Light Mode -->
+    <aside class="w-80 border-l border-[#EAE8E1] bg-white p-5 overflow-y-auto space-y-6 shadow-xs">
       
       <!-- Dedicated Publish Action Box -->
-      <div class="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 shadow-lg space-y-3">
+      <div class="p-4 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] shadow-xs space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Publishing Status</span>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${post && post.status === 'draft' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+          <span class="text-xs font-bold uppercase tracking-wider text-[#6E6B63]">Publishing Status</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${post && post.status === 'draft' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
             ${post ? (post.status === 'draft' ? 'Draft' : 'Published') : 'New Article'}
           </span>
         </div>
         
-        <button type="button" onclick="saveAndDeploy('published')" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+        <button type="button" onclick="saveAndDeploy('published')" class="w-full py-2.5 px-3 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-[#C25E3E]/20 transition transform active:scale-95">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
           <span>Publish Article Now</span>
         </button>
 
         <div class="flex items-center space-x-2 pt-1">
-          <button type="button" onclick="saveAndDeploy('draft')" class="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-medium transition text-center">
+          <button type="button" onclick="saveAndDeploy('draft')" class="flex-1 py-1.5 px-2 rounded-lg bg-white hover:bg-[#F3F1EC] text-[#2B2926] border border-[#E5E2D9] text-[11px] font-semibold transition text-center shadow-xs">
             Save as Draft
           </button>
           ${post ? `
-            <a href="/article/${post.slug}" target="_blank" class="py-1.5 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 text-[11px] font-medium transition text-center">
+            <a href="/article/${post.slug}" target="_blank" class="py-1.5 px-2.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[11px] font-semibold transition text-center shadow-xs">
               View Live
             </a>
           ` : ''}
@@ -606,22 +586,22 @@ const renderEditor = (c: any) => {
       </div>
 
       <!-- Breaking News Switch -->
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/30">
+      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200">
         <div>
-          <div class="text-xs font-bold text-rose-300">Mark as Breaking News</div>
-          <div class="text-[11px] text-slate-400">Push to top marquee banner</div>
+          <div class="text-xs font-bold text-rose-800">Mark as Breaking News</div>
+          <div class="text-[11px] text-[#6E6B63]">Push to top marquee banner</div>
         </div>
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" id="isBreakingInput" ${post && post.is_breaking ? 'checked' : ''} class="sr-only peer">
-          <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-500"></div>
+          <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#C25E3E]"></div>
         </label>
       </div>
 
       <!-- FEATURED IMAGE DRAG & DROP + WEBP CONVERSION & UNLINK -->
       <div class="space-y-2">
         <div class="flex items-center justify-between">
-          <label class="block text-xs font-semibold text-slate-200">Featured Image (Thumbnail)</label>
-          <span class="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">WebP Auto</span>
+          <label class="block text-xs font-semibold text-[#1C1B18]">Featured Image (Thumbnail)</label>
+          <span class="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">WebP Auto</span>
         </div>
 
         <!-- Drag & Drop Container -->
@@ -630,25 +610,25 @@ const renderEditor = (c: any) => {
              ondragleave="handleDragLeave(event)" 
              ondrop="handleDrop(event)" 
              onclick="document.getElementById('fileInput').click()" 
-             class="border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-2xl p-4 text-center cursor-pointer transition bg-slate-900/80 hover:bg-slate-800/60 relative group">
+             class="border-2 border-dashed border-[#D5D2C9] hover:border-[#C25E3E] rounded-2xl p-4 text-center cursor-pointer transition bg-[#FAF9F5] hover:bg-[#F3F1EC] relative group">
           
           <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
           
           <!-- Empty State -->
           <div id="dropZoneEmpty" class="${post && post.featured_image ? 'hidden' : 'block'} py-3">
-            <svg class="w-8 h-8 text-slate-500 group-hover:text-indigo-400 mx-auto mb-2 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <div class="text-xs font-bold text-slate-300">Drag & Drop Image or Click</div>
-            <div class="text-[10px] text-slate-500 mt-1">Converts automatically to clean WebP</div>
+            <svg class="w-8 h-8 text-[#8A867E] group-hover:text-[#C25E3E] mx-auto mb-2 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <div class="text-xs font-bold text-[#2B2926]">Drag & Drop Image or Click</div>
+            <div class="text-[10px] text-[#6E6B63] mt-1">Converts automatically to clean WebP</div>
           </div>
 
           <!-- Preview State -->
           <div id="dropZonePreview" class="${post && post.featured_image ? 'block' : 'hidden'} relative rounded-xl overflow-hidden group/img">
-            <img id="imagePreviewImg" src="${post ? (post.featured_image || '') : ''}" class="w-full h-36 object-cover rounded-lg">
-            <div class="absolute inset-0 bg-black/70 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center space-x-2">
-              <button type="button" onclick="event.stopPropagation(); unlinkAndCleanImage();" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[11px] font-bold shadow">Unlink Site</button>
+            <img id="imagePreviewImg" src="${post ? (post.featured_image || '') : ''}" class="w-full h-36 object-cover rounded-lg border border-[#EAE8E1]">
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center space-x-2">
+              <button type="button" onclick="event.stopPropagation(); unlinkAndCleanImage();" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-[#1C1B18] rounded-lg text-[11px] font-bold shadow">Unlink Site</button>
               <button type="button" onclick="event.stopPropagation(); removeImage();" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-bold shadow">Remove</button>
             </div>
-            <div class="absolute bottom-1 right-1 bg-slate-950/90 text-emerald-400 text-[9px] font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">
+            <div class="absolute bottom-1 right-1 bg-white/95 text-emerald-700 text-[9px] font-mono px-1.5 py-0.5 rounded border border-emerald-200">
               WebP Unlinked
             </div>
           </div>
@@ -657,21 +637,21 @@ const renderEditor = (c: any) => {
         <!-- Raw Image URL / Base64 Storage -->
         <input type="hidden" id="imageInput" value="${post ? (post.featured_image || '') : ''}">
         
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-          <button type="button" onclick="unlinkAndCleanImage()" class="text-indigo-400 hover:text-indigo-300 underline font-medium">Unlink original post reference</button>
-          <span class="text-slate-500">100% Clean</span>
+        <div class="flex items-center justify-between text-[11px] text-[#6E6B63] pt-1">
+          <button type="button" onclick="unlinkAndCleanImage()" class="text-[#C25E3E] hover:underline font-semibold">Unlink original post reference</button>
+          <span class="text-emerald-600 font-medium">100% Clean</span>
         </div>
       </div>
 
       <!-- Category Picker with Quick Add -->
       <div>
         <div class="flex items-center justify-between mb-1.5">
-          <label class="block text-xs font-semibold text-slate-300">Category</label>
-          <button type="button" onclick="promptAddNewCategory()" class="text-[11px] text-[#D97757] hover:underline font-semibold flex items-center space-x-1">
+          <label class="block text-xs font-semibold text-[#1C1B18]">Category</label>
+          <button type="button" onclick="promptAddNewCategory()" class="text-[11px] text-[#C25E3E] hover:underline font-semibold flex items-center space-x-1">
             <span>+ Add New</span>
           </button>
         </div>
-        <select id="categoryInput" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        <select id="categoryInput" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white">
           ${categories.map(cat => `
             <option value="${cat.id}" ${post && post.category_id === cat.id ? 'selected' : ''}>${cat.name}</option>
           `).join("")}
@@ -680,39 +660,39 @@ const renderEditor = (c: any) => {
 
       <!-- Author -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Author</label>
-        <input type="text" id="authorInput" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" value="${post ? post.author_name : 'Editorial Staff'}">
+        <label class="block text-xs font-semibold text-[#1C1B18] mb-1.5">Author</label>
+        <input type="text" id="authorInput" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white" value="${post ? post.author_name : 'Editorial Staff'}">
       </div>
 
       <!-- Read Time -->
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Read Time</label>
-        <input type="text" id="readTimeInput" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" value="${post ? post.read_time : '5 min read'}">
+        <label class="block text-xs font-semibold text-[#1C1B18] mb-1.5">Read Time</label>
+        <input type="text" id="readTimeInput" class="w-full bg-[#FAF9F5] border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] focus:bg-white" value="${post ? post.read_time : '5 min read'}">
       </div>
 
       <!-- Tags Management (Optional / Customizable) -->
-      <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-2.5">
+      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] space-y-2.5">
         <div class="flex items-center justify-between">
-          <label for="enableTagsCheck" class="text-xs font-semibold text-slate-300 cursor-pointer flex items-center space-x-2">
+          <label for="enableTagsCheck" class="text-xs font-semibold text-[#1C1B18] cursor-pointer flex items-center space-x-2">
             <span>🏷️ Show Tags on Post</span>
           </label>
-          <input type="checkbox" id="enableTagsCheck" onchange="toggleTagsSection()" ${post && post.tags && post.tags.trim() ? 'checked' : ''} class="w-4 h-4 rounded text-indigo-500 bg-slate-800 border-slate-700 focus:ring-0 cursor-pointer">
+          <input type="checkbox" id="enableTagsCheck" onchange="toggleTagsSection()" ${post && post.tags && post.tags.trim() ? 'checked' : ''} class="w-4 h-4 rounded text-[#C25E3E] bg-white border-[#E5E2D9] focus:ring-0 cursor-pointer">
         </div>
         
         <div id="tagsInputBox" class="${post && post.tags && post.tags.trim() ? 'block' : 'hidden'} space-y-1.5 pt-1">
-          <label class="block text-[11px] font-medium text-slate-400">Custom Tags (comma separated)</label>
-          <input type="text" id="tagsInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono" placeholder="USANews, Politics, Breaking" value="${post && post.tags ? post.tags : ''}">
-          <p class="text-[10px] text-slate-500 leading-tight">Separate tags with commas. If unticked or empty, no tags will be displayed.</p>
+          <label class="block text-[11px] font-medium text-[#6E6B63]">Custom Tags (comma separated)</label>
+          <input type="text" id="tagsInput" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-3 py-1.5 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E] font-mono" placeholder="USANews, Politics, Breaking" value="${post && post.tags ? post.tags : ''}">
+          <p class="text-[10px] text-[#8A867E] leading-tight">Separate tags with commas. If unticked or empty, no tags will be displayed.</p>
         </div>
       </div>
 
       <!-- Cloudflare Edge Webhook Status -->
-      <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-xs space-y-1">
-        <div class="text-slate-300 font-semibold flex items-center justify-between">
+      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] text-xs space-y-1">
+        <div class="text-[#1C1B18] font-semibold flex items-center justify-between">
           <span>Edge Webhook:</span>
-          <span class="text-emerald-400 font-mono text-[11px]">Enabled</span>
+          <span class="text-emerald-700 font-mono text-[11px] font-bold">Enabled</span>
         </div>
-        <p class="text-[11px] text-slate-400">On Save, Cloudflare CDN automatically invalidates the cache worldwide in &lt;30ms.</p>
+        <p class="text-[11px] text-[#6E6B63]">On Save, Cloudflare CDN automatically invalidates the cache worldwide in &lt;30ms.</p>
       </div>
 
     </aside>
@@ -721,63 +701,63 @@ const renderEditor = (c: any) => {
   <!-- FLOATING TK SUMMARY MASCOT TRIGGER BUTTON (BOTTOM RIGHT) -->
   <div id="tkSummaryFloatingBtn" onclick="openAiModal()" role="button" tabindex="0" class="fixed right-6 bottom-6 z-40 flex items-center group cursor-pointer select-none focus:outline-none">
     <!-- Tooltip Pill -->
-    <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-slate-900/95 border border-blue-500/40 text-xs font-bold text-blue-300 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
-      <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+    <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-white/95 border border-[#EAE8E1] text-xs font-bold text-[#1C1B18] shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-[#C25E3E] animate-ping"></span>
       <span>TK Summary AI</span>
     </div>
 
     <!-- Character Mascot (Transparent PNG, No Background) -->
     <div class="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95 pointer-events-none">
-      <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(8,124,218,0.5)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
-      <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(8,124,218,0.75)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
+      <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(194,94,62,0.35)]" alt="TK Summary" fetchpriority="high" loading="eager" width="80" height="89">
+      <img src="/assets/tk-mascot-happy.webp" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(194,94,62,0.5)] animate-bounce" alt="TK Summary Happy" loading="eager" width="80" height="89">
     </div>
   </div>
 
   <!-- RIGHT-SIDE TK SUMMARY SLIDE-OUT PANEL (POPUP ON EDITOR) -->
-  <div id="aiModal" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-[560px] lg:w-[620px] bg-slate-900/95 backdrop-blur-2xl border-l border-slate-700/80 shadow-[-24px_0_60px_rgba(0,0,0,0.7)] flex flex-col transition-all duration-300">
+  <div id="aiModal" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-[560px] lg:w-[620px] bg-[#FAF9F5] backdrop-blur-2xl border-l border-[#EAE8E1] shadow-[-16px_0_40px_rgba(0,0,0,0.15)] flex flex-col transition-all duration-300">
     
     <!-- Drawer Header -->
-    <div class="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between flex-shrink-0">
+    <div class="p-4 sm:p-5 border-b border-[#EAE8E1] bg-white flex items-center justify-between flex-shrink-0">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-1 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+        <div class="w-10 h-10 rounded-2xl bg-[#C25E3E]/10 border border-[#C25E3E]/20 p-1 flex items-center justify-center text-white shadow-xs">
           <img src="/assets/tk-mascot.webp" class="w-full h-full object-contain" alt="TK Summary" loading="eager" width="40" height="40">
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h2 class="text-sm sm:text-base font-black text-white tracking-wide">TK SUMMARY CLASSIC</h2>
-            <span class="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">v2.5 AI</span>
+            <h2 class="text-sm sm:text-base font-black text-[#1C1B18] tracking-wide">TK SUMMARY CLASSIC</h2>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C25E3E]/15 text-[#C25E3E] border border-[#C25E3E]/30">v2.5 AI</span>
           </div>
-          <p class="text-[11px] text-slate-400">15 Newsroom Presets • Rule-Based Formatter • WebP Image Studio</p>
+          <p class="text-[11px] text-[#6E6B63]">15 Newsroom Presets • Rule-Based Formatter • WebP Image Studio</p>
         </div>
       </div>
-      <button onclick="closeAiModal()" type="button" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition" title="Close Panel">✕</button>
+      <button onclick="closeAiModal()" type="button" class="w-8 h-8 rounded-full bg-[#F3F1EC] hover:bg-[#EAE8E1] text-[#6E6B63] hover:text-[#1C1B18] border border-[#E5E2D9] flex items-center justify-center transition" title="Close Panel">✕</button>
     </div>
 
     <!-- Mode Selector Tabs (AI Styles vs Free Presets) -->
-    <div class="px-4 sm:px-6 pt-3 pb-2 bg-slate-950/50 border-b border-slate-800/80 flex items-center space-x-2 flex-shrink-0">
-      <button type="button" id="tabAiStyles" onclick="switchTkTab('ai')" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-blue-600 text-white shadow-md shadow-blue-600/30">
+    <div class="px-4 sm:px-6 pt-3 pb-2 bg-[#F8F7F3] border-b border-[#EAE8E1] flex items-center space-x-2 flex-shrink-0">
+      <button type="button" id="tabAiStyles" onclick="switchTkTab('ai')" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-[#C25E3E] text-white shadow-sm">
         <span>⚡ AI Style Rewrite (15 Presets)</span>
       </button>
-      <button type="button" id="tabFreePresets" onclick="switchTkTab('free')" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center justify-center space-x-2 bg-slate-800/80">
+      <button type="button" id="tabFreePresets" onclick="switchTkTab('free')" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9]">
         <span>🎨 Free Presets (No AI)</span>
       </button>
     </div>
 
     <!-- Drawer Scrollable Content -->
-    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-slate-100">
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-[#1C1B18]">
 
       <!-- Gemini API Key Input Bar -->
-      <div class="p-3.5 rounded-2xl bg-blue-950/20 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div class="flex-1">
-          <label class="block font-bold text-blue-300 mb-1">Google Gemini API Key (Free):</label>
+          <label class="block font-bold text-[#1C1B18] mb-1">Google Gemini API Key (Free):</label>
           <div class="flex items-center space-x-2">
-            <input type="password" id="geminiApiKey" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500" placeholder="AIzaSy... (Saved in browser)">
-            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold">Save</button>
+            <input type="password" id="geminiApiKey" class="w-full bg-white border border-[#E5E2D9] rounded-lg px-3 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="AIzaSy... (Saved in browser)">
+            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white font-semibold shadow-xs">Save</button>
           </div>
         </div>
-        <div class="text-[11px] text-slate-400 sm:text-right">
+        <div class="text-[11px] text-[#6E6B63] sm:text-right">
           <span>Get Free Key:</span>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-400 hover:underline block font-semibold">aistudio.google.com &rarr;</a>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#C25E3E] hover:underline block font-semibold">aistudio.google.com &rarr;</a>
         </div>
       </div>
 
@@ -786,34 +766,34 @@ const renderEditor = (c: any) => {
 
         <!-- Step 1: Input URL and Fetch Article -->
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">1. Paste Article Post Link:</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">1. Paste Article Post Link:</label>
           <div class="flex items-center space-x-2">
-            <input type="url" id="fetchUrlInput" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" placeholder="https://edition.cnn.com/... or https://topstoryusa.info/...">
-            <button type="button" id="btnFetchUrl" onclick="fetchArticleFromLink()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/20 flex items-center space-x-2 transition">
+            <input type="url" id="fetchUrlInput" class="flex-1 bg-white border border-[#E5E2D9] rounded-xl px-4 py-2.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="https://edition.cnn.com/... or https://topstoryusa.info/...">
+            <button type="button" id="btnFetchUrl" onclick="fetchArticleFromLink()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#C25E3E] hover:bg-[#B05335] text-white shadow-sm flex items-center space-x-2 transition">
               <span>⚡ Fetch Article & Image</span>
             </button>
           </div>
         </div>
 
         <!-- Fetched Article Preview Box (Hidden until fetched) -->
-        <div id="fetchPreviewBox" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 text-xs">
-          <div class="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-2">
+        <div id="fetchPreviewBox" class="hidden p-4 rounded-2xl bg-white border border-[#EAE8E1] space-y-3 text-xs shadow-xs">
+          <div class="flex items-center justify-between text-emerald-700 font-bold border-b border-[#EAE8E1] pb-2">
             <span>✓ Article & Image Successfully Fetched!</span>
-            <span id="fetchStatsBadge" class="text-slate-400 font-mono">Ready</span>
+            <span id="fetchStatsBadge" class="text-[#6E6B63] font-mono">Ready</span>
           </div>
           <div class="flex gap-4 items-start">
-            <img id="fetchedThumbImg" class="w-24 h-24 object-cover rounded-xl border border-slate-800 flex-shrink-0 bg-slate-900">
+            <img id="fetchedThumbImg" class="w-24 h-24 object-cover rounded-xl border border-[#EAE8E1] flex-shrink-0 bg-[#F3F1EC]">
             <div class="flex-1 min-w-0 space-y-1">
-              <h4 id="fetchedTitlePreview" class="font-bold text-white text-sm line-clamp-2"></h4>
-              <p id="fetchedSummaryPreview" class="text-slate-400 line-clamp-2 leading-relaxed"></p>
-              <div class="flex items-center space-x-3 text-[11px] text-slate-500 pt-1">
-                <span class="text-emerald-400 font-mono">✓ Unlinked & Ready for WebP</span>
+              <h4 id="fetchedTitlePreview" class="font-bold text-[#1C1B18] text-sm line-clamp-2"></h4>
+              <p id="fetchedSummaryPreview" class="text-[#6E6B63] line-clamp-2 leading-relaxed"></p>
+              <div class="flex items-center space-x-3 text-[11px] text-[#8A867E] pt-1">
+                <span class="text-emerald-700 font-mono">✓ Unlinked & Ready for WebP</span>
               </div>
             </div>
           </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
-            <span class="text-emerald-300 font-semibold text-xs">✓ Automatically injected into Editor!</span>
-            <button type="button" onclick="closeAiModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-emerald-600/30 transition">
+          <div class="flex items-center justify-between pt-2 border-t border-[#EAE8E1]">
+            <span class="text-emerald-700 font-semibold text-xs">✓ Automatically injected into Editor!</span>
+            <button type="button" onclick="closeAiModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition">
               <span>📥 View In Editor Now</span>
             </button>
           </div>
@@ -822,202 +802,202 @@ const renderEditor = (c: any) => {
         <!-- Step 2: Choose from 15 TK Summary Styles (With Real Brand Logos) -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">2. Choose Editorial News Style (15 Official Presets):</label>
-            <span class="text-[11px] text-blue-400 font-mono" id="selectedStyleBadge">CNN Digital</span>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[#6E6B63]">2. Choose Editorial News Style (15 Official Presets):</label>
+            <span class="text-[11px] text-[#C25E3E] font-mono font-bold" id="selectedStyleBadge">CNN Digital</span>
           </div>
           
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[360px] overflow-y-auto pr-1" id="styleSelectorGrid">
             
             <!-- 1. CNN -->
-            <div onclick="selectStyle('cnn')" class="style-card selected border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="cnn">
+            <div onclick="selectStyle('cnn')" class="style-card selected border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="cnn">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/cnn.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="CNN">
+                <img src="/assets/styles/cnn.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="CNN">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">CNN Digital</div>
-                  <div class="text-[10px] text-slate-400 truncate">Editorial News</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">CNN Digital</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Editorial News</div>
                 </div>
               </div>
-              <div class="text-[10px] text-blue-400/90 bg-blue-950/30 px-2 py-0.5 rounded border border-blue-500/20 text-center">5W1H Inverted Lede</div>
+              <div class="text-[10px] text-[#C25E3E] bg-[#C25E3E]/10 px-2 py-0.5 rounded border border-[#C25E3E]/20 text-center font-medium">5W1H Inverted Lede</div>
             </div>
 
             <!-- 2. Daily Mail -->
-            <div onclick="selectStyle('dailymail')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="dailymail">
+            <div onclick="selectStyle('dailymail')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="dailymail">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/dailymail.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Daily Mail">
+                <img src="/assets/styles/dailymail.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Daily Mail">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Daily Mail</div>
-                  <div class="text-[10px] text-slate-400 truncate">Tabloid & Drama</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Daily Mail</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Tabloid & Drama</div>
                 </div>
               </div>
-              <div class="text-[10px] text-indigo-400/90 bg-indigo-950/30 px-2 py-0.5 rounded border border-indigo-500/20 text-center">WHAT WE KNOW Box</div>
+              <div class="text-[10px] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 text-center font-medium">WHAT WE KNOW Box</div>
             </div>
 
             <!-- 3. Fox News -->
-            <div onclick="selectStyle('foxnews')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="foxnews">
+            <div onclick="selectStyle('foxnews')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="foxnews">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/foxnews.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Fox News">
+                <img src="/assets/styles/foxnews.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Fox News">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Fox News</div>
-                  <div class="text-[10px] text-slate-400 truncate">Hard News</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Fox News</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Hard News</div>
                 </div>
               </div>
-              <div class="text-[10px] text-rose-400/90 bg-rose-950/30 px-2 py-0.5 rounded border border-rose-500/20 text-center">Conflict Frame Lede</div>
+              <div class="text-[10px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 text-center font-medium">Conflict Frame Lede</div>
             </div>
 
             <!-- 4. AP Wire -->
-            <div onclick="selectStyle('ap')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="ap">
+            <div onclick="selectStyle('ap')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="ap">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/ap.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="AP">
+                <img src="/assets/styles/ap.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="AP">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">AP Wire</div>
-                  <div class="text-[10px] text-slate-400 truncate">Wire Service</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">AP Wire</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Wire Service</div>
                 </div>
               </div>
-              <div class="text-[10px] text-amber-400/90 bg-amber-950/30 px-2 py-0.5 rounded border border-amber-500/20 text-center">CITY (AP) — Dateline</div>
+              <div class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-center font-medium">CITY (AP) — Dateline</div>
             </div>
 
             <!-- 5. People Magazine -->
-            <div onclick="selectStyle('people')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="people">
+            <div onclick="selectStyle('people')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="people">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/people.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="People">
+                <img src="/assets/styles/people.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="People">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">People Magazine</div>
-                  <div class="text-[10px] text-slate-400 truncate">Celebrity & Culture</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">People Magazine</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Celebrity & Culture</div>
                 </div>
               </div>
-              <div class="text-[10px] text-pink-400/90 bg-pink-950/30 px-2 py-0.5 rounded border border-pink-500/20 text-center">Person-first lede</div>
+              <div class="text-[10px] text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200 text-center font-medium">Person-first lede</div>
             </div>
 
             <!-- 6. TMZ -->
-            <div onclick="selectStyle('tmz')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="tmz">
+            <div onclick="selectStyle('tmz')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="tmz">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/tmz.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="TMZ">
+                <img src="/assets/styles/tmz.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="TMZ">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">TMZ</div>
-                  <div class="text-[10px] text-slate-400 truncate">Gossip Fast</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">TMZ</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Gossip Fast</div>
                 </div>
               </div>
-              <div class="text-[10px] text-orange-400/90 bg-orange-950/30 px-2 py-0.5 rounded border border-orange-500/20 text-center">Here's the deal...</div>
+              <div class="text-[10px] text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200 text-center font-medium">Here's the deal...</div>
             </div>
 
             <!-- 7. BuzzFeed -->
-            <div onclick="selectStyle('buzzfeed')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="buzzfeed">
+            <div onclick="selectStyle('buzzfeed')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="buzzfeed">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/buzzfeed.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="BuzzFeed">
+                <img src="/assets/styles/buzzfeed.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="BuzzFeed">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">BuzzFeed</div>
-                  <div class="text-[10px] text-slate-400 truncate">Internet Culture</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">BuzzFeed</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Internet Culture</div>
                 </div>
               </div>
-              <div class="text-[10px] text-red-400/90 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/20 text-center">Numbered H2s</div>
+              <div class="text-[10px] text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 text-center font-medium">Numbered H2s</div>
             </div>
 
             <!-- 8. Breaking Express -->
-            <div onclick="selectStyle('breaking')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="breaking">
+            <div onclick="selectStyle('breaking')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="breaking">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/breaking.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Breaking">
+                <img src="/assets/styles/breaking.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Breaking">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Breaking Express</div>
-                  <div class="text-[10px] text-slate-400 truncate">Urgent Alert</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Breaking Express</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Urgent Alert</div>
                 </div>
               </div>
-              <div class="text-[10px] text-red-500/90 bg-red-950/40 px-2 py-0.5 rounded border border-red-500/30 text-center">BREAKING Banner</div>
+              <div class="text-[10px] text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 text-center font-medium">BREAKING Banner</div>
             </div>
 
             <!-- 9. Tabloid -->
-            <div onclick="selectStyle('tabloid')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="tabloid">
+            <div onclick="selectStyle('tabloid')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="tabloid">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/tabloid.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Tabloid">
+                <img src="/assets/styles/tabloid.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Tabloid">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Tabloid</div>
-                  <div class="text-[10px] text-slate-400 truncate">Outrage Click</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Tabloid</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Outrage Click</div>
                 </div>
               </div>
-              <div class="text-[10px] text-red-400/90 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/20 text-center">BOMBSHELL Opener</div>
+              <div class="text-[10px] text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 text-center font-medium">BOMBSHELL Opener</div>
             </div>
 
             <!-- 10. News Analysis -->
-            <div onclick="selectStyle('analysis')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="analysis">
+            <div onclick="selectStyle('analysis')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="analysis">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/analysis.png" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Analysis">
+                <img src="/assets/styles/analysis.png" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Analysis">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">News Analysis</div>
-                  <div class="text-[10px] text-slate-400 truncate">Interpretive</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">News Analysis</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Interpretive</div>
                 </div>
               </div>
-              <div class="text-[10px] text-slate-300/90 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700 text-center">Thesis Lede & Outlook</div>
+              <div class="text-[10px] text-[#6E6B63] bg-[#F3F1EC] px-2 py-0.5 rounded border border-[#E5E2D9] text-center font-medium">Thesis Lede & Outlook</div>
             </div>
 
             <!-- 11. Axios Express -->
-            <div onclick="selectStyle('axios')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="axios">
+            <div onclick="selectStyle('axios')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="axios">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/axios.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Axios">
+                <img src="/assets/styles/axios.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Axios">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Axios Express</div>
-                  <div class="text-[10px] text-slate-400 truncate">Smart Brevity</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Axios Express</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Smart Brevity</div>
                 </div>
               </div>
-              <div class="text-[10px] text-blue-400/90 bg-blue-950/30 px-2 py-0.5 rounded border border-blue-500/20 text-center">1 Big Thing • Numbers</div>
+              <div class="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-center font-medium">1 Big Thing • Numbers</div>
             </div>
 
             <!-- 12. USA Viral Hook -->
-            <div onclick="selectStyle('usaviral')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="usaviral">
+            <div onclick="selectStyle('usaviral')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="usaviral">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/usaviral.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Viral">
+                <img src="/assets/styles/usaviral.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Viral">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">USA Viral Hook</div>
-                  <div class="text-[10px] text-slate-400 truncate">Social Traffic</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">USA Viral Hook</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Social Traffic</div>
                 </div>
               </div>
-              <div class="text-[10px] text-orange-400/90 bg-orange-950/30 px-2 py-0.5 rounded border border-orange-500/20 text-center">Curiosity Gap • Share</div>
+              <div class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-center font-medium">Curiosity Gap • Share</div>
             </div>
 
             <!-- 13. NYT Explainer -->
-            <div onclick="selectStyle('nytexplainer')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="nytexplainer">
+            <div onclick="selectStyle('nytexplainer')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="nytexplainer">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/nyt.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="NYT">
+                <img src="/assets/styles/nyt.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="NYT">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">NYT Explainer</div>
-                  <div class="text-[10px] text-slate-400 truncate">Contextual</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">NYT Explainer</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Contextual</div>
                 </div>
               </div>
-              <div class="text-[10px] text-slate-300/90 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700 text-center">H2 Q&A • Zero Jargon</div>
+              <div class="text-[10px] text-[#6E6B63] bg-[#F3F1EC] px-2 py-0.5 rounded border border-[#E5E2D9] text-center font-medium">H2 Q&A • Zero Jargon</div>
             </div>
 
             <!-- 14. Substack / Brew -->
-            <div onclick="selectStyle('newsletter')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="newsletter">
+            <div onclick="selectStyle('newsletter')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="newsletter">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/substack.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Substack">
+                <img src="/assets/styles/substack.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Substack">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Substack / Brew</div>
-                  <div class="text-[10px] text-slate-400 truncate">Newsletter</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Substack / Brew</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Newsletter</div>
                 </div>
               </div>
-              <div class="text-[10px] text-purple-400/90 bg-purple-950/30 px-2 py-0.5 rounded border border-purple-500/20 text-center">☕ Greeting • P.S. box</div>
+              <div class="text-[10px] text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 text-center font-medium">☕ Greeting • P.S. box</div>
             </div>
 
             <!-- 15. Investigative -->
-            <div onclick="selectStyle('investigative')" class="style-card border border-slate-800 bg-slate-950/70 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition space-y-2 flex flex-col justify-between" data-style="investigative">
+            <div onclick="selectStyle('investigative')" class="style-card border border-[#EAE8E1] bg-white p-3 rounded-2xl cursor-pointer hover:border-[#C25E3E] hover:shadow-xs transition space-y-2 flex flex-col justify-between" data-style="investigative">
               <div class="flex items-center space-x-2.5">
-                <img src="/assets/styles/investigative.svg" class="w-7 h-7 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Investigative">
+                <img src="/assets/styles/investigative.svg" class="w-7 h-7 object-contain rounded bg-[#F8F7F3] p-0.5 border border-[#EAE8E1]" alt="Investigative">
                 <div class="text-left min-w-0">
-                  <div class="font-bold text-xs text-white truncate">Investigative</div>
-                  <div class="text-[10px] text-slate-400 truncate">Evidence-driven</div>
+                  <div class="font-bold text-xs text-[#1C1B18] truncate">Investigative</div>
+                  <div class="text-[10px] text-[#6E6B63] truncate">Evidence-driven</div>
                 </div>
               </div>
-              <div class="text-[10px] text-teal-400/90 bg-teal-950/30 px-2 py-0.5 rounded border border-teal-500/20 text-center">The Paper Trail • Accused</div>
+              <div class="text-[10px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200 text-center font-medium">The Paper Trail • Accused</div>
             </div>
 
           </div>
         </div>
 
         <!-- Step 3: Options (Injection target, word count, WebP unlinking) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-800 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-[#EAE8E1] text-xs">
           
           <!-- Target Injection View -->
           <div>
-            <label class="block font-bold text-slate-300 mb-1.5">Inject Result Into:</label>
-            <select id="aiInjectTarget" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <label class="block font-bold text-[#6E6B63] mb-1.5">Inject Result Into:</label>
+            <select id="aiInjectTarget" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E]">
               <option value="both">Both Views (HTML & Post)</option>
               <option value="post">Post View (Visual)</option>
               <option value="html">HTML View (Code)</option>
@@ -1026,8 +1006,8 @@ const renderEditor = (c: any) => {
 
           <!-- Target Words (for Rewrite) -->
           <div>
-            <label class="block font-bold text-slate-300 mb-1.5">Rewrite Word Target:</label>
-            <select id="aiTargetWords" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <label class="block font-bold text-[#6E6B63] mb-1.5">Rewrite Word Target:</label>
+            <select id="aiTargetWords" class="w-full bg-white border border-[#E5E2D9] rounded-xl px-3 py-2 text-xs text-[#1C1B18] focus:outline-none focus:border-[#C25E3E]">
               <option value="250">250 Words (Quick Bullet)</option>
               <option value="450" selected>450 Words (Standard)</option>
               <option value="750">750 Words (In-Depth)</option>
@@ -1038,32 +1018,32 @@ const renderEditor = (c: any) => {
           <!-- Image Unlink & WebP check -->
           <div class="flex items-center pt-5">
             <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" id="aiCleanImageCheckbox" checked class="rounded border-slate-700 text-blue-600 focus:ring-0">
-              <span class="text-slate-300 text-[11px] font-semibold">Unlink site & WebP Image</span>
+              <input type="checkbox" id="aiCleanImageCheckbox" checked class="rounded border-[#E5E2D9] text-[#C25E3E] focus:ring-0">
+              <span class="text-[#1C1B18] text-[11px] font-semibold">Unlink site & WebP Image</span>
             </label>
           </div>
 
         </div>
 
         <!-- Step 4: The 2 Action Buttons (Only Format vs Rewrite) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-800">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#EAE8E1]">
           
           <!-- Button 1: Only Format (Keep Original Words) -->
-          <button type="button" id="btnOnlyFormat" onclick="executeAiProcess('format')" class="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 flex flex-col items-center justify-center transition shadow-lg">
-            <div class="flex items-center space-x-2 text-blue-400 font-black">
+          <button type="button" id="btnOnlyFormat" onclick="executeAiProcess('format')" class="py-3 px-5 rounded-2xl bg-white hover:bg-[#F8F7F3] text-[#1C1B18] font-bold text-xs border border-[#E5E2D9] flex flex-col items-center justify-center transition shadow-xs">
+            <div class="flex items-center space-x-2 text-[#C25E3E] font-black">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
               <span>✨ Only Format (រក្សាពាក្យដើម)</span>
             </div>
-            <span class="text-[11px] text-slate-400 mt-1 font-normal">Keep original words & quotes; format into signature style</span>
+            <span class="text-[11px] text-[#6E6B63] mt-1 font-normal">Keep original words & quotes; format into signature style</span>
           </button>
 
           <!-- Button 2: Rewrite with AI (Full rewrite) -->
-          <button type="button" id="btnRewriteAi" onclick="executeAiProcess('rewrite')" class="py-3 px-5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-blue-600/30 flex flex-col items-center justify-center transition">
-            <div class="flex items-center space-x-2 font-black text-amber-300">
+          <button type="button" id="btnRewriteAi" onclick="executeAiProcess('rewrite')" class="py-3 px-5 rounded-2xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs shadow-md shadow-[#C25E3E]/20 flex flex-col items-center justify-center transition">
+            <div class="flex items-center space-x-2 font-black text-amber-200">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
               <span>⚡ AI Rewrite (សរសេរឡើងវិញ)</span>
             </div>
-            <span class="text-[11px] text-blue-100 mt-1 font-normal">Authentic brand tone, vocabulary & structure</span>
+            <span class="text-[11px] text-[#F3F1EC] mt-1 font-normal">Authentic brand tone, vocabulary & structure</span>
           </button>
 
         </div>
@@ -1072,58 +1052,58 @@ const renderEditor = (c: any) => {
 
       <!-- TAB 2: FREE PRESETS (RULE-BASED, NO AI NEEDED) -->
       <div id="tkFreeTabContent" class="hidden space-y-4">
-        <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 flex items-center space-x-2">
+        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center space-x-2">
           <span>💡</span>
           <span><strong>Instant Formatting:</strong> Reorganizes paragraphs, inserts headings, pull-quotes, and drop caps without consuming any AI tokens.</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           
-          <button type="button" onclick="applyFreePreset('wire')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Classic Wire</div>
-            <div class="text-[10px] text-slate-400">Minimal, tight paragraphs, single H2 max.</div>
+          <button type="button" onclick="applyFreePreset('wire')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Classic Wire</div>
+            <div class="text-[10px] text-[#6E6B63]">Minimal, tight paragraphs, single H2 max.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('feature')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Magazine Feature</div>
-            <div class="text-[10px] text-slate-400">Drop-cap opener, H2 break, pull-quote callout.</div>
+          <button type="button" onclick="applyFreePreset('feature')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Magazine Feature</div>
+            <div class="text-[10px] text-[#6E6B63]">Drop-cap opener, H2 break, pull-quote callout.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('listicle')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Listicle</div>
-            <div class="text-[10px] text-slate-400">Numbered H2 sections with key takeaways.</div>
+          <button type="button" onclick="applyFreePreset('listicle')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Listicle</div>
+            <div class="text-[10px] text-[#6E6B63]">Numbered H2 sections with key takeaways.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('tabloid')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Tabloid Bold</div>
-            <div class="text-[10px] text-slate-400">Large bold lede, ALL-CAPS H2s, punchy paragraphs.</div>
+          <button type="button" onclick="applyFreePreset('tabloid')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Tabloid Bold</div>
+            <div class="text-[10px] text-[#6E6B63]">Large bold lede, ALL-CAPS H2s, punchy paragraphs.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('broadsheet')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Broadsheet Classic</div>
-            <div class="text-[10px] text-slate-400">Serif typography, dateline, formal attribution.</div>
+          <button type="button" onclick="applyFreePreset('broadsheet')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Broadsheet Classic</div>
+            <div class="text-[10px] text-[#6E6B63]">Serif typography, dateline, formal attribution.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('explainer')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Digital Explainer</div>
-            <div class="text-[10px] text-slate-400">"Why it matters" box, H2s every ~150 words.</div>
+          <button type="button" onclick="applyFreePreset('explainer')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Digital Explainer</div>
+            <div class="text-[10px] text-[#6E6B63]">"Why it matters" box, H2s every ~150 words.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('breaking')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Breaking Bulletin</div>
-            <div class="text-[10px] text-slate-400">BREAKING kicker banner + bullet summary.</div>
+          <button type="button" onclick="applyFreePreset('breaking')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Breaking Bulletin</div>
+            <div class="text-[10px] text-[#6E6B63]">BREAKING kicker banner + bullet summary.</div>
           </button>
 
-          <button type="button" onclick="applyFreePreset('newsletter')" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-left transition space-y-1 group">
-            <div class="font-bold text-xs text-white group-hover:text-emerald-400">Newsletter Style</div>
-            <div class="text-[10px] text-slate-400">Casual greeting, fast facts bullets, P.S. sign-off.</div>
+          <button type="button" onclick="applyFreePreset('newsletter')" class="p-3.5 rounded-2xl bg-white border border-[#EAE8E1] hover:border-[#C25E3E] hover:shadow-xs text-left transition space-y-1 group">
+            <div class="font-bold text-xs text-[#1C1B18] group-hover:text-[#C25E3E]">Newsletter Style</div>
+            <div class="text-[10px] text-[#6E6B63]">Casual greeting, fast facts bullets, P.S. sign-off.</div>
           </button>
 
         </div>
       </div>
 
       <!-- Result Applied Alert / Preview -->
-      <div id="aiProcessingState" class="hidden p-4 rounded-2xl bg-blue-950/40 border border-blue-500/40 text-center text-xs text-blue-200">
+      <div id="aiProcessingState" class="hidden p-4 rounded-2xl bg-[#C25E3E]/10 border border-[#C25E3E]/30 text-center text-xs text-[#C25E3E]">
         <span class="animate-spin inline-block mr-2">🌀</span>
         <span id="aiProcessingText">Processing with TK Summary...</span>
       </div>
@@ -1194,7 +1174,7 @@ const renderEditor = (c: any) => {
 
       // Reset button styles
       [btnPost, btnHtml, btnBoth].forEach(b => {
-        b.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center space-x-1.5';
+        b.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1.5';
       });
 
       // Hide all wrappers
@@ -1203,15 +1183,15 @@ const renderEditor = (c: any) => {
       wrapperBoth.classList.add('hidden');
 
       if (mode === 'post') {
-        btnPost.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+        btnPost.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-[#C25E3E] text-white shadow-xs';
         wrapperPost.classList.remove('hidden');
         document.getElementById('postVisualEditor').innerHTML = document.getElementById('htmlCodeEditor').value;
       } else if (mode === 'html') {
-        btnHtml.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+        btnHtml.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-[#C25E3E] text-white shadow-xs';
         wrapperHtml.classList.remove('hidden');
         document.getElementById('htmlCodeEditor').value = document.getElementById('postVisualEditor').innerHTML;
       } else if (mode === 'both') {
-        btnBoth.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-indigo-600 text-white shadow-md shadow-indigo-600/30';
+        btnBoth.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 bg-[#C25E3E] text-white shadow-xs';
         wrapperBoth.classList.remove('hidden');
         const content = document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
         document.getElementById('splitHtmlEditor').value = content;
@@ -1261,17 +1241,17 @@ const renderEditor = (c: any) => {
     // 2. FEATURED IMAGE DRAG & DROP + WEBP CONVERSION & UNLINK
     function handleDragOver(e) {
       e.preventDefault();
-      document.getElementById('dropZone').classList.add('border-indigo-500', 'bg-indigo-950/20');
+      document.getElementById('dropZone').classList.add('border-[#C25E3E]', 'bg-[#F3F1EC]');
     }
 
     function handleDragLeave(e) {
       e.preventDefault();
-      document.getElementById('dropZone').classList.remove('border-indigo-500', 'bg-indigo-950/20');
+      document.getElementById('dropZone').classList.remove('border-[#C25E3E]', 'bg-[#F3F1EC]');
     }
 
     function handleDrop(e) {
       e.preventDefault();
-      document.getElementById('dropZone').classList.remove('border-indigo-500', 'bg-indigo-950/20');
+      document.getElementById('dropZone').classList.remove('border-[#C25E3E]', 'bg-[#F3F1EC]');
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         processImageFileToWebp(e.dataTransfer.files[0]);
       }
@@ -1367,13 +1347,13 @@ const renderEditor = (c: any) => {
       const contentFree = document.getElementById('tkFreeTabContent');
 
       if (tab === 'ai') {
-        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-blue-600 text-white shadow-md shadow-blue-600/30';
-        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center justify-center space-x-2 bg-slate-800/80';
+        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-[#C25E3E] text-white shadow-xs';
+        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9]';
         contentAi.classList.remove('hidden');
         contentFree.classList.add('hidden');
       } else {
-        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-emerald-600 text-white shadow-md shadow-emerald-600/30';
-        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition flex items-center justify-center space-x-2 bg-slate-800/80';
+        btnFree.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-emerald-700 text-white shadow-xs';
+        btnAi.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-semibold text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center justify-center space-x-2 bg-[#F3F1EC] border border-[#E5E2D9]';
         contentFree.classList.remove('hidden');
         contentAi.classList.add('hidden');
       }
