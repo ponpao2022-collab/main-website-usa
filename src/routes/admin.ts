@@ -445,7 +445,7 @@ const renderEditor = (c: any) => {
   </div>
 
   <!-- FLOATING TK SUMMARY MASCOT TRIGGER BUTTON (BOTTOM RIGHT) -->
-  <div id="tkSummaryFloatingBtn" onclick="openAiModal()" role="button" tabindex="0" class="fixed right-6 bottom-6 z-50 flex items-center group cursor-pointer select-none focus:outline-none">
+  <div id="tkSummaryFloatingBtn" onclick="openAiModal()" role="button" tabindex="0" class="fixed right-6 bottom-6 z-40 flex items-center group cursor-pointer select-none focus:outline-none">
     <!-- Tooltip Pill -->
     <div class="mr-3 px-3.5 py-1.5 rounded-2xl bg-slate-900/95 border border-blue-500/40 text-xs font-bold text-blue-300 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-none flex items-center space-x-2">
       <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
@@ -453,7 +453,7 @@ const renderEditor = (c: any) => {
     </div>
 
     <!-- Character Mascot (Transparent PNG, No Background) -->
-    <div class="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95">
+    <div class="relative w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 group-hover:scale-110 active:scale-95 pointer-events-none">
       <img src="/assets/tk-mascot.png" class="w-full h-full object-contain group-hover:hidden transition-all duration-200 filter drop-shadow-[0_8px_20px_rgba(8,124,218,0.5)]" alt="TK Summary">
       <img src="/assets/tk-mascot-happy.png" class="w-full h-full object-contain hidden group-hover:block transition-all duration-200 filter drop-shadow-[0_12px_28px_rgba(8,124,218,0.75)] animate-bounce" alt="TK Summary Happy">
     </div>
@@ -1045,11 +1045,19 @@ const renderEditor = (c: any) => {
 
     // 3. AI POPUP MODAL & 15 TK SUMMARY STYLES SELECTOR
     function openAiModal() {
-      document.getElementById('aiModal').classList.remove('hidden');
+      const modal = document.getElementById('aiModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
     }
 
     function closeAiModal() {
-      document.getElementById('aiModal').classList.add('hidden');
+      const modal = document.getElementById('aiModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
 
     function switchTkTab(tab) {
@@ -1102,29 +1110,29 @@ const renderEditor = (c: any) => {
     }
 
     function applyFreePreset(preset) {
-      let content = document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
+      var content = document.getElementById('postVisualEditor').innerHTML || document.getElementById('htmlCodeEditor').value;
       if (!content || content.trim().length < 10) {
         alert('Please enter or fetch an article first!');
         return;
       }
 
-      let formatted = content;
+      var formatted = content;
       if (preset === 'wire') {
-        formatted = '<p class="font-sans font-medium text-slate-200"><strong>WASHINGTON (AP) —</strong> ' + content.replace(/<[^>]*>?/gm, '').slice(0, 250) + '...</p>\n' + content;
+        formatted = '<p class="font-sans font-medium text-slate-200"><strong>WASHINGTON (AP) —</strong> ' + content.replace(/<[^>]*>?/gm, '').slice(0, 250) + '...</p><hr class="my-4 border-slate-800">' + content;
       } else if (preset === 'feature') {
-        formatted = '<div class="my-5 p-4 rounded-xl bg-slate-900 border-l-4 border-indigo-500 italic text-slate-200">"A defining moment that challenges established wisdom and paves new territory."</div>\n' + content;
+        formatted = '<div class="my-5 p-4 rounded-xl bg-slate-900 border-l-4 border-indigo-500 italic text-slate-200">"A defining moment that challenges established wisdom and paves new territory."</div>' + content;
       } else if (preset === 'explainer') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-blue-950/40 border border-blue-500/40"><strong class="text-blue-400 block mb-1">Why it matters:</strong><p class="text-xs text-slate-300">Key developments that directly reshape the current environment.</p></div>\n' + content;
+        formatted = '<div class="my-4 p-4 rounded-xl bg-blue-950/40 border border-blue-500/40"><strong class="text-blue-400 block mb-1">Why it matters:</strong><p class="text-xs text-slate-300">Key developments that directly reshape the current environment.</p></div>' + content;
       } else if (preset === 'breaking') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/50 border border-red-600"><strong class="text-red-400 uppercase tracking-widest block mb-1">🚨 BREAKING BULLETIN:</strong><p class="text-xs text-slate-200">Developing story unfolding in real time with continuous verification.</p></div>\n' + content;
+        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/50 border border-red-600"><strong class="text-red-400 uppercase tracking-widest block mb-1">🚨 BREAKING BULLETIN:</strong><p class="text-xs text-slate-200">Developing story unfolding in real time with continuous verification.</p></div>' + content;
       } else if (preset === 'newsletter') {
-        formatted = '<p class="text-sm font-semibold text-purple-300 mb-4">Good morning ☕ — Here is everything you need to know today:</p>\n' + content + '\n<p class="text-xs text-slate-400 mt-4"><strong>P.S.</strong> Share this briefing with your team if you found it helpful!</p>';
+        formatted = '<p class="text-sm font-semibold text-purple-300 mb-4">Good morning ☕ — Here is everything you need to know today:</p>' + content + '<p class="text-xs text-slate-400 mt-4"><strong>P.S.</strong> Share this briefing with your team if you found it helpful!</p>';
       } else if (preset === 'tabloid') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/60 border border-red-500 text-center"><h3 class="text-sm font-black text-red-400 uppercase mb-1">🔥 BOMBSHELL REVELATION 🔥</h3><p class="text-xs text-slate-200">Shocking new details emerge regarding today\'s unexpected announcement!</p></div>\n' + content;
+        formatted = '<div class="my-4 p-4 rounded-xl bg-red-950/60 border border-red-500 text-center"><h3 class="text-sm font-black text-red-400 uppercase mb-1">🔥 BOMBSHELL REVELATION 🔥</h3><p class="text-xs text-slate-200">Shocking new details emerge regarding today unexpectedly!</p></div>' + content;
       } else if (preset === 'listicle') {
-        formatted = '<div class="my-4 p-4 rounded-xl bg-rose-950/30 border-l-4 border-rose-500"><strong class="text-rose-400 block mb-1">Key Takeaways at a Glance:</strong><ul class="list-disc list-inside text-xs text-slate-300 space-y-1"><li>Point 1: Primary institutional announcement.</li><li>Point 2: Core immediate impacts.</li><li>Point 3: Next phase timelines.</li></ul></div>\n' + content;
+        formatted = '<div class="my-4 p-4 rounded-xl bg-rose-950/30 border-l-4 border-rose-500"><strong class="text-rose-400 block mb-1">Key Takeaways at a Glance:</strong><ul class="list-disc list-inside text-xs text-slate-300 space-y-1"><li>Point 1: Primary institutional announcement.</li><li>Point 2: Core immediate impacts.</li><li>Point 3: Next phase timelines.</li></ul></div>' + content;
       } else if (preset === 'broadsheet') {
-        formatted = '<p class="font-serif italic text-slate-300 text-sm border-b border-slate-800 pb-3 mb-4">By Special Correspondent • Published in Washington, D.C.</p>\n' + content;
+        formatted = '<p class="font-serif italic text-slate-300 text-sm border-b border-slate-800 pb-3 mb-4">By Special Correspondent • Published in Washington, D.C.</p>' + content;
       }
 
       document.getElementById('htmlCodeEditor').value = formatted;
