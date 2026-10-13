@@ -29,7 +29,7 @@ db.exec(`
     is_featured INTEGER DEFAULT 0,
     is_trending INTEGER DEFAULT 0,
     status TEXT DEFAULT 'published', -- 'draft', 'published', 'scheduled'
-    views INTEGER DEFAULT 1420,
+    views INTEGER DEFAULT 0,
     tags TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -41,11 +41,18 @@ db.exec(`
   );
 `);
 
-// Safe migration for existing DB
+// Safe migrations for existing DB
 try {
   db.exec("ALTER TABLE posts ADD COLUMN tags TEXT;");
 } catch (e) {
   // column already exists
+}
+
+// Reset artificially inflated initial views back to genuine count
+try {
+  db.exec("UPDATE posts SET views = MAX(0, views - 1420) WHERE views >= 1420;");
+} catch (e) {
+  // ignore
 }
 
 // Seed Categories if empty (only NEWS by default)

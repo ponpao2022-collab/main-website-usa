@@ -88,7 +88,7 @@ adminRouter.get("/", (c) => {
       <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
         <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Global Pageviews</div>
         <div class="text-3xl font-extrabold text-indigo-400">${totalViews.toLocaleString()}</div>
-        <div class="text-[11px] text-indigo-400/80 mt-2">98.4% Served from Cache</div>
+        <div class="text-[11px] text-indigo-400/80 mt-2">Real Visitors Tracked Live</div>
       </div>
 
       <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
@@ -129,8 +129,8 @@ adminRouter.get("/", (c) => {
               <th class="py-3 px-4">Category</th>
               <th class="py-3 px-4">Author</th>
               <th class="py-3 px-4 text-center">Breaking?</th>
-              <th class="py-3 px-4">Views</th>
-              <th class="py-3 px-5 text-right">Actions</th>
+              <th class="py-3 px-4 text-center">Views</th>
+              <th class="py-3 px-6 text-center">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/80 text-slate-300">
@@ -171,11 +171,27 @@ adminRouter.get("/", (c) => {
                     </span>` : `
                     <span class="text-slate-600 text-[11px]">-</span>`}
                 </td>
-                <td class="py-4 px-4 font-mono">${p.views.toLocaleString()}</td>
-                <td class="py-4 px-5 text-right space-x-2">
-                  <a href="/article/${p.slug}" target="_blank" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">View</a>
-                  <a href="/admin/edit/${p.id}" class="px-2.5 py-1 rounded bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 transition text-[11px]">Edit</a>
-                  <button onclick="deletePost(${p.id})" class="px-2.5 py-1 rounded bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/40 transition text-[11px]">Delete</button>
+                <td class="py-4 px-4 text-center font-mono">
+                  <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-500/20 text-xs font-semibold">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <span>${p.views.toLocaleString()}</span>
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-center whitespace-nowrap">
+                  <div class="inline-flex items-center space-x-1.5 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800">
+                    <a href="/article/${p.slug}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-1 transition shadow-sm" title="View live article">
+                      <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                      <span>View</span>
+                    </a>
+                    <a href="/admin/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/25 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center space-x-1 transition shadow-sm" title="Edit story">
+                      <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      <span>Edit</span>
+                    </a>
+                    <button type="button" onclick="deletePost(${p.id})" class="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/35 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center space-x-1 transition shadow-sm cursor-pointer" title="Delete story">
+                      <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             `).join("")}

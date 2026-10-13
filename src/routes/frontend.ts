@@ -896,8 +896,12 @@ frontendRouter.get("/article/:slug", (c) => {
     return c.html(layout("Article Not Found", `<div class="text-center py-20"><h1 class="text-2xl font-bold font-headline text-[#1C1B18]">404 - Article Not Found</h1><a href="/" class="text-[#C25E3E] mt-4 inline-block font-semibold">Return to Homepage</a></div>`));
   }
 
-  // REAL LIVE VIEW TRACKING IN DATABASE (Recorded live for CMS Dashboard, but hidden from visitor view)
-  db.query("UPDATE posts SET views = views + 1 WHERE id = ?").run(post.id);
+  // REAL LIVE VIEW TRACKING IN DATABASE (Filtered for genuine human visitors, ignoring automated crawler bots)
+  const userAgent = (c.req.header("user-agent") || "").toLowerCase();
+  const isBot = /bot|crawl|spider|slurp|curl|wget|mediapartners|lighthouse|headless/i.test(userAgent);
+  if (!isBot) {
+    db.query("UPDATE posts SET views = views + 1 WHERE id = ?").run(post.id);
+  }
 
   // Must Read Next
   const related = db.query(`

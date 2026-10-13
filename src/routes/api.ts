@@ -161,8 +161,8 @@ apiRouter.post("/posts", async (c) => {
     // Insert new post
     const result = db.prepare(`
       INSERT INTO posts 
-        (title, slug, summary, content, category_id, author_name, featured_image, read_time, is_breaking, is_featured, status, tags)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (title, slug, summary, content, category_id, author_name, featured_image, read_time, is_breaking, is_featured, status, tags, views)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     `).run(
       title, generatedSlug, summary || "", content, category_id || 1,
       author_name || "Editorial Staff", featured_image || "", read_time || "4 min read",
