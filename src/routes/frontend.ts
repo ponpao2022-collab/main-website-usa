@@ -3,6 +3,14 @@ import { db } from "../db/index";
 
 export const frontendRouter = new Hono();
 
+// Edge Cache-Control Header for Visitor Pages (<30ms CDN speed)
+frontendRouter.use("*", async (c, next) => {
+  await next();
+  if (c.req.method === "GET" || c.req.method === "HEAD") {
+    c.res.headers.set("Cache-Control", "public, max-age=60, s-maxage=300");
+  }
+});
+
 // Helper: Format Article with Read More strictly after Paragraph 2 with Smooth Blur & Justified Text
 function formatArticleWithReadMore(content: string) {
   const pRegex = /<p[\s\S]*?<\/p>/gi;
@@ -119,6 +127,43 @@ function layout(title: string, content: string, currentPath = "/") {
       -webkit-mask-image: none !important;
       mask-image: none !important;
     }
+
+    /* Mobile Menu Hamburger-to-X Morph Animation */
+    #mobileMenuToggleBtn .bar-line {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: #1C1B18;
+      border-radius: 9999px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    #mobileMenuToggleBtn.is-active .bar-line:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+      background-color: #C25E3E;
+    }
+    #mobileMenuToggleBtn.is-active .bar-line:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    #mobileMenuToggleBtn.is-active .bar-line:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+      background-color: #C25E3E;
+    }
+
+    /* Mobile Dropdown Panel Smooth Transform Slide */
+    #mobileNavPanel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(-12px);
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.35s ease;
+    }
+    #mobileNavPanel.is-open {
+      max-height: 550px;
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body class="bg-[#FAF9F5] text-[#1F1E1B] min-h-screen flex flex-col antialiased selection:bg-[#C25E3E] selection:text-white">
@@ -156,44 +201,49 @@ function layout(title: string, content: string, currentPath = "/") {
           <span class="text-[#2B2926] text-[11px] font-medium">U.S. National Edition</span>
         </div>
 
-        <!-- Mobile Hamburger Menu Button (☰ Like Celeb BNews) -->
-        <button type="button" id="mobileMenuToggleBtn" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-[#1C1B18] hover:bg-[#F3F1EC] border border-[#E5E2D9] transition flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Toggle Navigation Menu">
-          <svg id="menuIconOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-          <svg id="menuIconClose" class="w-6 h-6 hidden text-[#C25E3E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+        <!-- Mobile Animated Hamburger Menu Button (☰ ➔ ✕ Like Celeb BNews) -->
+        <button type="button" id="mobileMenuToggleBtn" onclick="toggleMobileMenu()" class="lg:hidden p-2.5 rounded-xl text-[#1C1B18] hover:bg-[#F3F1EC] border border-[#E5E2D9] transition flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Toggle Navigation Menu">
+          <div class="w-5 h-3.5 relative flex flex-col justify-between" id="hamburgerBox">
+            <span class="bar-line"></span>
+            <span class="bar-line"></span>
+            <span class="bar-line"></span>
+          </div>
         </button>
       </div>
     </div>
 
-    <!-- Mobile Navigation Panel (Clean Vertical List like Celeb BNews) -->
-    <div id="mobileNavPanel" class="hidden lg:hidden border-t border-[#EAE8E1] bg-white divide-y divide-[#F0EDE6] shadow-xl">
-      <nav class="flex flex-col text-sm font-semibold">
-        <a href="/" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
-          <span>HOME</span>
-          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    <!-- Mobile Navigation Panel (Clean Vertical List with Search like Celeb BNews) -->
+    <div id="mobileNavPanel" class="lg:hidden border-t border-[#33302A] bg-[#1F1E1B] text-white shadow-2xl">
+      <!-- Search Box (like Celeb BNews) -->
+      <form action="/news" method="GET" class="p-4 pb-3 flex items-center gap-2 border-b border-[#2C2A26]">
+        <input type="search" name="q" placeholder="Search news stories..." class="flex-1 bg-[#2D2B26] border border-[#3E3C36] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-[#8E8B83] focus:outline-none focus:border-[#C25E3E]">
+        <button type="submit" class="px-4 py-2.5 bg-[#C25E3E] hover:bg-[#B05335] text-white text-xs font-bold rounded-xl transition shadow-sm">Go</button>
+      </form>
+
+      <nav class="flex flex-col text-sm font-semibold divide-y divide-[#2C2A26] py-1">
+        <a href="/" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
+          <span>Home</span>
+          <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
-        <a href="/news" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath.startsWith('/news') ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
-          <span>NEWS</span>
-          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <a href="/news" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath.startsWith('/news') ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
+          <span>News</span>
+          <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
-        <a href="/about-us" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/about-us' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+        <a href="/about-us" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/about-us' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>About Us</span>
-          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
-        <a href="/contact-us" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/contact-us' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+        <a href="/contact-us" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/contact-us' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>Contact Us</span>
-          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
-        <a href="/privacy-policy" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/privacy-policy' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+        <a href="/privacy-policy" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/privacy-policy' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>Privacy Policy</span>
-          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
-        <a href="/terms-and-conditions" class="flex items-center justify-between px-5 py-3.5 hover:bg-[#FAF9F5] transition ${currentPath === '/terms-and-conditions' ? 'text-[#C25E3E] font-bold bg-[#FAF9F5]' : 'text-[#2B2926]'}">
+        <a href="/terms-and-conditions" class="flex items-center justify-between px-5 py-3 hover:bg-[#2D2B26] transition ${currentPath === '/terms-and-conditions' ? 'text-[#C25E3E] font-bold bg-[#2D2B26]/50' : 'text-slate-100'}">
           <span>Terms & Conditions</span>
-          <svg class="w-4 h-4 text-[#A8A49D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </a>
       </nav>
     </div>
@@ -280,18 +330,10 @@ function layout(title: string, content: string, currentPath = "/") {
   <script>
     function toggleMobileMenu() {
       const panel = document.getElementById('mobileNavPanel');
-      const iconOpen = document.getElementById('menuIconOpen');
-      const iconClose = document.getElementById('menuIconClose');
-      if (!panel) return;
-      if (panel.classList.contains('hidden')) {
-        panel.classList.remove('hidden');
-        if (iconOpen) iconOpen.classList.add('hidden');
-        if (iconClose) iconClose.classList.remove('hidden');
-      } else {
-        panel.classList.add('hidden');
-        if (iconOpen) iconOpen.classList.remove('hidden');
-        if (iconClose) iconClose.classList.add('hidden');
-      }
+      const btn = document.getElementById('mobileMenuToggleBtn');
+      if (!panel || !btn) return;
+      panel.classList.toggle('is-open');
+      btn.classList.toggle('is-active');
     }
   </script>
 
@@ -549,21 +591,33 @@ frontendRouter.get("/", (c) => {
 
 // 2. NEWS FEED PAGE ROUTE (/news)
 frontendRouter.get("/news", (c) => {
-  const posts = db.query(`
-    SELECT p.*, c.name as category_name, c.color as category_color, c.slug as category_slug
-    FROM posts p
-    LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.status = 'published'
-    ORDER BY p.id DESC
-  `).all() as any[];
+  const q = c.req.query("q")?.trim() || "";
+  let posts: any[] = [];
+  if (q) {
+    posts = db.query(`
+      SELECT p.*, c.name as category_name, c.color as category_color, c.slug as category_slug
+      FROM posts p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.status = 'published' AND (p.title LIKE ? OR p.summary LIKE ?)
+      ORDER BY p.id DESC
+    `).all(`%${q}%`, `%${q}%`) as any[];
+  } else {
+    posts = db.query(`
+      SELECT p.*, c.name as category_name, c.color as category_color, c.slug as category_slug
+      FROM posts p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.status = 'published'
+      ORDER BY p.id DESC
+    `).all() as any[];
+  }
 
   const content = `
     <div class="mb-8 border-b border-[#EAE8E1] pb-5">
       <div class="flex items-center space-x-3">
         <span class="w-3 h-8 rounded-full bg-[#C25E3E]"></span>
-        <h1 class="text-3xl font-black text-[#1C1B18] font-headline">All News & Dispatches</h1>
+        <h1 class="text-3xl font-black text-[#1C1B18] font-headline">${q ? `Search: "${q}"` : 'All News & Dispatches'}</h1>
       </div>
-      <p class="text-xs text-[#6E6B63] mt-2">Comprehensive coverage from our editorial newsroom across all beats</p>
+      <p class="text-xs text-[#6E6B63] mt-2">${q ? `Found ${posts.length} stories matching your search` : 'Comprehensive coverage from our editorial newsroom across all beats'}</p>
     </div>
 
     ${posts.length === 0 ? `
