@@ -56,3 +56,35 @@ export async function extractArticleHtml(html: string, base: string) {
   const images = [...content.matchAll(/<img\b[^>]*src="([^"]+)"/gi)].map(m => m[1]!);
   return { content, text, images };
 }
+
+export async function extractHeadline(html: string, base: string) {
+  const headings: string[] = []; let current = -1, documentTitle = '', ogTitle = '', siteName = '';
+  await new HTMLRewriter()
+    .on('article h1,.entry-title,[itemprop="headline"]', {
+      element() { current = headings.push('') - 1; },
+      text(chunk) { if (current >= 0) headings[current] += chunk.text; },
+    })
+    .on('title', { text(chunk) { documentTitle += chunk.text; } })
+    .on('meta', { element(el) {
+      const property = el.getAttribute('property') || el.getAttribute('name');
+      if (property === 'og:title') ogTitle = el.getAttribute('content') || '';
+      if (property === 'og:site_name') siteName = el.getAttribute('content') || '';
+    } }).transform(new Response(html)).text();
+  const decode = (value: string) => value.replace(/&#(x[\da-f]+|\d+);/gi, (_, code: string) => {
+    const point = code.toLowerCase().startsWith('x') ? parseInt(code.slice(1), 16) : Number(code);
+    return point > 0 && point <= 0x10ffff ? String.fromCodePoint(point) : '';
+  }).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&hellip;/g, '…').replace(/&ndash;/g, '–').replace(/&mdash;/g, '—').replace(/&nbsp;/g, ' ');
+  let title = decode(headings.find(value => value.trim()) || ogTitle || documentTitle).replace(/\s+/g, ' ').trim();
+  const names = [decode(siteName), new URL(base).hostname.replace(/^www\./, '')].filter(Boolean);
+  for (const name of names) {
+    const suffix = new RegExp('\\s+[|–—-]\\s+' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i');
+    title = title.replace(suffix, '');
+  }
+  return title.replace(/^[\s.…]+/, '').trim();
+}
+
+export async function importedTextWithoutImages(content: string) {
+  return new HTMLRewriter().on('figure,img', { element(el) { el.remove(); } })
+    .transform(new Response(content)).text();
+}

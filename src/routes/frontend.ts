@@ -1084,12 +1084,6 @@ frontendRouter.get("/article/:slug", (c) => {
           </div>
         </div>
 
-        <!-- Featured Hero Image -->
-        ${post.featured_image ? `
-        <div class="rounded-2xl overflow-hidden mb-8 border border-[#E8E6DF] shadow-sm">
-          <img src="${post.featured_image}" alt="${post.title}" class="w-full max-h-[500px] object-cover">
-        </div>` : ''}
-
         <!-- Article Body with Justified Text & Read More Strictly After Paragraph 2 -->
         ${formattedBody}
 

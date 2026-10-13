@@ -58,6 +58,7 @@ test('fetch, formatting, presets, view switching, saving and copying work togeth
   const { context, element, requests, clipboard } = editorContext();
   for (const source of await editorScripts()) new Script(source).runInContext(context);
   element('fetchUrlInput').value = 'example.com/story';
+  element('imageInput').value = '/media/selected.webp';
   await context.fetchArticleFromLink();
   expect(requests[0].payload.url).toBe('https://example.com/story');
   expect(element('titleInput').value).toBe('Fetched headline');
@@ -66,10 +67,12 @@ test('fetch, formatting, presets, view switching, saving and copying work togeth
   }
   expect(element('htmlCodeEditor').value).toBe('<p>Fetched article body</p>');
   expect(element('btnFetchUrl').disabled).toBe(false);
+  expect(element('imageInput').value).toBe('/media/selected.webp');
   context.setViewMode('both');
   expect(element('bothViewWrapper').style.display).toBe('block');
   await context.executeAiProcess('format');
   expect(element('htmlCodeEditor').value).toBe('<p>Formatted article body</p>');
+  expect(element('imageInput').value).toBe('/media/selected.webp');
   context.applyFreePreset('wire');
   context.applyFreePreset('wire');
   expect(element('htmlCodeEditor').value.match(/tk-summary-box/g)?.length).toBe(1);

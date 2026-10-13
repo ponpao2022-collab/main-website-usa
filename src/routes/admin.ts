@@ -1438,7 +1438,7 @@ const renderEditor = (c: any) => {
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preload" href="/assets/tailwindcss.min.js" as="script">
   <script src="/assets/tailwindcss.min.js"></script>
-  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014e">
+  <link rel="stylesheet" href="/assets/editor-studio.css?v=20261014f">
   <link rel="preload" href="/assets/tk-mascot.webp" as="image" type="image/webp">
   <link rel="preload" href="/assets/tk-mascot-happy.webp" as="image" type="image/webp">
   <style>
@@ -2024,6 +2024,24 @@ const renderEditor = (c: any) => {
     <!-- Drawer Scrollable Content -->
     <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-[#1C1B18]">
 
+      <section id="aiConnection">
+      <!-- Gemini API Key Input Bar -->
+      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div class="flex-1">
+          <label class="block font-bold text-[#1C1B18] mb-1">Google Gemini API Key (Free):</label>
+          <div class="flex items-center space-x-2">
+            <input type="password" id="geminiApiKey" class="w-full bg-white border border-[#E5E2D9] rounded-lg px-3 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="AIzaSy... (Saved in browser)">
+            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white font-semibold shadow-xs">Save</button>
+          </div>
+        </div>
+        <div class="text-[11px] text-[#6E6B63] sm:text-right">
+          <span>Get Free Key:</span>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#C25E3E] hover:underline block font-semibold">aistudio.google.com &rarr;</a>
+        </div>
+      </div>
+
+      </section>
+
       <!-- TAB 1: AI STYLES & LINK SCRAPER -->
       <div id="tkAiTabContent" class="space-y-6">
 
@@ -2041,7 +2059,7 @@ const renderEditor = (c: any) => {
         <!-- Fetched Article Preview Box (Hidden until fetched) -->
         <div id="fetchPreviewBox" class="hidden p-4 rounded-2xl bg-white border border-[#EAE8E1] space-y-3 text-xs shadow-xs">
           <div class="flex items-center justify-between text-emerald-700 font-bold border-b border-[#EAE8E1] pb-2">
-            <span>✓ Article & Image Successfully Fetched!</span>
+            <span>✓ Article imported · images ready to choose</span>
             <span id="fetchStatsBadge" class="text-[#6E6B63] font-mono">Ready</span>
           </div>
           <div class="flex gap-4 items-start">
@@ -2055,7 +2073,7 @@ const renderEditor = (c: any) => {
             </div>
           </div>
           <div class="flex items-center justify-between pt-2 border-t border-[#EAE8E1]">
-            <span class="text-emerald-700 font-semibold text-xs">✓ Automatically injected into Editor!</span>
+            <button type="button" onclick="openImageStudio()" class="studio-trigger">Choose images · inject manually</button>
             <button type="button" onclick="closeAiModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center space-x-1.5 shadow-sm transition">
               <span>📥 View In Editor Now</span>
             </button>
@@ -2387,23 +2405,7 @@ const renderEditor = (c: any) => {
       </div>
 
       <!-- Result Applied Alert / Preview -->
-      <details id="aiConnection" class="ai-connection"><summary>AI connection · for rewrite and Khmer translation</summary>
-      <!-- Gemini API Key Input Bar -->
-      <div class="p-3.5 rounded-2xl bg-[#F8F7F3] border border-[#EAE8E1] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div class="flex-1">
-          <label class="block font-bold text-[#1C1B18] mb-1">Google Gemini API Key (Free):</label>
-          <div class="flex items-center space-x-2">
-            <input type="password" id="geminiApiKey" class="w-full bg-white border border-[#E5E2D9] rounded-lg px-3 py-1.5 text-xs text-[#1C1B18] placeholder-[#8A867E] focus:outline-none focus:border-[#C25E3E]" placeholder="AIzaSy... (Saved in browser)">
-            <button type="button" onclick="saveGeminiKey()" class="px-3 py-1.5 rounded-lg bg-[#C25E3E] hover:bg-[#B05335] text-white font-semibold shadow-xs">Save</button>
-          </div>
-        </div>
-        <div class="text-[11px] text-[#6E6B63] sm:text-right">
-          <span>Get Free Key:</span>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#C25E3E] hover:underline block font-semibold">aistudio.google.com &rarr;</a>
-        </div>
-      </div>
 
-      </details>
       <div id="aiProcessingState" class="hidden p-4 rounded-2xl bg-[#C25E3E]/10 border border-[#C25E3E]/30 text-center text-xs text-[#C25E3E]">
         <span class="animate-spin inline-block mr-2">🌀</span>
         <span id="aiProcessingText">Processing with TK Summary...</span>
@@ -2947,13 +2949,12 @@ const renderEditor = (c: any) => {
               thumb.src = data.image;
               thumb.classList.remove('hidden');
             }
-            if (typeof setImagePreview === 'function') setImagePreview(data.image);
           } else {
             const thumb = document.getElementById('fetchedThumbImg');
             if (thumb) thumb.classList.add('hidden');
           }
           const badge = document.getElementById('fetchStatsBadge');
-          if (badge) badge.textContent = 'Content & Image Ready';
+          if (badge) badge.textContent = 'Images await your selection';
           const prevBox = document.getElementById('fetchPreviewBox');
           if (prevBox) prevBox.classList.remove('hidden');
 
@@ -2974,7 +2975,7 @@ const renderEditor = (c: any) => {
           }
           if (typeof updateWordCount === 'function') updateWordCount();
 
-          alert('✓ ជោគជ័យ! បានទាញយកចំណងជើង អត្ថបទ និងរូបភាពពី Link បញ្ចូលទៅក្នុង Editor រួចរាល់!');
+          alert('✓ បានទាញយកអត្ថបទហើយ។ សូមជ្រើសរូបក្នុង Image Studio ដើម្បី inject ដោយខ្លួនឯង។');
         } else {
           alert('Fetch error: ' + (data.error || 'Failed to scrape article'));
         }
@@ -2996,7 +2997,7 @@ const renderEditor = (c: any) => {
         openAiModal();
         switchTkTab('ai');
         const keyInput = document.getElementById('geminiApiKey');
-        if (keyInput) { document.getElementById('aiConnection').open = true; keyInput.focus(); }
+        if (keyInput) { keyInput.focus(); }
         alert('សូមបញ្ចូល Google Gemini API Key (ឥតគិតថ្លៃ) ក្នុងប្រអប់ TK Summary AI ជាមុនសិន ដើម្បីឱ្យប្រព័ន្ធ AI អាចបកប្រែជាភាសាខ្មែរបាន!');
         return;
       }
@@ -3060,12 +3061,6 @@ const renderEditor = (c: any) => {
           }
           if (data.summary) {
             document.getElementById('summaryInput').value = data.summary;
-          }
-
-          // Handle Image Injection
-          if (fetchedArticleData && fetchedArticleData.image && !document.getElementById('imageInput').value) {
-            let imgUrl = fetchedArticleData.image;
-            setImagePreview(imgUrl);
           }
 
           // Inject Content to selected view
@@ -3228,7 +3223,7 @@ const renderEditor = (c: any) => {
     <div class="studio-footer"><button type="button" onclick="closeImageStudio()">Cancel</button><button type="button" onclick="injectStudioImage('thumbnail')">Set thumbnail</button><button type="button" onclick="injectStudioImage('inline')">Insert at cursor</button><button type="button" onclick="injectStudioImage('both')">Use for both</button></div>
   </dialog>
   <div id="editorToast" role="status" aria-live="polite"></div>
-  <script src="/assets/editor-studio.js?v=20261014e"></script>
+  <script src="/assets/editor-studio.js?v=20261014f"></script>
 
 </body>
 </html>`);

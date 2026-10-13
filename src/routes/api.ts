@@ -3,7 +3,7 @@ import { db, dbPath } from "../db/index";
 import fs from "fs";
 import path from "node:path";
 import { fetchRemoteImage } from "../utils/remote-image";
-import { absoluteWebUrl, extractArticleHtml } from "../utils/article-import";
+import { absoluteWebUrl, extractArticleHtml, extractHeadline, importedTextWithoutImages } from "../utils/article-import";
 import { recordVisitorPing, removeVisitorSession, getLiveStats } from "../utils/tracker";
 import stylePrompts from "../data/style-prompts.json";
 import stylesList from "../data/styles.json";
@@ -398,16 +398,8 @@ apiRouter.post("/ai/fetch-article", async (c) => {
         .replace(/&nbsp;/g, " ");
     };
 
-    // Extract Title
-    let title = "";
-    const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["'](.*?)["']/i) ||
-                        html.match(/<meta\s+content=["'](.*?)["']\s+property=["']og:title["']/i);
-    if (ogTitleMatch && ogTitleMatch[1]) title = ogTitleMatch[1];
-    else {
-      const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
-      if (titleMatch && titleMatch[1]) title = titleMatch[1];
-    }
-    title = decodeHtml(title).replace(/\s*([|–—\-])\s*(STORY USA|CNN|BBC|Reuters|The Verge|Bloomberg|The Guardian|The New York Times|AP News|TechCrunch).*$/i, "").trim();
+    // Prefer the article's own heading and decode numeric entities before importing it.
+    const title = await extractHeadline(html, res.url || targetUrl);
 
     // Extract Summary / Description
     let summary = "";
@@ -455,7 +447,7 @@ apiRouter.post("/ai/fetch-article", async (c) => {
     if (!imported.content || !imported.text) {
       return c.json({ success: false, error: "No readable article found. The source may require login or block imports." }, 422);
     }
-    const content = imported.content;
+    const content = await importedTextWithoutImages(imported.content);
     const rawText = imported.text;
 
     return c.json({

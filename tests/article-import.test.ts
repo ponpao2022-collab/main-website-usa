@@ -40,3 +40,16 @@ test('imports publishers that use h5/h6 for the entire article body', async () =
   expect(result.content).toContain('href="https://news.example/reference"');
   expect(result.content).not.toContain('advertisement()');
 });
+
+import { extractHeadline, importedTextWithoutImages } from '../src/utils/article-import';
+test('headline prefers source heading and removes encoded leading dots and site suffix', async () => {
+  const html = '<title>&amp;#8230;ABC News – NEWS TODAY</title><meta property="og:site_name" content="NEWS TODAY"><article><h1 class="entry-title">&#8230;ABC News &amp; Update – NEWS TODAY</h1></article>';
+  expect(await extractHeadline(html, 'https://newstodayonline.info/story')).toBe('ABC News & Update');
+});
+test('fetch keeps images available separately without injecting them into the article', async () => {
+  const result = await importedTextWithoutImages('<p>Story <a href="https://x.com/a/status/1">source</a></p><figure><img src="/photo.jpg"><figcaption>Photo</figcaption></figure><img src="/thumbnail.jpg">');
+  expect(result).not.toContain('<img');
+  expect(result).not.toContain('<figure');
+  expect(result).toContain('https://x.com/a/status/1');
+  expect(result).toContain('Story');
+});
