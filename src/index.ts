@@ -30,9 +30,18 @@ app.get('/media/:name', async (c) => {
   return new Response(file, { headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' } });
 });
 
+import { ADMIN_PATH } from "./config";
+
 // Mount Routers
 app.route("/api", apiRouter);
-app.route("/admin", adminRouter);
+app.route(`/${ADMIN_PATH}`, adminRouter);
+
+// Block default /admin routes when custom admin path is configured
+if (ADMIN_PATH !== "admin") {
+  app.all("/admin", (c) => c.text("Not Found", 404));
+  app.all("/admin/*", (c) => c.text("Not Found", 404));
+}
+
 app.route("/", frontendRouter);
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -42,7 +51,7 @@ console.log(`
    THE CHRONICLE - NEXT-GEN NEWS CMS & HIGH-SPEED FRONTEND
    ========================================================
    🌐 Live News Website:   http://localhost:${PORT}/
-   ⚡ NextGen Admin CMS:   http://localhost:${PORT}/admin
+   ⚡ NextGen Admin CMS:   http://localhost:${PORT}/${ADMIN_PATH}
    📦 RESTful API:         http://localhost:${PORT}/api/posts
    ☁️  Edge CDN Sync:       Active (Cloudflare Ready)
    ========================================================

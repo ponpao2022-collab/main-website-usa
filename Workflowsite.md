@@ -6,8 +6,8 @@ This is the handoff document for future work. Check the source and live site bef
 ## Project locations
 
 - Website: https://topusanewsstory.com
-- CMS: https://topusanewsstory.com/admin
-- Editor: https://topusanewsstory.com/admin/new
+- CMS: `https://topusanewsstory.com/${ADMIN_PATH}` (configured via private environment variable)
+- Editor: `https://topusanewsstory.com/${ADMIN_PATH}/new` (configured via private environment variable)
 - Workspace: `/home/pao/Documents/Website`
 - Repository: https://github.com/ponpao2022-collab/main-website-usa.git
 - Current deployment branch: `main`; use `codex/` for new task branches unless requested otherwise.

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { db } from "../db/index";
 import { dashboardIcon as icon, dashboardEscape as escapeDashboard } from "../utils/dashboard-icons";
+import { ADMIN_PATH } from "../config";
 
 export const adminRouter = new Hono();
 
@@ -11,7 +12,7 @@ adminRouter.use("*", async (c, next) => {
   c.res.headers.set("Expires", "0");
 
   const path = c.req.path;
-  if (path === "/admin/login" || path === "/admin/logout") {
+  if (path.endsWith("/login") || path.endsWith("/logout")) {
     await next();
     return;
   }
@@ -21,7 +22,7 @@ adminRouter.use("*", async (c, next) => {
   const token = tokenMatch ? tokenMatch[1] : null;
 
   if (token !== "usa_news_cms_auth_token_secret_2026") {
-    return c.redirect("/admin/login");
+    return c.redirect(`/${ADMIN_PATH}/login`);
   }
 
   await next();
@@ -31,7 +32,7 @@ adminRouter.use("*", async (c, next) => {
 adminRouter.get("/login", (c) => {
   const cookieHeader = c.req.header("cookie") || "";
   if (cookieHeader.includes("usa_cms_token=usa_news_cms_auth_token_secret_2026")) {
-    return c.redirect("/admin");
+    return c.redirect(`/${ADMIN_PATH}`);
   }
 
   return c.html(`<!DOCTYPE html>
@@ -102,7 +103,7 @@ adminRouter.get("/login", (c) => {
         });
         const data = await res.json();
         if (data.success) {
-          window.location.href = '/admin';
+          window.location.href = '/${ADMIN_PATH}';
         } else {
           errEl.textContent = data.error || 'Username ឬ Password មិនត្រឹមត្រូវ';
           errEl.classList.remove('hidden');
@@ -122,7 +123,7 @@ adminRouter.get("/login", (c) => {
 // LOGOUT ROUTE
 adminRouter.get("/logout", (c) => {
   c.header("Set-Cookie", "usa_cms_token=; Path=/; Max-Age=0; SameSite=Lax; HttpOnly");
-  return c.redirect("/admin/login");
+  return c.redirect(`/${ADMIN_PATH}/login`);
 });
 
 // ADMIN DASHBOARD
@@ -165,7 +166,7 @@ adminRouter.get("/", (c) => {
 <body class="cms-dashboard bg-[#FAF9F5] text-[#1C1B18] font-sans antialiased min-h-screen flex flex-col selection:bg-[#C25E3E] selection:text-white">
 
   <aside id="cmsSidebar" class="cms-sidebar" aria-label="CMS navigation">
-    <a href="/admin" class="cms-brand"><img src="/assets/logo-sm.webp" alt="USA News Story"><span>USA NEWS STORY<small>Editorial workspace</small></span></a>
+    <a href="/${ADMIN_PATH}" class="cms-brand"><img src="/assets/logo-sm.webp" alt="USA News Story"><span>USA NEWS STORY<small>Editorial workspace</small></span></a>
     <div class="cms-nav-label">Workspace</div>
     <nav>
       <button id="mainTabArticlesBtn" type="button" onclick="switchMainTab('articles')" class="cms-nav-item" aria-current="page">${icon('articles')}<span>Articles</span><small>${activePosts.length}</small></button>
@@ -179,12 +180,12 @@ adminRouter.get("/", (c) => {
 
       <button type="button" onclick="purgeCache(this)" class="cms-nav-item">${icon('refresh')}<span>Refresh cache</span></button>
     </nav>
-    <div class="cms-sidebar-bottom"><div class="cms-account"><img class="cms-admin-avatar" src="${escapeDashboard(adminAvatar)}" alt="Admin" onerror="this.onerror=null;this.src='/assets/logo-sm.webp'"><div>Admin<small>CMS workspace</small></div></div><a href="/admin/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
+    <div class="cms-sidebar-bottom"><div class="cms-account"><img class="cms-admin-avatar" src="${escapeDashboard(adminAvatar)}" alt="Admin" onerror="this.onerror=null;this.src='/assets/logo-sm.webp'"><div>Admin<small>CMS workspace</small></div></div><a href="/${ADMIN_PATH}/logout" class="cms-nav-item">${icon('logout')}<span>Sign out</span></a></div>
   </aside>
   <button id="cmsNavOverlay" class="cms-nav-overlay" aria-label="Close navigation" onclick="toggleDashboardNav(false)"></button>
   <header class="cms-header">
     <div class="cms-header-left"><button type="button" class="cms-menu" onclick="toggleDashboardNav()" aria-label="Open navigation" aria-expanded="false">${icon('menu')}</button><span>Workspace <span class="cms-breadcrumb">/</span> <strong id="cmsPageName">Articles</strong></span></div>
-    <div class="cms-header-actions"><a href="/" target="_blank" class="cms-view-site">${icon('external')}<span>View website</span></a><a href="/admin/new" class="cms-primary">${icon('plus')}<span>New article</span></a></div>
+    <div class="cms-header-actions"><a href="/" target="_blank" class="cms-view-site">${icon('external')}<span>View website</span></a><a href="/${ADMIN_PATH}/new" class="cms-primary">${icon('plus')}<span>New article</span></a></div>
   </header>
   <main id="cmsMain" class="cms-main">
     <div class="cms-page-heading"><div><span class="cms-eyebrow">EDITORIAL WORKSPACE</span><h1 id="cmsPageHeading">Manage your stories</h1><p id="cmsPageDescription">Write, publish and keep your newsroom moving.</p></div><div class="cms-live-state"><span></span> Audience updates every 3 seconds</div></div>
@@ -297,7 +298,7 @@ adminRouter.get("/", (c) => {
                   <td colspan="5" class="text-center py-12 text-[#8A867E]">
                     <div class="text-sm font-semibold text-[#6E6B63] mb-1">No published articles</div>
                     <div class="text-xs text-[#8A867E] mb-4">Start by writing and publishing your first article!</div>
-                    <a href="/admin/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
+                    <a href="/${ADMIN_PATH}/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                       <span>+ Publish First Story</span>
                     </a>
@@ -312,7 +313,7 @@ adminRouter.get("/", (c) => {
                     <div class="flex items-center space-x-3">
                       ${p.featured_image ? `<img src="${p.featured_image}" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-[#EAE8E1]">` : ''}
                       <div>
-                        <a href="/admin/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-2 transition">
+                        <a href="/${ADMIN_PATH}/edit/${p.id}" class="font-bold text-[#1C1B18] hover:text-[#C25E3E] text-sm line-clamp-2 transition">
                           ${escapeDashboard(p.title)}
                         </a><span class="cms-status-badge cms-status-${escapeDashboard(p.status)}">${escapeDashboard(p.status)}</span>${p.is_breaking ? '<span class="cms-status-badge cms-status-draft">Breaking</span>' : ''}
                         <div class="cms-post-meta">${escapeDashboard(p.author_name)} · /article/${escapeDashboard(p.slug)}</div>
@@ -337,7 +338,7 @@ adminRouter.get("/", (c) => {
                         <svg class="w-3.5 h-3.5 text-[#6E6B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                         <span>View</span>
                       </a>
-                      <a href="/admin/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs" title="Edit story">
+                      <a href="/${ADMIN_PATH}/edit/${p.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center space-x-1 transition shadow-xs" title="Edit story">
                         <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         <span>Edit</span>
                       </a>
@@ -1545,7 +1546,7 @@ const renderEditor = (c: any) => {
   <!-- Top Navigation Bar -->
   <header class="h-14 border-b border-[#EAE8E1] bg-white/95 backdrop-blur-md px-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
     <div class="flex items-center space-x-3">
-      <a href="/admin" class="text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1 text-xs font-semibold">
+      <a href="/${ADMIN_PATH}" class="text-[#6E6B63] hover:text-[#1C1B18] transition flex items-center space-x-1 text-xs font-semibold">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         <span>Dashboard</span>
       </a>
@@ -3015,7 +3016,7 @@ const renderEditor = (c: any) => {
             draftBtn.innerHTML = '✅ Draft Saved!';
           }
           setTimeout(function() {
-            window.location.href = '/admin';
+            window.location.href = '/${ADMIN_PATH}';
           }, 600);
         } else {
           alert('Failed to save story: ' + (data.error || 'Unknown error'));
