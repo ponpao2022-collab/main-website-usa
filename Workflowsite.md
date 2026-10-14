@@ -1,161 +1,153 @@
-# 🚀 SYSTEM CONCEPT & OPERATIONAL WORKFLOW GUIDE
-**Website:** `https://topusanewsstory.com` | **CMS:** `https://topusanewsstory.com/admin`  
-**Server IP:** `2.25.237.28` | **Tech Stack:** Bun Runtime • Hono Framework • SQLite (WAL Mode) • Cloudflare CDN  
+# Top USA News Story — workflow and project memory
 
----
+Last updated: 2026-10-14 (Asia/Phnom_Penh).
+This is the handoff document for future work. Check the source and live site before treating historical verification as current behavior. Update this file when a lasting decision changes.
 
-## 📌 មាតិកា (Table of Contents)
-1. [ទិដ្ឋភាពទូទៅនៃស្ថាបត្យកម្មប្រព័ន្ធ (Architecture Overview)](#1-architecture-overview)
-2. [គណនី និងសុវត្ថិភាព Admin CMS (Authentication & Security)](#2-authentication--security)
-3. [ប្រព័ន្ធ Editor និង Visual Sync (Dual-Mode Editor)](#3-dual-mode-editor)
-4. [ម៉ាស៊ីនជំនួយការ TK Summary AI (Editorial AI Engine)](#4-tk-summary-ai-engine)
-5. [TK Link (៦ ខ្ទង់) - Pretty Links Alternative](#5-tk-link-system)
-6. [ប្រព័ន្ធរាប់ចំនួនអ្នកមើល Real-Time (Whos.amung.us RAM Engine)](#6-real-time-visitor-tracking)
-7. [ដំណើរការ Auto-Deploy និងសុវត្ថិភាពទិន្នន័យ (Deployment Workflow)](#7-automated-deployment--backups)
-8. [ការណែនាំផ្លាស់ប្តូរ VPS ទៅកាន់ Server ថ្មី (VPS Migration Guide)](#8-vps-migration-guide)
+## Project locations
 
----
+- Website: https://topusanewsstory.com
+- CMS: https://topusanewsstory.com/admin
+- Editor: https://topusanewsstory.com/admin/new
+- Workspace: `/home/pao/Documents/Website`
+- Repository: https://github.com/ponpao2022-collab/main-website-usa.git
+- Current deployment branch: `main`; use `codex/` for new task branches unless requested otherwise.
+- Stack: Bun, Hono, SQLite in WAL mode, Cloudflare.
+- Production checkout: `/var/www/news`; service: `news-app`.
+- Persistent production database: `/var/www/data/news.sqlite`.
+- Uploaded media: `media/` beside the selected database (production: `/var/www/data/media`).
+- `DB_PATH` overrides the database location; `PORT` controls the listener.
 
-## 1. Architecture Overview
-ប្រព័ន្ធនេះត្រូវបានបង្កើតឡើងដើម្បីល្បឿនលឿនបំផុត (Sub-millisecond latency) ដោយមិនប្រើប្រាស់ WordPress ឬ Plugins ធ្ងន់ៗដែលងាយនឹងគាំង ឬស៊ី RAM ឡើយ៖
-* **Runtime:** [Bun](https://bun.sh) (លឿនជាង Node.js ពី ៣ ទៅ ៤ ដង)
-* **Framework:** [Hono v4](https://hono.dev) (Ultra-fast, lightweight web framework)
-* **Database:** SQLite ដំណើរការក្នុងទម្រង់ WAL (Write-Ahead Logging) ស្ថិតនៅ `/var/www/data/news.sqlite` (ដាច់ដោយឡែកពី Git directory ដើម្បីការពារកុំឱ្យបាត់ទិន្នន័យពេល deploy)
-* **Edge Acceleration:** Cloudflare CDN (Full Page Cache ជាមួយ `stale-while-revalidate` និង Global Invalidation <30ms)
+## User preferences and accepted decisions
 
----
+- Communicate briefly, usually in Khmer, using plain language. Act on requested fixes and verify the result instead of stopping at a plan.
+- The user has authorized pushing and deploying website changes in this conversation. Keep the current task's scope and any later instructions in mind.
+- Keep CMS and Post Editor modern and uncluttered: readable headings, restrained cards/borders, useful spacing, and real SVG icons.
+- Use local SVG country flags and device/platform icons; emoji flags do not render reliably in all browsers.
+- Author display/default is **Admin**. Show the available Admin photo instead of a letter avatar when a photo exists.
+- Keep TK Editorial tools inside the Post Editor. Do not re-add duplicate TK Tools or View Website sidebar tabs; the website action is already in the top bar.
+- Category management should follow the same CMS design.
+- Category entries automatically follow NEWS in desktop and mobile navigation, in database ID order. Skip the News category to avoid duplicating NEWS. All primary/mobile menu labels display in uppercase. Category links open their corresponding article list and show the active state.
+- When a reversible trial is requested, retain a practical rollback path.
 
-## 2. Authentication & Security
-* **ផ្លូវចូល Login:** `https://topusanewsstory.com/admin/login`
-* **Default Credentials:**
-  * **Username:** `admin`
-  * **Password:** `admin@12345`
-* **Session Persistence:** ប្រព័ន្ធរក្សា Token នៅក្នុង Browser Cookie និង Memory ធ្វើឱ្យពេលបិទ Browser ហើយបើកឡើងវិញ មិនចាំបាច់ Login ម្តងទៀតឡើយ។
+## Post Editor and import workflow
 
----
+1. Enter a source URL in TK Tools and fetch it.
+2. Review the headline, summary, and body before formatting or rewriting.
+3. Choose a preset or AI action. Gemini key entry remains visible in TK Tools; it is saved in that browser's local storage. Never put actual keys in this document, commits, or screenshots.
+4. Review source links/social links and any preview content. Imported headings should decode HTML entities and remove redundant source-site suffixes.
+5. Fetch collects available images separately. **Do not automatically inject images into the article or automatically assign the thumbnail.** The user chooses where to inject them.
+6. Image Studio supports crop/resize/edit, thumbnail selection, and insertion at the saved editor cursor. Imported image wrappers must not retain unwanted source links when inserting an edited image.
+7. Export/upload as clear WebP images **under 50 KB**. Preserve quality through resizing and compression; upload validation enforces the limit.
+8. Save a draft or publish only when requested/appropriate to the task.
 
-## 3. Dual-Mode Editor
-ផ្ទាំងសរសេរអត្ថបទ (Article Editor) ត្រូវបានរចនាឡើងយ៉ាងងាយស្រួល ទាំងលើ Computer និងទូរស័ព្ទដៃ៖
-* **Visual Editor (WYSIWYG):** ផ្ទាំងសរសេរផ្ទាល់ភ្នែក ងាយស្រួល format អក្សរដិត ទ្រេត ចំណងជើង H2, H3 និង callout boxes។
-* **HTML Editor:** ផ្ទាំងកូដ HTML ផ្ទាល់សម្រាប់អ្នកជំនាញកែសម្រួល tags និង styling លម្អិត។
-* **Split View:** បង្ហាញអេក្រង់ចែកជាពីរ (ខាងឆ្វេង HTML, ខាងស្តាំ Visual) ជាមួយប្រព័ន្ធ Two-Way Live Sync ភ្លាមៗ។
-* **Mobile Optimized:** គម្លាតកថាខណ្ឌ (Paragraph Spacing) ត្រឹមត្រូវតាមស្ដង់ដារ UI/UX ទូរស័ព្ទដៃ មិនវែងជ្រុល។
+The thumbnail is for cards/previews; do not automatically repeat it as a hero image inside every article. Explicitly inserted body images remain visible. Visual, HTML, and split views must stay synchronized. Read More must preserve nested content and allow the remaining article to expand.
 
----
+Fetch is best effort: login walls, anti-bot responses, unavailable sources, and unreadable markup can still prevent import. Do not promise that any URL can be fetched. Formatting without AI does not require a Gemini key; AI actions require the appropriate key and working provider response.
 
-## 4. TK Summary AI Engine
-ផ្ទាំងជំនួយការឆ្លាតវៃ TK Summary Classic v2.5 AI បំពាក់ដោយមុខងារសំខាន់ៗ៖
+Relevant implementation: `src/routes/admin.ts`, `src/routes/api.ts`, `src/utils/article-import.ts`, `src/utils/article-display.ts`, `public/assets/freeFormat.js`, and editor media assets.
 
-### ក. 15 Editorial Newsroom Styles
-លោកអ្នកអាចជ្រើសរើស Style កាសែតអន្តរជាតិល្បីៗចំនួន ១៥ (CNN, Daily Mail, Fox News, AP Wire, People Magazine, TMZ, BuzzFeed, Breaking Express, Tabloid, News Analysis, Axios Express, USA Viral Hook, NYT Explainer, Substack Newsletter, Investigative):
-* **Visual Selection:** ចុចលើ Card វានឹងលោតស៊ុមពណ៌ទឹកក្រូចដិត `#C25E3E`, Background ពណ៌ក្រែមស្រាល `#FFF5F0` និងសញ្ញាធីក `✓` (Checkmark badge) ភ្លាមៗ។
-* **Quick Apply Bar:** មានប៊ូតុង `⚡ Apply [Style] Style` នៅផ្ទាល់លើ Step 2 មិនបាច់ scroll ចុះក្រោម។
-* **Double Click:** ចុច ២ ដងលើ Card ណាមួយ វានឹង Format ចូល Editor ភ្លាមមួយរំពេច។
+## Visitor performance and stylesheet rollback
 
-### ខ. Article & Image Fetcher
-* អាចបិទភ្ជាប់ (Paste) Link ពីកាសែតណាក៏បាន (CNN, Top Story USA, លោកអ្នកមិនបាច់វាយ `https://` ក៏ប្រព័ន្ធ auto-complete ឱ្យដែរ)។
-* បំពាក់ប្រព័ន្ធ **Googlebot Fallback Header** ដែលអាចឆ្លងកាត់ការបិទខ្ទប់របស់ Cloudflare/Anti-Bot ដើម្បីទាញយក Headline, Summary, Content និង Featured Image ដោយស្វ័យប្រវត្តិ។
+Visitors use precompiled Tailwind CSS. CMS keeps its Tailwind runtime. The compiler is pinned to Tailwind **3.4.17**, matching the previous runtime.
 
-### គ. Google Gemini AI & Rule-based Formatter
-* **✨ Only Format (រក្សាពាក្យដើម):** រៀបចំរចនាសម្ព័ន្ធអត្ថបទ និងប្រអប់ Highlight តាម Style នីមួយៗដោយរក្សាពាក្យ សម្រង់សម្តី និងការពិត ១០០% មិនកែប្រែ (មិនត្រូវការ Gemini API Key ឡើយ)។
-* **⚡ AI Rewrite:** សរសេរអត្ថបទឡើងវិញតាមសំនៀង និងវេយ្យាករណ៍របស់ Brand កាសែតនីមួយៗតាមរយៈ Google Gemini Flash។
-* **🇰🇭 AI Khmer Translation:** បកប្រែអត្ថបទទាំងមូលជាភាសាខ្មែរបែបសារព័ត៌មានយ៉ាងរលូន។
-* **WebP Image Studio:** បម្លែងរូបភាពទៅជា WebP និងសម្អាត Link ដើមដើម្បីកុំឱ្យជាប់ footprint។
-
----
-
-## 5. TK Link System (៦ ខ្ទង់ - Pretty Links Alternative)
-ប្រព័ន្ធជំនួស Pretty Links ដោយផ្ទាល់លើ Server មិនបាច់ប្រើ Plugin WordPress៖
-* **ទម្រង់ Link:** បង្កើត Link ៦ ខ្ទង់ស្អាត (ឧ. `https://topusanewsstory.com/asdfef`)។
-* **Batch Generator:** អាចជ្រើសរើសចំនួន Link ដែលចង់បង្កើត (ឧ. 2, 5, 10, 50, 100 links) សម្រាប់អត្ថបទតែមួយ។
-* **Clean Redirect (គ្មានកន្ទុយរញេរញៃ):** ពេល Visitor ចុចលើ TK Link វានឹងបញ្ជូន (302 Redirect) ទៅកាន់ Post ដើមស្អាត (Clean Canonical URL) ដោយគ្មានកន្ទុយ tracking ឬ affiliate parameter ដែលធ្វើឱ្យប៉ះពាល់ដល់ការផុស ឬ Comment លើ Facebook ឡើយ។
-* **Click Tracking:** រាប់ចំនួន Click ជាក់ស្ដែងលើ link នីមួយៗរក្សាទុកក្នុង SQLite។
-* **Quick Tools:** ប៊ូតុង Copy មួយៗ និងប៊ូតុង **📋 Copy All Links** ងាយស្រួលយកទៅប្រើប្រាស់។
-
----
-
-## 6. Real-Time Visitor Tracking (Whos.amung.us RAM Engine)
-* **High Performance:** ដំណើរការលើ Memory RAM ផ្ទាល់ឆ្លើយតបក្រោម `<0.001ms` មិនធ្វើឱ្យ Database ធ្លាក់ល្បឿនឡើយ។
-* **Metrics:** បង្ហាញចំនួនអ្នកកំពុង Online ជាក់ស្ដែង, ទំព័រដែលកំពុងមើល (Active Pages) និងស្ថិតិប្រទេស (Country Distribution)។
-* **Anti-Snooping:** ការពារកូដ Tracking មិនឱ្យ Developer ឬគូប្រជែងអាចចូលទៅ inspect មើលកូដ tracker ដោយងាយស្រួលឡើយ។
-
----
-
-## 7. Automated Deployment & Backups
-រាល់ការកែប្រែកូដត្រូវបានការពារ និង Deploy ទៅកាន់ Production យ៉ាងមានសុវត្ថិភាពតាមរយៈ Script ស្វ័យប្រវត្តិ៖
-
-### បញ្ជា Deploy:
 ```bash
-./scripts/auto-deploy.sh "សារពិពណ៌នាការកែប្រែ"
-```
-
-### ដំណើរការស្វ័យប្រវត្តិនៃ Script:
-1. **Git Commit & Push:** រុញកូដទៅកាន់ GitHub Repository (`main` branch)។
-2. **Safe Database Protection:** Database នៅលើ VPS ស្ថិតនៅ `/var/www/data/news.sqlite` (ក្រៅ Git Tree) ធានាថាការ Pull កូដថ្មីមិនប៉ះពាល់ដល់អត្ថបទដែលបានផុសឡើយ។
-3. **Automatic SQLite Backup:** រាល់ពេល Deploy ប្រព័ន្ធនឹង Copy Database បម្រុងទុកទៅក្នុង `/var/www/data/backups/news_backup_YYYYMMDD_HHMMSS.sqlite` ដោយស្វ័យប្រវត្តិ (រក្សាទុក ២០ file ចុងក្រោយ)។
-4. **Zero-Downtime Reload:** Systemd restart សេវាកម្ម Bun ឡើងវិញក្នុងរយៈពេល <1 វិនាទី។
-5. **Edge Cache Purge:** Cloudflare CDN ធ្វើបច្ចុប្បន្នភាពទំព័រថ្មីទូទាំងពិភពលោក។
-
----
-
-## 8. VPS Migration Guide (ការប្ដូរ VPS ដោយមិនបាត់ទិន្នន័យ)
-នៅពេលអនាគត ប្រសិនបើលោកអ្នកចង់ប្តូរទៅកាន់ Server ឬ VPS ថ្មី អ្នកគ្រាន់តែអនុវត្តតាម ៤ ជំហានខាងក្រោម នោះភ្ញៀវដែលចុច Link ចាស់ៗ (រួមទាំង TK Links ៦ ខ្ទង់) នឹងនៅតែចូលអានបាន ១០០%៖
-
-### ជំហានទី ១៖ ដំឡើងបរិស្ថានលើ VPS ថ្មី
-```bash
-# 1. ដំឡើង Bun Runtime
-curl -fsSL https://bun.sh/install | bash
-source ~/.bashrc
-
-# 2. Clone កូដពី GitHub
-mkdir -p /var/www/news
-git clone https://github.com/ponpao2022-collab/main-website-usa.git /var/www/news
-cd /var/www/news
 bun install
+bun run build:css
 ```
 
-### ជំហានទី ២៖ ផ្ទេរ Database SQLite ទៅ VPS ថ្មី
-លោកអ្នកគ្រាន់តែ Copy ហ្វាល `/var/www/data/news.sqlite` ពី Server ចាស់ មកកាន់ Server ថ្មី៖
+- Inputs: `styles/public.css`, `tailwind.public.config.cjs`, frontend/API templates, `public/assets/freeFormat.js`, and post HTML from the selected database.
+- Builder: `scripts/build-public-css.ts` opens the database read-only, scans content, writes a hashed `public/assets/public-<hash>.css`, and updates `src/data/public-css.json`.
+- `.cache/` holds temporary compilation inputs/output. Do not commit it.
+- Optional `PUBLIC_CSS_SNAPSHOT` points to a local JSON article backup to include its post classes in a build. Do not commit the backup.
+- Stage the generated stylesheet and manifest when source changes require CSS updates. `src/data/` matches an ignore rule, so the manifest may require `git add -f src/data/public-css.json`.
+- Production deployment rebuilds CSS using `/var/www/data/news.sqlite`. New arbitrary utility classes in post HTML need a rebuild; category names alone do not need one.
+- Hashed asset filenames support long-lived asset caching. Keep the runtime asset for the CMS and rollback.
+- Rollback: set `PUBLIC_STYLE_ENGINE=runtime` for the service and restart it; the public layout then loads the previous runtime instead of static CSS. Revert the relevant code commit if a full rollback is required. Preserve the database and media.
+
+Initial verification found roughly 33 KB of CSS versus 407 KB of runtime JavaScript before compression. This is a styling-payload comparison, not a measured percentage improvement in complete page loading. Article fonts/layout, Read More, and mobile navigation were checked. Do not claim guaranteed Instant Article speed.
+
+## Live audience and date reports
+
+- Active sessions are tracked in process memory; current readers are different from total pageviews.
+- `audience_samples` stores peak observed concurrent readers per minute. History is also sampled by a one-minute timer.
+- `pageview_events` records timestamped article views. These are server-observed events, not guaranteed unique human readers; cached pages may not reach the origin.
+- Live audience supports 1 hour, 24 hours, 7 days, and custom ranges.
+- Articles reports support date/time ranges for pageviews and article/published/draft/breaking totals.
+- Article counts in a selected range use **article creation time** and current status, not a historical log of publication transitions.
+- CMS date/time inputs use Phnom Penh time (UTC+7); stored range timestamps use UTC. Custom ranges have a 366-day limit, with an exclusive end.
+- Historical event data begins at `analytics_started_at`. Older lifetime view counters cannot be reconstructed into earlier hourly/daily history.
+
+Relevant files: `src/utils/analytics.ts`, `src/utils/tracker.ts`, `public/assets/cms-analytics.js`, and database schema initialization.
+
+## Backup and restore
+
+- CMS backup/export/import endpoints require editor authentication.
+- SQLite download uses `db.serialize()` and includes committed changes still in WAL. The database file alone does not contain uploaded media.
+- JSON backup v2 includes posts, categories, valid TK short links, and local WebP media. It is an article/content backup, not a full analytics/settings snapshot.
+- Restore shows a preview and requires an explicit restore action. Test restores against a disposable database; never restore production just to check a button.
+- Restore merges by post slug, preserves existing post IDs, remaps categories, and restores links/media. Invalid payloads must roll back database changes.
+- Limits: 50 MB import request; 1–10,000 articles per backup.
+- JSON restores were tested for IDs, links, media, and invalid-input rollback. SQLite snapshot was tested with a committed row still in WAL.
+- The deployment endpoint currently makes a raw database-file copy and retains the latest 20 backups. **This is not the same WAL-safe snapshot used by the CMS download endpoint.** Before migration or recovery-sensitive work, obtain a consistent SQLite backup plus media; do not assume a live raw file copy contains all recent writes.
+
+Relevant file: `src/utils/backups.ts`; tests: `tests/backups.test.ts`.
+
+## Development and verification
+
+Inspect status and applicable local instructions before editing. Never stage unrelated user changes.
+
 ```bash
-# នៅលើ VPS ថ្មី៖
-mkdir -p /var/www/data/backups
-# Copy file តាមរយៈ SCP (ឧទាហរណ៍):
-# scp root@2.25.237.28:/var/www/data/news.sqlite /var/www/data/news.sqlite
+bun install
+DB_PATH=/tmp/topusanews-preview.sqlite PORT=3001 bun run src/index.ts
+bunx tsc --noEmit
+bun test
+git diff --check
 ```
 
-### ជំហានទី ៣៖ បង្កើត Systemd Service លើ VPS ថ្មី
-បង្កើតហ្វាល `/etc/systemd/system/news.service`:
-```ini
-[Unit]
-Description=Top USA News Story Server
-After=network.target
+Use a disposable database copy for preview/testing. Do not point tests at production. `bun check` in the existing package script is not the established TypeScript check; use `bunx tsc --noEmit`.
 
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/var/www/news
-ExecStart=/root/.bun/bin/bun run src/index.ts
-Restart=always
-RestartSec=3
-Environment=NODE_ENV=production
-Environment=PORT=3000
+Test the behavior affected by the change. For layout/navigation work, inspect desktop and mobile, capture the final result, and verify relevant controls. Do not navigate away from the user's live editor or lose their unsaved work; use a separate temporary tab and close previews afterward.
 
-[Install]
-WantedBy=multi-user.target
-```
-បើកដំណើរការសេវាកម្ម៖
+At the last implementation check: 18 tests passed, covering import, editor behavior, media validation, category menus, dashboard icons, analytics, and backups. This is historical evidence; rerun appropriate checks for subsequent code changes.
+
+`news.sqlite` has an incidental local modification from prior database work. **Do not commit it**, WAL/SHM files, credentials, or backup exports. Stage named code/assets rather than `git add -A`.
+
+## Push and deploy procedure
+
+1. Check the diff, build CSS if needed, and run relevant checks.
+2. Stage only the intended files; commit with a descriptive message.
+3. Push to the approved deployment branch.
+4. Trigger the deploy endpoint over HTTPS using the `x-deploy-secret` header with the configured secret from the authorized environment. Do not put secrets in the URL or this document.
+5. The endpoint fetches code, resets the production checkout to `origin/main`, installs dependencies, builds visitor CSS against the persistent database, and restarts `news-app`.
+6. A successful trigger response only means the background job started. Verify the live page and a concrete changed behavior/asset before reporting deployment complete.
+
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable news
-sudo systemctl start news
+git add <intended-files>
+git commit -m "Describe the change"
+git push origin main
+curl --fail-with-body --silent --show-error --max-time 20 \
+  -X POST -H "x-deploy-secret: ${DEPLOY_SECRET}" \
+  https://topusanewsstory.com/api/system/deploy
 ```
 
-### ជំហានទី ៤៖ ប្តូរ IP នៅលើ Cloudflare DNS
-* ចូលទៅកាន់គណនី Cloudflare របស់អ្នក
-* ចូលទៅកាន់ **DNS Records** នៃ domain `topusanewsstory.com`
-* ប្តូរ **A Record** ពី IP ចាស់ (`2.25.237.28`) ទៅកាន់ **IP នៃ VPS ថ្មី** របស់អ្នក
-* រក្សាទុក (Save) ជាការស្រេច! 
-* ត្រឹមតែ ២ ទៅ ៥ នាទី Cloudflare នឹងបញ្ជូន Traffic ទាំងអស់ទៅ VPS ថ្មីដោយស្វ័យប្រវត្តិ ដោយរាល់ TK Links, អត្ថបទ និងស្ថិតិទាំងអស់ដំណើរការបន្តឥតមានចន្លោះប្រហោងឡើយ។
+The existing `scripts/auto-deploy.sh` stages everything and sends a secret in an HTTP URL. Do not use that helper as the deployment workflow until it is corrected. In the Codex environment, Git writes/network may require sandbox escalation; existing user authorization still applies.
 
----
-*ឯកសារនេះត្រូវបានបង្កើតឡើងសម្រាប់ជាស្តង់ដារប្រតិបត្តិការនៃគម្រោង `topusanewsstory.com`។*
+The cache refresh endpoint currently simulates a purge; do not claim it invalidates Cloudflare globally. Public HTML advertises a 60-second shared cache and 300-second stale-while-revalidate window, so menu/category changes may take time to appear through a cache. Restarting the service is not a guarantee of zero downtime.
+
+## Migration and recovery checklist
+
+- Obtain a consistent full SQLite backup and copy the media directory. Preserve short links, settings, and analytics when migrating the complete site.
+- Install Bun/dependencies and clone the repository on the destination.
+- Restore data outside the Git checkout; configure `DB_PATH`, `PORT`, and deployment secret appropriately.
+- Build visitor CSS using the restored database. Configure the service using the verified production service name/environment rather than an outdated sample.
+- Verify public articles, media, TK redirects, CMS login, and backups before switching DNS.
+- Change the Cloudflare A record when the destination is ready. DNS/cache timing varies; verify afterward instead of promising a fixed migration time.
+
+## Recent implementation checkpoints
+
+- `61756ee`: CMS popups, backup/restore, audience history, date reports.
+- `f870f2f`: precompiled visitor CSS with runtime rollback.
+- `94281e8`: automatic category navigation after NEWS.
+- `239824a`: uppercase desktop/mobile menu labels.
+
+These are reference points, not permission to reset unrelated later work.
