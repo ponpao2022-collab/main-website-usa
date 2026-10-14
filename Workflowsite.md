@@ -6,8 +6,9 @@ This is the handoff document for future work. Check the source and live site bef
 ## Project locations
 
 - Website: https://topusanewsstory.com
-- CMS: `https://topusanewsstory.com/${ADMIN_PATH}` (configured via private environment variable)
-- Editor: https://topusanewsstory.com/article/new
+- CMS Login: `https://topusanewsstory.com/${ADMIN_PATH}/login` (configured via private `ADMIN_PATH`)
+- CMS Dashboard: `https://topusanewsstory.com/${ADMIN_PATH}` (configured via private `ADMIN_PATH`)
+- New Story Editor: https://topusanewsstory.com/article/new
 - Workspace: `/home/pao/Documents/Website`
 - Repository: https://github.com/ponpao2022-collab/main-website-usa.git
 - Current deployment branch: `main`; use `codex/` for new task branches unless requested otherwise.
@@ -16,6 +17,8 @@ This is the handoff document for future work. Check the source and live site bef
 - Persistent production database: `/var/www/data/news.sqlite`.
 - Uploaded media: `media/` beside the selected database (production: `/var/www/data/media`).
 - `DB_PATH` overrides the database location; `PORT` controls the listener.
+- `ADMIN_PATH` controls the CMS admin path prefix (default: `pao`).
+
 
 ## User preferences and accepted decisions
 
@@ -45,6 +48,32 @@ The thumbnail is for cards/previews; do not automatically repeat it as a hero im
 Fetch is best effort: login walls, anti-bot responses, unavailable sources, and unreadable markup can still prevent import. Do not promise that any URL can be fetched. Formatting without AI does not require a Gemini key; AI actions require the appropriate key and working provider response.
 
 Relevant implementation: `src/routes/admin.ts`, `src/routes/api.ts`, `src/utils/article-import.ts`, `src/utils/article-display.ts`, `public/assets/freeFormat.js`, and editor media assets.
+
+## CMS security, dynamic routing, and privacy rules
+
+- **Dynamic Admin Route (`ADMIN_PATH`):**
+  - Exported from `src/config.ts` via `process.env.ADMIN_PATH` with fallback `"pao"`.
+  - Mounted dynamically in `src/index.ts` at `/${ADMIN_PATH}`.
+  - All CMS dashboard routes, login, logout, and article edit links dynamically follow `/${ADMIN_PATH}`.
+  - Strict lockdown: incoming requests to `/admin` and `/admin/*` return a strict `404 Not Found` whenever `ADMIN_PATH !== "admin"`.
+- **Dedicated New Article Route (`/article/new`):**
+  - The official user-facing URL to compose new articles is `https://topusanewsstory.com/article/new`.
+  - Registered directly on the root Hono application before `frontendRouter` so it takes priority over dynamic `/article/:slug` matching.
+  - Enforces editor authentication (`usa_cms_token` cookie); unauthorized visitors are redirected to `/${ADMIN_PATH}/login`.
+  - Disables caching with strict headers: `Cache-Control: no-cache, no-store, must-revalidate, max-age=0, private`, `CDN-Cache-Control: no-store`, and `Cloudflare-CDN-Cache-Control: no-store`.
+  - Dashboard navigation ("New article" button in header and empty state) links to `/article/new`.
+  - Visiting `/${ADMIN_PATH}/new` redirects automatically (302) to `/article/new`.
+- **Git and GitHub Privacy Sanitization:**
+  - **Never commit** the private admin path (`pao`), the VPS IP (`2.25.237.28`), deploy secrets, or database files to GitHub.
+  - `.env` stores `ADMIN_PATH`, `PORT`, `DEPLOY_SECRET`, and `VPS_HOST` locally; it is strictly ignored by `.gitignore`.
+  - `scripts/auto-deploy.sh` reads `VPS_HOST` and `DEPLOY_SECRET` from `.env` without printing or hardcoding secrets.
+- **Cloudflare Edge Cache Rules Configuration:**
+  - **Rule 1 (Bypass Cache for Admin, Editor & API):**
+    - Match: `URI Path contains [ADMIN_PATH]` OR `URI Path equals /article/new` OR `URI Path contains /api` OR `URI Path contains /admin`.
+    - Action: **Bypass cache**.
+  - **Rule 2 (Edge Cache News Articles):**
+    - Match: `URI Path starts with /article/` OR `URI Path starts with /category/` OR `URI Path equals /`.
+    - Action: **Eligible for cache**.
 
 ## Visitor performance and stylesheet rollback
 
@@ -130,7 +159,7 @@ curl --fail-with-body --silent --show-error --max-time 20 \
   https://topusanewsstory.com/api/system/deploy
 ```
 
-The existing `scripts/auto-deploy.sh` stages everything and sends a secret in an HTTP URL. Do not use that helper as the deployment workflow until it is corrected. In the Codex environment, Git writes/network may require sandbox escalation; existing user authorization still applies.
+`scripts/auto-deploy.sh` safely sources `VPS_HOST` and `DEPLOY_SECRET` from local `.env` and does not leak IP addresses or secrets to console or Git. In the Codex environment, Git writes/network may require sandbox escalation; existing user authorization still applies.
 
 The cache refresh endpoint currently simulates a purge; do not claim it invalidates Cloudflare globally. Public HTML advertises a 60-second shared cache and 300-second stale-while-revalidate window, so menu/category changes may take time to appear through a cache. Restarting the service is not a guarantee of zero downtime.
 
@@ -145,9 +174,12 @@ The cache refresh endpoint currently simulates a purge; do not claim it invalida
 
 ## Recent implementation checkpoints
 
+- `389b938`: Dedicated user-facing new article editor route at `/article/new`, dashboard buttons updated, auto-redirect from `/pao/new`.
+- `cafd1fb`: Dynamic CMS admin path (`ADMIN_PATH`), `/admin` lockdown to 404, sanitize GitHub repo from VPS IP and secret paths.
 - `61756ee`: CMS popups, backup/restore, audience history, date reports.
 - `f870f2f`: precompiled visitor CSS with runtime rollback.
 - `94281e8`: automatic category navigation after NEWS.
 - `239824a`: uppercase desktop/mobile menu labels.
 
 These are reference points, not permission to reset unrelated later work.
+
