@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { compress } from "hono/compress";
 import { frontendRouter } from "./routes/frontend";
-import { adminRouter } from "./routes/admin";
+import { adminRouter, renderEditor } from "./routes/admin";
 import { apiRouter } from "./routes/api";
 
 const app = new Hono();
@@ -41,6 +41,25 @@ if (ADMIN_PATH !== "admin") {
   app.all("/admin", (c) => c.text("Not Found", 404));
   app.all("/admin/*", (c) => c.text("Not Found", 404));
 }
+
+// User-facing Editor Route for New Articles (/article/new)
+app.get("/article/new", async (c) => {
+  const cookieHeader = c.req.header("cookie") || "";
+  const tokenMatch = cookieHeader.match(/usa_cms_token=([^;]+)/);
+  const token = tokenMatch ? tokenMatch[1] : null;
+
+  if (token !== "usa_news_cms_auth_token_secret_2026") {
+    return c.redirect(`/${ADMIN_PATH}/login`);
+  }
+
+  c.res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, private");
+  c.res.headers.set("Pragma", "no-cache");
+  c.res.headers.set("Expires", "0");
+  c.res.headers.set("CDN-Cache-Control", "no-store");
+  c.res.headers.set("Cloudflare-CDN-Cache-Control", "no-store");
+
+  return renderEditor(c);
+});
 
 app.route("/", frontendRouter);
 

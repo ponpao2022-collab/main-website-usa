@@ -185,7 +185,7 @@ adminRouter.get("/", (c) => {
   <button id="cmsNavOverlay" class="cms-nav-overlay" aria-label="Close navigation" onclick="toggleDashboardNav(false)"></button>
   <header class="cms-header">
     <div class="cms-header-left"><button type="button" class="cms-menu" onclick="toggleDashboardNav()" aria-label="Open navigation" aria-expanded="false">${icon('menu')}</button><span>Workspace <span class="cms-breadcrumb">/</span> <strong id="cmsPageName">Articles</strong></span></div>
-    <div class="cms-header-actions"><a href="/" target="_blank" class="cms-view-site">${icon('external')}<span>View website</span></a><a href="/${ADMIN_PATH}/new" class="cms-primary">${icon('plus')}<span>New article</span></a></div>
+    <div class="cms-header-actions"><a href="/" target="_blank" class="cms-view-site">${icon('external')}<span>View website</span></a><a href="/article/new" class="cms-primary">${icon('plus')}<span>New article</span></a></div>
   </header>
   <main id="cmsMain" class="cms-main">
     <div class="cms-page-heading"><div><span class="cms-eyebrow">EDITORIAL WORKSPACE</span><h1 id="cmsPageHeading">Manage your stories</h1><p id="cmsPageDescription">Write, publish and keep your newsroom moving.</p></div><div class="cms-live-state"><span></span> Audience updates every 3 seconds</div></div>
@@ -298,7 +298,7 @@ adminRouter.get("/", (c) => {
                   <td colspan="5" class="text-center py-12 text-[#8A867E]">
                     <div class="text-sm font-semibold text-[#6E6B63] mb-1">No published articles</div>
                     <div class="text-xs text-[#8A867E] mb-4">Start by writing and publishing your first article!</div>
-                    <a href="/${ADMIN_PATH}/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
+                    <a href="/article/new" class="px-4 py-2 rounded-xl bg-[#C25E3E] hover:bg-[#B05335] text-white font-bold text-xs inline-flex items-center space-x-1.5 transition shadow-sm">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                       <span>+ Publish First Story</span>
                     </a>
@@ -1271,7 +1271,7 @@ adminRouter.get("/", (c) => {
 });
 
 // ADMIN POST EDITOR (NEW or EDIT)
-const renderEditor = (c: any) => {
+export const renderEditor = (c: any) => {
   const id = c.req.param("id");
   let post: any = null;
   if (id) {
@@ -3083,5 +3083,11 @@ const renderEditor = (c: any) => {
 </html>`);
 };
 
-adminRouter.get("/new", renderEditor);
+adminRouter.get("/new", (c) => {
+  if (c.req.path === "/admin/new") {
+    return renderEditor(c);
+  }
+  return c.redirect("/article/new");
+});
 adminRouter.get("/edit/:id", renderEditor);
+

@@ -50,10 +50,11 @@ docker compose up -d --build
 
 ចូលទៅកាន់ **Caching** -> **Cache Rules** -> **Create rule**:
 
-### Rule ១៖ កុំ Cache ផ្ទាំង Admin/CMS និង API (Bypass Cache for Admin & API)
+### Rule ១៖ កុំ Cache ផ្ទាំង Admin/CMS, Editor និង API (Bypass Cache for Admin, Editor & API)
 * **Rule name:** `Bypass Admin & API`
 * **When incoming requests match:**
   * `URI Path` contains `[ADMIN_PATH]` (ឧទាហរណ៍ path admin សម្ងាត់របស់អ្នក) OR
+  * `URI Path` equals `/article/new` OR
   * `URI Path` contains `/api` OR
   * `URI Path` contains `/admin`
 * **Cache eligibility:** **Bypass cache**
